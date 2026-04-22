@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>画像調整&書き出しツール</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/heic-to@1.4.2/dist/iife/heic-to.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+:root {
+    --accent: #6366f1;
+    --accent-soft: #eef2ff;
+    --bg: #f5f5f7;
+    --card: #ffffff;
+    --border: #e4e4e7;
+    --text: #18181b;
+    --muted: #71717a;
+    --danger: #ef4444;
+    --danger-soft: #fef2f2;
+    --warn: #f59e0b;
+    --warn-soft: #fffbeb;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+}
+
+*,*::before,*::after { box-sizing:border-box; }
+
+body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 32px 20px 60px; margin: 0; min-height: 100vh; color: var(--text); }
+
+.version-label { position: absolute; top: 20px; right: 24px; font-size: 0.85rem; color: var(--muted); font-weight: 500; letter-spacing: 0.02em; }
+
+.page-title { position: relative; width: 100%; max-width: 900px; margin-bottom: 20px; }
+.page-title h2 { font-size: 1.5rem; font-weight: 500; letter-spacing: -0.02em; margin: 0 0 4px; color: var(--text); }
+.page-title p { font-size: 0.85rem; color: var(--muted); margin: 0; font-weight: 300; }
+
+.help-btn { position: absolute; right: 0; bottom: 0; background: none; border: none; font-size: 1.6rem; cursor: pointer; padding: 0; transition: transform 0.15s; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05)); }
+.help-btn:hover { transform: scale(1.1); }
+
+.section-card { background: var(--card); padding: 28px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); width: 100%; max-width: 900px; text-align: center; }
+
+.instruction-text { position: relative; max-width: 700px; margin: 16px auto; font-size: 0.8rem; color: var(--muted); line-height: 1.75; text-align: left; background: var(--bg); padding: 14px 32px 14px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); font-weight: 300; }
+.close-inst-btn { position: absolute; top: 8px; right: 12px; font-size: 1.2rem; background: none; border: none; color: var(--muted); cursor: pointer; padding: 0; transition: color 0.15s; }
+.close-inst-btn:hover { color: var(--text); }
+
+.upload-zone { border: 1.5px dashed var(--border); border-radius: var(--radius-sm); padding: 44px 20px; background: var(--bg); cursor: pointer; transition: all 0.2s ease; }
+.upload-zone:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+.upload-btn-main { background: var(--accent); padding: 11px 24px; border-radius: 100px; color: #fff; font-weight: 500; font-size: 0.9rem; display: inline-block; margin-bottom: 12px; letter-spacing: -0.01em; cursor: pointer; transition: opacity 0.15s; }
+.upload-btn-main:hover { opacity: 0.85; }
+.upload-format-text { font-size: 0.72rem; color: var(--muted); font-weight: 300; letter-spacing: 0.04em; text-transform: uppercase; }
+
+.btn { padding: 10px 22px; cursor: pointer; border: none; border-radius: 100px; font-family: inherit; font-weight: 500; font-size: 0.875rem; transition: all 0.15s; letter-spacing: -0.01em; }
+.btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-success { background: var(--accent); color: #fff; }
+.btn-secondary { background: #e4e4e7; color: var(--muted); }
+.btn-secondary:hover { background: #d4d4d8; color: var(--text); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+
+#previewArea { display:flex; flex-wrap:wrap; gap:12px; justify-content:flex-start; margin-top:22px; }
+.thumb-box { position: relative; width:110px; text-align:center; cursor:pointer; transition: transform 0.15s; }
+.thumb-box:hover { transform: translateY(-2px); }
+
+.custom-tooltip { visibility: hidden; opacity: 0; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(24, 24, 27, 0.9); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 500; white-space: nowrap; z-index: 100; pointer-events: none; transition: all 0.1s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-bottom: 6px; }
+.custom-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 5px; border-style: solid; border-color: rgba(24, 24, 27, 0.9) transparent transparent transparent; }
+.thumb-box:hover .custom-tooltip { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(-4px); }
+.mini-thumb-box { position: relative; display: flex; flex-direction: column; align-items: center; width: 100px; cursor: pointer; }
+.mini-thumb-box:hover .custom-tooltip { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+.thumb-frame { width: 98px; height: 98px; border-radius: 10px; border: 2px solid transparent; background: var(--bg); display: flex; align-items: center; justify-content: center; margin: 0 auto; overflow: hidden; position: relative; }
+.thumb-frame.is-small { border-color: var(--danger); }
+.thumb-frame.is-japanese { border-color: var(--warn); }
+.thumb-frame.is-both { border-color: #a855f7; }
+
+.thumb-inner-img { display: block; object-fit: cover; }
+.thumb-name { font-size:0.65rem; color:var(--text); font-weight:500; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:5px; line-height:1.3; }
+.thumb-size, .thumb-dimensions { font-size:0.6rem; color:var(--muted); display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.3; font-weight:300; }
+
+#imagePreviewModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+.preview-modal-inner { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
+
+/* キャンバス・ツールバー枠のサイズアニメーション */
+.preview-card { background: var(--card); padding: 16px 20px 14px; border-radius: var(--radius); position: relative; box-shadow: 0 25px 60px rgba(0,0,0,0.4); display: inline-flex; flex-direction: column; align-items: stretch; transition: width 0.26s ease, height 0.26s ease; }
+
+/* クロスフェード画像レイヤー (常に中央に配置し、jsのtransformでオフセットをかける) */
+.preview-layer { position: absolute; top: 50%; left: 50%; max-width: none; max-height: none; display: block; transform: translate(-50%, -50%); opacity: 0; transition: opacity 0.26s ease; pointer-events: none; }
+
+.nav-btn { position: fixed; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; background: rgba(255,255,255,0.9); color: var(--text); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; user-select: none; transition: background 0.2s, box-shadow 0.2s; border: 1px solid var(--border); z-index: 5010; }
+.nav-btn:hover { background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.nav-btn.prev { left: 20px; }
+.nav-btn.next { right: 20px; }
+.close-preview-top { position: absolute; top: -14px; right: -44px; color: #fff; font-size: 38px; cursor: pointer; line-height: 1; font-weight: 300; z-index: 5020; opacity: 0.8; transition: opacity 0.2s; }
+.close-preview-top:hover { opacity: 1; }
+
+.highlight-red { color:var(--danger); }
+
+#progress { display: none; position: fixed; top: 24px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 360px; background: var(--card); z-index: 6000; padding: 20px 24px; text-align: center; box-shadow: 0 8px 32px rgba(0,0,0,0.12); border-radius: var(--radius); border: 1px solid var(--border); }
+.progress-container { width:100%; height:3px; background:var(--border); border-radius:100px; margin-top:14px; overflow:hidden; display:block; }
+.progress-bar { height:100%; width:0%; background:var(--accent); transition:width 0.2s ease; border-radius:100px; }
+
+#alertModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:5000; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+.modal-content { background: var(--card); padding: 28px; border-radius: var(--radius); max-width: 90%; width: 750px; max-height: 85vh; overflow-y: auto; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.2); border: 1px solid var(--border); }
+.alert-section { margin-bottom:20px; background:var(--danger-soft); padding:16px; border-radius:var(--radius-sm); border:1px solid #fecaca; }
+.alert-section.japanese { background:var(--warn-soft); border-color:#fde68a; }
+.alert-list { display:flex; flex-wrap:wrap; gap:12px; justify-content:flex-start; margin-top:10px; }
+
+.asp-btn { padding: 4px 10px; border-radius: 100px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-family: inherit; font-size: 0.72rem; font-weight: 400; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+.asp-btn:hover { border-color: var(--accent); color: var(--accent); }
+.asp-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
+
+/* 独自ダイアログ */
+#customDialogModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
+.custom-dialog-card { position: relative; background: var(--card); padding: 28px; border-radius: var(--radius); width: 90%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); border: 1px solid var(--border); text-align: center; }
+.custom-dialog-close { position: absolute; top: 12px; right: 16px; font-size: 1.5rem; color: var(--muted); background: none; border: none; cursor: pointer; transition: color 0.15s; line-height: 1; padding: 0; }
+.custom-dialog-close:hover { color: var(--text); }
+.custom-dialog-title { font-size: 1.15rem; font-weight: 500; margin: 0 0 14px; color: var(--text); letter-spacing:-0.01em; }
+.custom-dialog-message { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 24px; white-space: pre-wrap; text-align: left; background: var(--bg); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.custom-dialog-actions { display: flex; justify-content: center; gap: 12px; }
+
+</style>
+</head>
+<body>
+
+<div class="version-label">Ver 1.0.0</div>
+
+<div id="progress">
+  <div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px;">処理中...</div>
+  <div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px;">
+    <div id="progressFileName" style="font-size:0.8rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px;"></div>
+    <div id="progressCount" style="font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap;"></div>
+  </div>
+  <div id="progressTimeLeft" style="font-size:0.75rem; color:var(--muted);"></div>
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+</div>
+
+<div class="page-title">
+    <h2>画像調整 &amp; 書き出しツール</h2>
+    <p>Image Resize &amp; Export — 幅1200px自動リサイズ / ZIP一括書き出し</p>
+    <button id="helpBtn" class="help-btn" title="説明を表示">💡</button>
+</div>
+
+<div class="section-card">
+    <div class="instruction-text" id="instructionBox">
+        <button class="close-inst-btn" id="closeInstBtn" title="閉じる">&times;</button>
+        書き出し時に全て幅1200pxにリサイズされます。幅1200pxに満たない画像はオリジナルサイズで書き出すか強制的に幅1200pxにリサイズ（画質が劣化）させるかを選択できます。また、日本語が含まれるファイル名はWeb環境での不具合を防ぐため、自動的に日本語は削除されファイル名の頭に連番が付加されます。書き出される名前は「webleon_images.zip」です。シフトキーを押すと「フォルダに書き出し」が使用可能になります。アラートが2度表示されますが、それぞれ「許可する」「変更を保存」を選んでください。<br>
+        <span style="display:block; margin-top:6px;">※ コラム（枠付き）に使用する画像は幅600px以上であれば問題ありません。</span>
+    </div>
+
+    <div class="upload-zone" id="dropZone">
+        <div class="upload-btn-main">画像・PDF・ZIP を選択 / ドロップ</div>
+        <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip" style="display:none">
+        <div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; ZIP</div>
+    </div>
+
+    <div id="actionArea" style="display:none; margin-top:24px; padding-top:20px;">
+        <button class="btn btn-secondary" onclick="location.reload()" style="margin-left:10px;">やり直す</button>
+        <button class="btn btn-success" id="exportZipBtn">ZIP で書き出し</button>
+    </div>
+
+    <div id="previewArea"></div>
+</div>
+
+<div id="customDialogModal">
+    <div class="custom-dialog-card">
+        <button class="custom-dialog-close" id="customDialogCloseBtn" title="閉じる（キャンセル）">&times;</button>
+        <h3 id="customDialogTitle" class="custom-dialog-title"></h3>
+        <p id="customDialogMessage" class="custom-dialog-message"></p>
+        <div class="custom-dialog-actions">
+            <button id="customDialogCancelBtn" class="btn btn-secondary">キャンセル</button>
+            <button id="customDialogOkBtn" class="btn btn-success">OK</button>
+        </div>
+    </div>
+</div>
+
+<div id="alertModal">
+  <div class="modal-content">
+    <h3 style="margin-top:0; font-size:1.1rem; font-weight:500; letter-spacing:-0.01em;">確認が必要な画像があります</h3>
+    <div id="smallAlertContainer" class="alert-section">
+        <h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:var(--danger);">幅1200px未満の画像</h4>
+        <div id="smallAlertList" class="alert-list"></div>
+    </div>
+    <div id="jpAlertContainer" class="alert-section japanese">
+        <h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:#b45309;">日本語ファイル名の画像</h4>
+        <div id="jpAlertList" class="alert-list"></div>
+    </div>
+    <div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top: 20px;">
+      <button class="btn btn-secondary" onclick="closeAlertModal()">確認して閉じる</button>
+      <button class="btn btn-success" onclick="downloadAlertImage()">アラート結果をJPGで保存</button>
+    </div>
+  </div>
+</div>
+
+<div id="imagePreviewModal">
+    <div class="preview-modal-inner">
+        <div class="nav-btn prev" onclick="changePreviewImage(-1)">❮</div>
+        <div class="preview-card" onclick="event.stopPropagation()">
+            <span class="close-preview-top" onclick="closeImagePreview()">&times;</span>
+            <div id="aspectBar" style="display:flex; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; overflow:hidden;">
+                <span style="font-size:0.72rem; color:var(--muted); white-space:nowrap; font-weight:400; margin-right:2px;">キャンバス</span>
+                <button class="asp-btn active" data-key="free" onclick="setAspect(this)">オリジナル</button>
+                <button class="asp-btn" data-key="1:1" onclick="setAspect(this)">1:1</button>
+                <button class="asp-btn" data-key="3:2" onclick="setAspect(this)">3:2</button>
+                <button class="asp-btn" data-key="4:3" onclick="setAspect(this)">4:3</button>
+                <button class="asp-btn" data-key="3:4" onclick="setAspect(this)">3:4</button>
+                <button class="asp-btn" data-key="2:3" onclick="setAspect(this)">2:3</button>
+                <button class="asp-btn" data-key="thumb" onclick="setAspect(this)">Thumbnail</button>
+                <button class="asp-btn" data-key="og" onclick="setAspect(this)">OG</button>
+                <button class="asp-btn" data-key="special" onclick="setAspect(this)">Special</button>
+            </div>
+            
+            <div id="zoomContainer" style="position:relative; overflow:hidden; background:var(--bg); border-radius:0; cursor:grab; user-select:none; transition: width 0.26s ease, height 0.26s ease;">
+                <img id="previewImg0" class="preview-layer" src="" alt="拡大">
+                <img id="previewImg1" class="preview-layer" src="" alt="拡大">
+            </div>
+            
+            <div id="zoomBar" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px; transition: width 0.26s ease;">
+                <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
+                    <button onclick="stepZoom(-0.25)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text);">−</button>
+                    <span id="zoomLabel" style="font-size:0.8rem;font-weight:500;min-width:44px;text-align:center;color:var(--text);">100%</span>
+                    <button onclick="stepZoom(0.25)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text);">＋</button>
+                    <button onclick="resetZoom()" style="padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:0.75rem;color:var(--muted);">リセット</button>
+                </div>
+                <div style="display:flex; align-items:center; justify-content:center; gap:6px; flex:1; min-width:0; flex-wrap:wrap; text-align:center;">
+                    <div style="display:flex; flex-direction:column; min-width:0; align-items:center; width:100%;">
+                        <div id="previewMetaName" style="font-weight:500; font-size:0.85rem; letter-spacing:-0.01em; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%;"></div>
+                        <div id="previewMetaInfo" style="font-size:0.75rem; color:var(--muted); font-weight:300; white-space:nowrap;"></div>
+                    </div>
+                </div>
+                <button onclick="exportCroppedView()" style="padding:7px 14px;border-radius:100px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0;">この画像を書き出す</button>
+            </div>
+        </div>
+        <div class="nav-btn next" onclick="changePreviewImage(1)">❯</div>
+    </div>
+</div>
+
+<script>
+const byId = id => document.getElementById(id);
+
+// --- 独自ダイアログ制御 ---
+function showCustomDialog(options) {
+    return new Promise((resolve) => {
+        const modal = byId('customDialogModal');
+        const titleEl = byId('customDialogTitle');
+        const msgEl = byId('customDialogMessage');
+        const okBtn = byId('customDialogOkBtn');
+        const cancelBtn = byId('customDialogCancelBtn');
+        const closeBtn = byId('customDialogCloseBtn');
+
+        titleEl.textContent = options.title || '確認';
+        msgEl.textContent = options.message || '';
+        
+        okBtn.textContent = options.okText || 'OK';
+        okBtn.className = options.okClass || 'btn btn-success';
+
+        if (options.type === 'alert') {
+            cancelBtn.style.display = 'none';
+        } else {
+            cancelBtn.style.display = 'inline-block';
+            cancelBtn.textContent = options.cancelText || 'キャンセル';
+        }
+
+        modal.style.display = 'flex';
+
+        const cleanup = () => { modal.style.display = 'none'; };
+
+        okBtn.onclick = () => { cleanup(); resolve(true); };
+        cancelBtn.onclick = () => { cleanup(); resolve(false); };
+        closeBtn.onclick = () => { cleanup(); resolve(null); }; 
+    });
+}
+
+// --- 説明文の表示・非表示の制御 ---
+const instBox = byId('instructionBox');
+if (localStorage.getItem('hideAppInstruction')) instBox.style.display = 'none';
+
+byId('closeInstBtn').onclick = () => {
+    instBox.style.display = 'none';
+    localStorage.setItem('hideAppInstruction', '1');
+};
+byId('helpBtn').onclick = () => {
+    instBox.style.display = instBox.style.display === 'none' ? 'block' : 'none';
+    if (instBox.style.display === 'none') {
+        localStorage.setItem('hideAppInstruction', '1');
+    } else {
+        localStorage.removeItem('hideAppInstruction');
+    }
+};
+// ----------------------------------
+
+function highlightJapanese(text) {
+    return text.replace(/[^\x01-\x7E]+/g, '<span class="highlight-red">$&</span>');
+}
+
+const truncateName = (str) => {
+    let w = 0;
+    for (let i = 0; i < str.length; i++) {
+        w += /[^\x01-\x7E]/.test(str[i]) ? 2 : 1;
+        if (w > 16) return str.slice(0, i) + '...';
+    }
+    return str;
+};
+
+const pdfjsLib = window['pdfjs-dist/build/pdf'];
+if (pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+let processedImages = [], smallImages = [], japaneseImages = [];
+let _progressStartTime = 0, currentPreviewIndex = -1;
+
+const fileInput = byId('fileInput'), dropZone = byId('dropZone'), previewArea = byId('previewArea');
+const alertModal = byId('alertModal'), imagePreviewModal = byId('imagePreviewModal');
+const progressBar = byId('progressBar'), exportZipBtn = byId('exportZipBtn');
+const zoomContainer = byId('zoomContainer'), zoomLabel = byId('zoomLabel');
+
+// クロスフェード用のレイヤー管理
+let activeLayer = 0;
+const getActiveImg = () => byId('previewImg' + activeLayer);
+let targetCw = 0, targetCh = 0;
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Shift') exportZipBtn.textContent = 'フォルダに書き出し';
+    if (imagePreviewModal.style.display === 'flex') {
+        if (e.key === 'ArrowLeft') changePreviewImage(-1);
+        if (e.key === 'ArrowRight') changePreviewImage(1);
+        if (e.key === 'Escape') closeImagePreview();
+        if (e.key === '+' || e.key === '=') stepZoom(0.25);
+        if (e.key === '-') stepZoom(-0.25);
+    }
+});
+document.addEventListener('keyup', (e) => { if (e.key === 'Shift') exportZipBtn.textContent = 'ZIP で書き出し'; });
+
+let imgW = 0, imgH = 0, imgX = 0, imgY = 0, fitW = 0;
+let isDragging = false, dragStartX = 0, dragStartY = 0, dragStartImgX = 0, dragStartImgY = 0;
+const MAX_ZOOM = 5;
+
+// 画像を「コンテナの中心位置」からオフセットで計算して描画
+function applyPos() {
+    const img = getActiveImg();
+    const cw = targetCw || zoomContainer.clientWidth;
+    const ch = targetCh || zoomContainer.clientHeight;
+    
+    const tx = imgX - cw / 2 + imgW / 2;
+    const ty = imgY - ch / 2 + imgH / 2;
+    
+    img.style.width = Math.round(imgW) + 'px';
+    img.style.height = Math.round(imgH) + 'px';
+    img.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px))`;
+    
+    zoomLabel.textContent = fitW > 0 ? Math.round(imgW / fitW * 100) + '%' : '100%';
+}
+
+function clampPos(x, y, w, h, cw = targetCw, ch = targetCh) {
+    if (!cw) cw = zoomContainer.clientWidth;
+    if (!ch) ch = zoomContainer.clientHeight;
+    return {
+        nx: w <= cw ? (cw - w) / 2 : Math.min(0, Math.max(x, cw - w)),
+        ny: h <= ch ? (ch - h) / 2 : Math.min(0, Math.max(y, ch - h))
+    };
+}
+
+// サイズを計算して返し、コンテナにも適用する（計算結果を返すことでCSSアニメーション中の誤差を防ぐ）
+function resizeContainerToAspect(aspectKey) {
+    const maxW = window.innerWidth - 160, maxH = window.innerHeight * 0.9 - 110;
+    let w, h;
+    if (!aspectKey || aspectKey === 'free') {
+        const data = processedImages[currentPreviewIndex];
+        const iw = data ? data.originalWidth : getActiveImg().naturalWidth;
+        const ih = data ? data.originalHeight : getActiveImg().naturalHeight;
+        if (!iw || !ih) {
+            w = zoomContainer.clientWidth || maxW;
+            h = zoomContainer.clientHeight || maxH;
+        } else {
+            const scale = Math.min(maxW / iw, maxH / ih);
+            w = Math.floor(iw * scale); h = Math.floor(ih * scale);
+        }
+    } else {
+        const preset = ASPECT_PRESETS[aspectKey];
+        if (!preset) {
+            w = zoomContainer.clientWidth; h = zoomContainer.clientHeight;
+        } else {
+            const ratio = preset.h / preset.w;
+            let wByW = Math.floor(maxW), hByW = Math.floor(wByW * ratio);
+            let hByH = Math.floor(maxH), wByH = Math.floor(hByH / ratio);
+            if (hByW <= maxH) { w = wByW; h = hByW; } else { w = wByH; h = hByH; }
+        }
+    }
+    
+    targetCw = w; targetCh = h;
+    
+    zoomContainer.style.width = w + 'px'; zoomContainer.style.height = h + 'px';
+    const card = zoomContainer.closest('.preview-card');
+    if (card) {
+        card.style.width = (w + 40) + 'px';
+        const bar = card.querySelector('#zoomBar');
+        if (bar) bar.style.width = w + 'px';
+    }
+    return { cw: w, ch: h };
+}
+
+function fitImage() {
+    const dims = resizeContainerToAspect(currentAspectKey);
+    if (!dims) return;
+    const { cw, ch } = dims;
+
+    const iw = getActiveImg().naturalWidth, ih = getActiveImg().naturalHeight;
+    if (!iw || !ih) return;
+    if (currentAspectKey === 'free') { imgW = cw; imgH = ch; } 
+    else {
+        const scale = Math.max(cw / iw, ch / ih);
+        imgW = Math.round(iw * scale); imgH = Math.round(ih * scale);
+    }
+    fitW = imgW; imgX = Math.round((cw - imgW) / 2); imgY = Math.round((ch - imgH) / 2);
+    const c = clampPos(imgX, imgY, imgW, imgH, cw, ch);
+    imgX = c.nx; imgY = c.ny;
+    applyPos();
+}
+
+function resetZoom() { fitImage(); }
+
+function zoomAt(cx, cy, newW) {
+    newW = Math.max(fitW, Math.min(fitW * MAX_ZOOM, newW));
+    const ratio = newW / imgW;
+    const newH = Math.round(imgH * ratio);
+    const nx = cx - ratio * (cx - imgX), ny = cy - ratio * (cy - imgY);
+    imgW = Math.round(newW); imgH = newH;
+    const c = clampPos(nx, ny, imgW, imgH);
+    imgX = c.nx; imgY = c.ny;
+    applyPos();
+}
+
+function stepZoom(delta) { zoomAt(zoomContainer.clientWidth / 2, zoomContainer.clientHeight / 2, imgW * (1 + delta)); }
+
+zoomContainer.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = zoomContainer.getBoundingClientRect();
+    const factor = e.deltaMode === 1 ? 40 : (e.deltaMode === 2 ? 600 : 1);
+    zoomAt(e.clientX - rect.left, e.clientY - rect.top, imgW * (1 - (e.deltaY * factor) * 0.001));
+}, { passive: false });
+
+zoomContainer.addEventListener('mousedown', (e) => {
+    if (e.button !== 0) return;
+    isDragging = true;
+    dragStartX = e.clientX; dragStartY = e.clientY;
+    dragStartImgX = imgX; dragStartImgY = imgY;
+    zoomContainer.style.cursor = 'grabbing';
+    e.preventDefault();
+});
+window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const c = clampPos(dragStartImgX + (e.clientX - dragStartX), dragStartImgY + (e.clientY - dragStartY), imgW, imgH);
+    imgX = c.nx; imgY = c.ny;
+    applyPos();
+});
+window.addEventListener('mouseup', () => { if (isDragging) { isDragging = false; zoomContainer.style.cursor = 'grab'; } });
+
+let lastTouchDist = 0, lastMidX = 0, lastMidY = 0;
+let touchPanning = false, touchStartX = 0, touchStartY = 0, touchStartImgX = 0, touchStartImgY = 0;
+zoomContainer.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+        touchPanning = false;
+        const t0 = e.touches[0], t1 = e.touches[1];
+        lastTouchDist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+        lastMidX = (t0.clientX + t1.clientX) / 2; lastMidY = (t0.clientY + t1.clientY) / 2;
+    } else if (e.touches.length === 1) {
+        touchPanning = true;
+        touchStartX = e.touches[0].clientX; touchStartY = e.touches[0].clientY;
+        touchStartImgX = imgX; touchStartImgY = imgY;
+    }
+}, { passive: true });
+zoomContainer.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 2) {
+        const t0 = e.touches[0], t1 = e.touches[1];
+        const dist = Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY);
+        const midX = (t0.clientX + t1.clientX) / 2, midY = (t0.clientY + t1.clientY) / 2;
+        const rect = zoomContainer.getBoundingClientRect();
+        const cx = midX - rect.left, cy = midY - rect.top;
+        const newW = Math.max(fitW, Math.min(fitW * MAX_ZOOM, imgW * (dist / lastTouchDist)));
+        const newH = Math.round(newW * (getActiveImg().naturalHeight / getActiveImg().naturalWidth));
+        const c = clampPos(cx - (newW / imgW) * (cx - imgX) + (midX - lastMidX), cy - (newH / imgH) * (cy - imgY) + (midY - lastMidY), newW, newH);
+        imgW = Math.round(newW); imgH = newH; imgX = c.nx; imgY = c.ny;
+        applyPos();
+        lastTouchDist = dist; lastMidX = midX; lastMidY = midY;
+    } else if (e.touches.length === 1 && touchPanning) {
+        const c = clampPos(touchStartImgX + (e.touches[0].clientX - touchStartX), touchStartImgY + (e.touches[0].clientY - touchStartY), imgW, imgH);
+        imgX = c.nx; imgY = c.ny;
+        applyPos();
+    }
+}, { passive: false });
+zoomContainer.addEventListener('touchend', () => { touchPanning = false; isDragging = false; });
+
+imagePreviewModal.addEventListener('click', (e) => { if (e.target === imagePreviewModal) closeImagePreview(); });
+
+let resizeRaf = null;
+window.addEventListener('resize', () => {
+    if (imagePreviewModal.style.display !== 'flex' || resizeRaf) return;
+    resizeRaf = requestAnimationFrame(() => { fitImage(); resizeRaf = null; });
+});
+
+const ASPECT_PRESETS = {
+    'free': { w: null, h: null }, '1:1': { w: 1, h: 1 }, '3:2': { w: 3, h: 2 },
+    '4:3': { w: 4, h: 3 }, '3:4': { w: 3, h: 4 }, '2:3': { w: 2, h: 3 },
+    'thumb': { w: 1200, h: 600 }, 'og': { w: 1200, h: 630 }, 'special': { w: 1200, h: 675 }
+};
+
+const EXPORT_SIZE = {
+    'free': { w: null, h: null }, '1:1': { w: 1200, h: 1200 }, '3:2': { w: 1200, h: 800 },
+    '4:3': { w: 1200, h: 900 }, '3:4': { w: 1200, h: 1600 }, '2:3': { w: 1200, h: 1800 },
+    'thumb': { w: 1200, h: 600 }, 'og': { w: 1200, h: 630 }, 'special': { w: 1200, h: 675 }
+};
+
+const FIXED_FILENAME = { 'thumb': 'thumbnail.jpg', 'og': 'og.jpg', 'special': 'og_special.jpg' };
+let currentAspectKey = 'free';
+
+function setAspect(btn) {
+    document.querySelectorAll('.asp-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentAspectKey = btn.dataset.key;
+    if (getActiveImg().naturalWidth) fitImage();
+}
+
+async function exportCroppedView() {
+    const data = processedImages[currentPreviewIndex];
+    if (!data) return;
+    const cw = zoomContainer.clientWidth, ch = zoomContainer.clientHeight;
+    const iw = getActiveImg().naturalWidth, ih = getActiveImg().naturalHeight;
+    const cssScale = imgW / iw;
+    const img = new Image(); img.src = data.blobUrl;
+    await new Promise(res => { img.onload = res; if (img.complete) res(); });
+
+    let srcX, srcY, srcW, srcH, outW, outH;
+    if (currentAspectKey === 'free') {
+        srcX = Math.max(0, -imgX / cssScale); srcY = Math.max(0, -imgY / cssScale);
+        srcW = Math.min(cw / cssScale, iw - srcX); srcH = Math.min(ch / cssScale, ih - srcY);
+        outW = Math.min(Math.round(srcW), 1200); outH = Math.round(outW * (srcH / srcW));
+    } else {
+        const preset = ASPECT_PRESETS[currentAspectKey], ratio = preset.w / preset.h;
+        let fw = cw / ch >= ratio ? ch * ratio : cw, fh = cw / ch >= ratio ? ch : cw / ratio;
+        srcX = Math.max(0, ((cw - fw) / 2 - imgX) / cssScale); srcY = Math.max(0, ((ch - fh) / 2 - imgY) / cssScale);
+        srcW = Math.min(fw / cssScale, iw - srcX); srcH = Math.min(fh / cssScale, ih - srcY);
+        const exp = EXPORT_SIZE[currentAspectKey];
+        outW = exp.w; outH = exp.h;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = outW; canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH);
+    ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
+
+    const filename = FIXED_FILENAME[currentAspectKey] || `${data.exportName.replace(/\.jpg$/i, '')}_${currentAspectKey === 'free' ? 'original' : currentAspectKey.replace(':', 'x')}.jpg`;
+    canvas.toBlob(blob => {
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+        a.download = filename; a.click();
+    }, 'image/jpeg', 0.95);
+}
+
+function formatBytes(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024, sizes = ['Bytes', 'KB', 'MB', 'GB'], i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+async function decodeHeicToBlob(file) { return await HeicTo({ blob: file, type: 'image/jpeg', quality: 0.92 }); }
+async function decodeTiffToBlob(file) {
+    const arrayBuffer = await file.arrayBuffer(), ifds = UTIF.decode(arrayBuffer);
+    UTIF.decodeImage(arrayBuffer, ifds[0]);
+    const canvas = document.createElement('canvas'); canvas.width = ifds[0].width; canvas.height = ifds[0].height;
+    const ctx = canvas.getContext('2d'), imgData = ctx.createImageData(canvas.width, canvas.height);
+    imgData.data.set(UTIF.toRGBA8(ifds[0])); ctx.putImageData(imgData, 0, 0);
+    return new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+}
+
+function updateFileProgress(current, total, fileName) {
+    progressBar.style.width = (total > 0 ? Math.round((current / total) * 100) : 0) + '%';
+    byId('progressFileName').innerHTML = fileName || '';
+    byId('progressCount').textContent = total > 0 ? `[${current}/${total}]` : '';
+    if (current > 0 && total > 0) {
+        const remaining = Math.max(0, Math.round(((Date.now() - _progressStartTime) / 1000 / current) * (total - current)));
+        byId('progressTimeLeft').textContent = remaining < 60 ? `残り約 ${remaining} 秒` : `残り約 ${Math.floor(remaining / 60)} 分 ${remaining % 60} 秒`;
+    }
+}
+
+function showProgressPanel(statusText) {
+    byId('progress').style.display = 'block'; byId('statusText').innerText = statusText;
+    progressBar.style.width = '0%'; _progressStartTime = Date.now();
+}
+
+dropZone.addEventListener('click', () => fileInput.click());
+dropZone.addEventListener('dragover', e => e.preventDefault());
+dropZone.addEventListener('drop', e => { e.preventDefault(); handleFiles(e.dataTransfer.files); });
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+async function handleFiles(files) {
+    if (!files || !files.length) return;
+    showProgressPanel('読み込み中...');
+    processedImages = []; smallImages = []; japaneseImages = []; previewArea.innerHTML = '';
+    let allTasks = [];
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i], name = file.name.toLowerCase();
+        if (name.endsWith('.zip')) {
+            try {
+                const zip = await new JSZip().loadAsync(file);
+                Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(k))
+                    .forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip }));
+            } catch(e) { console.error(e); }
+        } else if (name.endsWith('.pdf')) { allTasks.push({ file, name: file.name, isPdf: true }); }
+        else if (/\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(name)) { allTasks.push({ file, name: file.name }); }
+    }
+    allTasks.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+    
+    let doneCount = 0;
+    for (const task of allTasks) {
+        updateFileProgress(doneCount, allTasks.length || 1, task.name);
+        await new Promise(r => setTimeout(r, 5));
+        try {
+            let blob, outName = task.name;
+            if (task.isPdf) {
+                const pdf = await pdfjsLib.getDocument({ data: await task.file.arrayBuffer() }).promise;
+                for (let j = 1; j <= pdf.numPages; j++) {
+                    const page = await pdf.getPage(j), viewport = page.getViewport({ scale: 2.0 });
+                    const canvasTmp = document.createElement('canvas'); canvasTmp.width = viewport.width; canvasTmp.height = viewport.height;
+                    await page.render({ canvasContext: canvasTmp.getContext('2d'), viewport }).promise;
+                    await processSingleFile(new File([await new Promise(r => canvasTmp.toBlob(r, 'image/jpeg', 0.95))], `${task.file.name.replace(/\.pdf$/i, '')}_p${j}.jpg`, { type: 'image/jpeg' }));
+                }
+                doneCount++; continue;
+            }
+            blob = task.zipKey ? await task.zipObj.file(task.zipKey).async("blob") : task.file;
+            if (/\.(heic|heif)$/i.test(outName)) { blob = await decodeHeicToBlob(new File([blob], outName)); outName = outName.replace(/\.(heic|heif)$/i, '.jpg'); }
+            else if (/\.(tif|tiff)$/i.test(outName)) { blob = await decodeTiffToBlob(new File([blob], outName)); outName = outName.replace(/\.(tif|tiff)$/i, '.jpg'); }
+            await processSingleFile(new File([blob], outName));
+        } catch(e) { console.error(e); }
+        doneCount++;
+    }
+    byId('progress').style.display = 'none';
+    if (processedImages.length) { byId('actionArea').style.display = 'block'; dropZone.style.display = 'none'; }
+    if (smallImages.length || japaneseImages.length) alertModal.style.display = 'flex';
+    renderAllThumbs();
+}
+
+async function processSingleFile(file) {
+    return new Promise((resolve) => {
+        const img = new Image(), url = URL.createObjectURL(file);
+        img.onload = async () => {
+            const isSmall = img.width < 1200, hasJapanese = /[^\x01-\x7E]/.test(file.name);
+            const createBlob = (maxW, q) => {
+                const w = Math.min(maxW, img.width), cvs = document.createElement('canvas');
+                cvs.width = w; cvs.height = Math.round(img.height * (w / img.width));
+                const ctx = cvs.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, cvs.width, cvs.height); ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+                return new Promise(r => cvs.toBlob(r, 'image/jpeg', q));
+            };
+            const [exportBlob, previewBlob, thumbBlob] = await Promise.all([createBlob(1200, 0.95), createBlob(3000, 0.90), createBlob(100, 0.85)]);
+            const data = {
+                file, originalName: file.name, exportName: file.name.replace(/\.[^/.]+$/, "").replace(/ /g, "_") + ".jpg",
+                blob: exportBlob, blobUrl: URL.createObjectURL(previewBlob), thumbUrl: URL.createObjectURL(thumbBlob),
+                originalWidth: img.width, originalHeight: img.height, isSmall, hasJapanese, sizeStr: formatBytes(file.size)
+            };
+            processedImages.push(data);
+            if (isSmall) smallImages.push(data);
+            if (hasJapanese) japaneseImages.push(data);
+            URL.revokeObjectURL(url); resolve();
+        };
+        img.onerror = resolve; img.src = url;
+    });
+}
+
+function renderAllThumbs() {
+    previewArea.innerHTML = '';
+    processedImages.forEach((data, i) => {
+        const box = document.createElement('div'); box.className = 'thumb-box'; box.onclick = () => showImagePreview(i);
+        
+        const frameClass = data.isSmall && data.hasJapanese ? 'is-both' : data.isSmall ? 'is-small' : data.hasJapanese ? 'is-japanese' : '';
+        let imgW, imgH;
+        if (data.isSmall) {
+            imgW = Math.max(8, Math.round(94 * (data.originalWidth / 1200))); imgH = Math.round(imgW * (data.originalHeight / data.originalWidth));
+            if (imgH > 94) { imgH = 94; imgW = Math.max(8, Math.round(imgH * (data.originalWidth / data.originalHeight))); }
+        } else {
+            const aspect = data.originalWidth / data.originalHeight;
+            imgW = aspect >= 1 ? 94 : Math.round(94 * aspect); imgH = aspect >= 1 ? Math.round(94 / aspect) : 94;
+        }
+        
+        box.innerHTML = `
+            <div class="custom-tooltip">${data.exportName}</div>
+            <div class="thumb-frame ${frameClass}"><img src="${data.thumbUrl}" class="thumb-inner-img" style="width:${imgW}px; height:${imgH}px; border-radius:${data.isSmall ? '3px' : '0px'};"></div>
+            <span class="thumb-name">${highlightJapanese(truncateName(data.exportName))}</span>
+            <span class="thumb-size">${data.sizeStr}</span>
+            <span class="thumb-dimensions"><span style="${data.isSmall ? 'color:#ef4444;font-weight:bold;' : ''}">${data.originalWidth}</span>x${data.originalHeight} px</span>
+        `;
+        previewArea.appendChild(box);
+    });
+    
+    const renderMiniThumb = (d, sec) => {
+        const shortName = truncateName(d.originalName);
+        return `
+        <div class="mini-thumb-box">
+            <div class="custom-tooltip">${d.originalName}</div>
+            <div style="width:80px;height:80px;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+                <img src="${d.thumbUrl}" style="max-width:100%;max-height:100%;object-fit:contain;">
+            </div>
+            <span style="font-size:0.65rem;font-weight:bold;margin-top:4px;word-break:break-all;text-align:center;">${sec === 'japanese' ? `<span class="highlight-red">${shortName}</span>` : shortName}</span>
+            <span style="font-size:0.6rem;color:var(--muted);margin-top:1px;">${sec === 'small' ? `<span class="highlight-red" style="font-weight:bold;">${d.originalWidth}</span>×${d.originalHeight}` : `${d.originalWidth}×${d.originalHeight}`}</span>
+        </div>`;
+    };
+    
+    byId('smallAlertList').innerHTML = smallImages.map(d => renderMiniThumb(d, 'small')).join('');
+    byId('jpAlertList').innerHTML = japaneseImages.map(d => renderMiniThumb(d, 'japanese')).join('');
+    byId('smallAlertContainer').style.display = smallImages.length ? 'block' : 'none';
+    byId('jpAlertContainer').style.display = japaneseImages.length ? 'block' : 'none';
+}
+
+function showImagePreview(index) {
+    if (index < 0 || index >= processedImages.length) return;
+    const data = processedImages[index];
+    
+    document.querySelectorAll('.asp-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.asp-btn[data-key="free"]').classList.add('active');
+    currentAspectKey = 'free';
+
+    const isInitialOpen = (imagePreviewModal.style.display !== 'flex');
+    const nextLayer = isInitialOpen ? activeLayer : (activeLayer === 0 ? 1 : 0);
+    const nextImg = byId('previewImg' + nextLayer);
+
+    const onLoad = () => {
+        currentPreviewIndex = index;
+        activeLayer = nextLayer;
+        
+        if (isInitialOpen) {
+            imagePreviewModal.style.display = 'flex';
+        }
+        
+        fitImage();
+        
+        if (!isInitialOpen) {
+            const oldImg = byId('previewImg' + (activeLayer === 0 ? 1 : 0));
+            oldImg.style.opacity = 0;
+            oldImg.style.zIndex = 1;
+            nextImg.style.zIndex = 2;
+        } else {
+            nextImg.style.zIndex = 2;
+        }
+        
+        void nextImg.offsetWidth;
+        nextImg.style.opacity = 1;
+
+        byId('previewMetaName').innerHTML = highlightJapanese(data.exportName);
+        byId('previewMetaInfo').innerHTML = `${data.sizeStr} &nbsp;/&nbsp; ${data.isSmall ? `<span class="highlight-red" style="font-weight:bold;">${data.originalWidth}</span>` : data.originalWidth}×${data.originalHeight}px`;
+    };
+
+    nextImg.onload = null;
+    nextImg.src = data.blobUrl;
+    
+    if (nextImg.complete && nextImg.naturalWidth) {
+        onLoad();
+    } else {
+        nextImg.onload = onLoad;
+    }
+}
+
+function changePreviewImage(dir) {
+    if (!processedImages.length) return;
+    let nextIndex = currentPreviewIndex + dir;
+    showImagePreview(nextIndex >= processedImages.length ? 0 : nextIndex < 0 ? processedImages.length - 1 : nextIndex);
+}
+
+function closeImagePreview() { 
+    imagePreviewModal.style.display = 'none'; 
+    byId('previewImg0').style.opacity = 0;
+    byId('previewImg1').style.opacity = 0;
+}
+function closeAlertModal() { alertModal.style.display = 'none'; }
+
+async function generateAlertImageCanvas() {
+    const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d'), padding = 50, itemW = 180, itemH = 190, cols = 5;
+    const sLen = smallImages.length, jLen = japaneseImages.length, smallRows = Math.ceil(sLen / cols), jpRows = Math.ceil(jLen / cols);
+    canvas.width = Math.max(950, cols * itemW + padding * 2);
+    canvas.height = padding * 2 + (smallRows > 0 ? 80 + smallRows * itemH : 0) + (jpRows > 0 ? 80 + jpRows * itemH + (smallRows > 0 ? 40 : 0) : 0);
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    let currentY = padding;
+    
+    const drawSection = async (title, color, items, section) => {
+        if (!items.length) return;
+        ctx.fillStyle = color; ctx.font = 'bold 24px "Noto Sans JP", sans-serif'; ctx.fillText(title, padding, currentY + 25); currentY += 60;
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i], x = padding + (i % cols) * itemW, y = currentY + Math.floor(i / cols) * itemH;
+            const img = new Image(); img.src = item.blobUrl; await new Promise(res => img.onload = res);
+            const scale = Math.min(120 / img.width, 120 / img.height), dw = img.width * scale, dh = img.height * scale, dx = x + (itemW - dw) / 2, dy = y + (120 - dh) / 2;
+            ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.strokeRect(dx - 2, dy - 2, dw + 4, dh + 4); ctx.drawImage(img, dx, dy, dw, dh);
+            const chunks = item.originalName.split(/([^\x01-\x7E]+)/g).filter(Boolean);
+            let fontSize = 12, totalW = chunks.reduce((acc, c) => { ctx.font = `bold 12px "Noto Sans JP", sans-serif`; return acc + ctx.measureText(c).width; }, 0);
+            if (totalW > itemW - 10) { fontSize = 10; ctx.font = `bold 10px "Noto Sans JP", sans-serif`; totalW = chunks.reduce((acc, c) => acc + ctx.measureText(c).width, 0); }
+            let curX = (x + itemW / 2) - (totalW / 2);
+            chunks.forEach(c => { ctx.fillStyle = (section === 'japanese' && /[^\x01-\x7E]/.test(c)) ? '#ef4444' : '#1e293b'; ctx.fillText(c, curX, y + 145); curX += ctx.measureText(c).width; });
+            const wText = String(item.originalWidth), hText = `x${item.originalHeight} px`;
+            ctx.font = '11px "Noto Sans JP", sans-serif'; const ww = ctx.measureText(wText).width, hh = ctx.measureText(hText).width;
+            let sx = (x + itemW / 2) - ((ww + hh) / 2);
+            ctx.fillStyle = section === 'small' ? '#ef4444' : '#64748b'; if (section === 'small') ctx.font = 'bold 11px "Noto Sans JP", sans-serif';
+            ctx.fillText(wText, sx, y + 160); ctx.fillStyle = '#64748b'; ctx.font = '11px "Noto Sans JP", sans-serif'; ctx.fillText(hText, sx + ww, y + 160);
+        }
+        currentY += (Math.ceil(items.length / cols) * itemH) + 40;
+    };
+    await drawSection("幅1200px未満の画像一覧", "#e11d48", smallImages, 'small');
+    await drawSection("日本語ファイル名の画像一覧", "#d97706", japaneseImages, 'japanese');
+    return canvas.toDataURL('image/jpeg', 0.9);
+}
+
+async function downloadAlertImage() {
+    const a = document.createElement('a'); a.href = await generateAlertImageCanvas(); a.download = 'alert_summary.jpg'; a.click();
+}
+
+exportZipBtn.addEventListener('click', async (e) => {
+    const useFolder = e.shiftKey && window.showDirectoryPicker;
+
+    const exportFormatChoice = await showCustomDialog({
+        title: '書き出し形式の確認',
+        message: 'ファイル名はどのように書き出しますか？\n元のファイル名の頭に連番を付加するのであれば「連番を付加」をクリックしてください。\n\n（※日本語などの全角文字が含まれる場合は、Web環境での不具合を防ぐため強制的に連番へ変換されます）',
+        okText: '元の名前のまま',
+        cancelText: '連番を付加',
+        type: 'confirm'
+    });
+    if (exportFormatChoice === null) return; 
+    
+    const renameRequested = !exportFormatChoice;
+
+    let forceUpscale = false;
+    if (smallImages.length > 0) {
+        const sizeChoice = await showCustomDialog({
+            title: '幅1200px未満の画像が含まれています',
+            message: '幅1200pxに満たない画像はどう処理しますか？\n\n「1200pxに拡大」を選ぶと、強制的に引き伸ばされるため画質が粗くなる場合があります。',
+            okText: 'オリジナルサイズのまま',
+            cancelText: '強制的に1200pxに拡大',
+            type: 'confirm'
+        });
+        
+        if (sizeChoice === null) return;
+        forceUpscale = !sizeChoice;
+    }
+
+    let dirHandle = null;
+    if (useFolder) {
+        try {
+            dirHandle = await window.showDirectoryPicker({ startIn: 'desktop' });
+        } catch(e) { return; }
+    }
+
+    showProgressPanel(useFolder ? 'フォルダに書き出し中...' : 'ZIP を作成中...');
+
+    try {
+        const zip = useFolder ? null : new JSZip();
+        let counter = 1;
+        for (let i = 0; i < processedImages.length; i++) {
+            const data = processedImages[i]; let blobToSave = data.blob, finalName = data.exportName;
+            if (data.hasJapanese || renameRequested) finalName = `${String(counter++).padStart(2, '0')}_${data.originalName.replace(/\.[^/.]+$/, "").replace(/ /g, "_").replace(/[^\x01-\x7E]/g, "")}.jpg`;
+            updateFileProgress(i, processedImages.length, finalName);
+            await new Promise(res => setTimeout(res, 5));
+            if (data.isSmall && forceUpscale) {
+                const img = new Image(); img.src = URL.createObjectURL(data.file); await new Promise(res => img.onload = res);
+                const cvs = document.createElement('canvas'); cvs.width = 1200; cvs.height = Math.round(img.height * (1200/img.width));
+                const ctx = cvs.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,1200,cvs.height); ctx.drawImage(img,0,0,1200,cvs.height);
+                blobToSave = await new Promise(res => cvs.toBlob(res, 'image/jpeg', 0.95));
+            }
+            if (useFolder) {
+                const fh = await dirHandle.getFileHandle(finalName, { create: true }), w = await fh.createWritable();
+                await w.write(blobToSave); await w.close();
+            } else zip.file(finalName, blobToSave);
+        }
+
+        if (smallImages.length || japaneseImages.length) {
+            const alertUrl = await generateAlertImageCanvas();
+            if (useFolder) {
+                const fh = await dirHandle.getFileHandle("00_alert_summary.jpg", { create: true }), w = await fh.createWritable();
+                await w.write(await (await fetch(alertUrl)).blob()); await w.close();
+            } else zip.file("00_alert_summary.jpg", alertUrl.split(',')[1], {base64: true});
+        }
+
+        if (!useFolder) {
+            const a = document.createElement('a'); a.href = URL.createObjectURL(await zip.generateAsync({ type: "blob" }));
+            a.download = "webleon_images.zip"; a.click();
+        }
+    } catch (err) { 
+        console.error(err);
+        await showCustomDialog({
+            title: 'エラー',
+            message: '書き出し中にエラーが発生しました。',
+            okText: '閉じる',
+            okClass: 'btn btn-danger',
+            type: 'alert'
+        });
+    }
+    finally { byId('progress').style.display = 'none'; }
+});
+</script>
+</body>
+</html>
