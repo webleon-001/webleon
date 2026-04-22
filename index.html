@@ -64,9 +64,20 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
 .btn-danger { background: var(--danger); color: #fff; }
 .btn-danger:hover { background: #dc2626; }
 
-#previewArea { display:flex; flex-wrap:wrap; gap:12px; justify-content:flex-start; margin-top:22px; }
-.thumb-box { position: relative; width:110px; text-align:center; cursor:pointer; transition: transform 0.15s; }
-.thumb-box:hover { transform: translateY(-2px); }
+#previewArea { position: relative; display:flex; flex-wrap:wrap; justify-content:flex-start; gap:12px; margin-top:22px; border-radius: var(--radius-sm); border: 1.5px dashed transparent; transition: border-color 0.2s, background 0.2s, padding-left 0.35s ease; padding: 8px; }
+#previewArea.drag-over { border-color: var(--accent); background: var(--accent-soft); }
+.preview-drop-hint { display: none; width: 100%; text-align: center; padding: 20px; color: var(--accent); font-size: 0.8rem; font-weight: 500; pointer-events: none; }
+#previewArea.drag-over .preview-drop-hint { display: block; }
+.thumb-box { position: relative; flex: 0 0 var(--thumb-w, calc(12.5% - 10.5px)); min-width: 0; text-align:center; cursor:pointer; transition: transform 0.15s; border-radius: 12px; }
+
+.thumb-delete-btn { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; background: var(--danger); color: #fff; border: 2px solid #fff; font-size: 12px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.15s; z-index: 10; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+.thumb-box:hover .thumb-delete-btn { opacity: 1; }
+@media (max-width: 600px) { .thumb-box { flex: 0 0 calc(33.333% - 8px); } }
+.preset-box { cursor:pointer; text-align:center; transition:transform 0.15s; flex-shrink:0; }
+.preset-box:hover { transform:translateY(-2px); }
+.preset-box canvas { display:block; border-radius:6px; border:1.5px solid var(--border); background:var(--bg); transition: opacity 0.2s; }
+.preset-box:hover canvas { border-color:var(--accent); }
+.preset-box span { display:block; font-size:0.6rem; color:var(--muted); margin-top:3px; font-weight:500; letter-spacing:0.02em; }
 
 .custom-tooltip { visibility: hidden; opacity: 0; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: rgba(24, 24, 27, 0.9); color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 500; white-space: nowrap; z-index: 100; pointer-events: none; transition: all 0.1s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.15); margin-bottom: 6px; }
 .custom-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-width: 5px; border-style: solid; border-color: rgba(24, 24, 27, 0.9) transparent transparent transparent; }
@@ -74,16 +85,16 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
 .mini-thumb-box { position: relative; display: flex; flex-direction: column; align-items: center; width: 100px; cursor: pointer; }
 .mini-thumb-box:hover .custom-tooltip { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(-4px); }
 
-.thumb-frame { width: 98px; height: 98px; border-radius: 10px; border: 2px solid transparent; background: var(--bg); display: flex; align-items: center; justify-content: center; margin: 0 auto; overflow: hidden; position: relative; }
+.thumb-frame { width: 100%; aspect-ratio: 1 / 1; height: auto; border-radius: 10px; border: 2px solid transparent; background: var(--bg); display: flex; align-items: center; justify-content: center; margin: 0 auto; overflow: hidden; position: relative; }
 .thumb-frame.is-small { border-color: var(--danger); }
 .thumb-frame.is-japanese { border-color: var(--warn); }
 .thumb-frame.is-both { border-color: #a855f7; }
 
 .thumb-inner-img { display: block; object-fit: cover; }
 .thumb-name { font-size:0.65rem; color:var(--text); font-weight:500; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-top:5px; line-height:1.3; }
-.thumb-size, .thumb-dimensions { font-size:0.6rem; color:var(--muted); display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.3; font-weight:300; }
+.thumb-dimensions { font-size:0.6rem; color:var(--muted); display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; line-height:1.3; font-weight:300; }
 
-#imagePreviewModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+#imagePreviewModal { display: none; opacity: 0; transition: opacity 0.3s ease; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 5000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
 .preview-modal-inner { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
 
 /* キャンバス・ツールバー枠のサイズアニメーション */
@@ -92,10 +103,10 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
 /* クロスフェード画像レイヤー (常に中央に配置し、jsのtransformでオフセットをかける) */
 .preview-layer { position: absolute; top: 50%; left: 50%; max-width: none; max-height: none; display: block; transform: translate(-50%, -50%); opacity: 0; transition: opacity 0.26s ease; pointer-events: none; }
 
-.nav-btn { position: fixed; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; background: rgba(255,255,255,0.9); color: var(--text); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; user-select: none; transition: background 0.2s, box-shadow 0.2s; border: 1px solid var(--border); z-index: 5010; }
+.nav-btn { position: fixed; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; flex-shrink: 0; background: rgba(255,255,255,0.9); color: var(--text); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; user-select: none; transition: background 0.2s, box-shadow 0.2s; border: 1px solid var(--border); z-index: 5010; }
 .nav-btn:hover { background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-.nav-btn.prev { left: 20px; }
-.nav-btn.next { right: 20px; }
+.nav-btn.prev { left: 16px; }
+.nav-btn.next { right: 16px; }
 .close-preview-top { position: absolute; top: -14px; right: -44px; color: #fff; font-size: 38px; cursor: pointer; line-height: 1; font-weight: 300; z-index: 5020; opacity: 0.8; transition: opacity 0.2s; }
 .close-preview-top:hover { opacity: 1; }
 
@@ -172,11 +183,28 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
         <div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div>
     </div>
 
-    <div id="previewArea"></div>
+    <div id="previewArea"><div class="preview-drop-hint">ここにドロップして追加</div></div>
 
-    <div id="actionArea" style="display:none; margin-top:24px; padding-top:20px;">
-        <button class="btn btn-secondary" onclick="location.reload()" style="margin-left:10px;">やり直す</button>
-        <button class="btn btn-success" id="exportZipBtn">ZIP で書き出し</button>
+    <div id="actionArea" style="display:none; margin-top:24px; padding-top:20px; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%;">
+        <div style="display:flex; gap:10px; align-items:flex-end;">
+            <div class="preset-box" id="presetBox-thumb" onclick="openInPreset('thumb')" title="Thumbnailプリセットで開く">
+                <canvas id="pc-thumb" width="80" height="40"></canvas>
+                <span>Thumbnail</span>
+            </div>
+            <div class="preset-box" id="presetBox-og" onclick="openInPreset('og')" title="OGプリセットで開く">
+                <canvas id="pc-og" width="76" height="40"></canvas>
+                <span>OG</span>
+            </div>
+            <div class="preset-box" id="presetBox-special" onclick="openInPreset('special')" title="Specialプリセットで開く">
+                <canvas id="pc-special" width="71" height="40"></canvas>
+                <span>Special</span>
+            </div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <input type="file" id="addFileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none">
+            <button class="btn btn-secondary" onclick="byId('addFileInput').click()">画像追加</button>
+            <button class="btn btn-success" id="exportZipBtn">ZIP で書き出し</button>
+        </div>
     </div>
 
     <div class="instruction-text" id="instructionBox" style="margin-top:20px;">
@@ -222,17 +250,25 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
         <div class="nav-btn prev" onclick="changePreviewImage(-1)">❮</div>
         <div class="preview-card" onclick="event.stopPropagation()">
             <span class="close-preview-top" onclick="closeImagePreview()">&times;</span>
-            <div id="aspectBar" style="display:flex; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; overflow:hidden;">
-                <span style="font-size:0.72rem; color:var(--muted); white-space:nowrap; font-weight:400; margin-right:2px;">キャンバス</span>
-                <button class="asp-btn active" data-key="free" onclick="setAspect(this)">オリジナル</button>
-                <button class="asp-btn" data-key="1:1" onclick="setAspect(this)">1:1</button>
-                <button class="asp-btn" data-key="3:2" onclick="setAspect(this)">3:2</button>
-                <button class="asp-btn" data-key="4:3" onclick="setAspect(this)">4:3</button>
-                <button class="asp-btn" data-key="3:4" onclick="setAspect(this)">3:4</button>
-                <button class="asp-btn" data-key="2:3" onclick="setAspect(this)">2:3</button>
-                <button class="asp-btn" data-key="thumb" onclick="setAspect(this)">Thumbnail</button>
-                <button class="asp-btn" data-key="og" onclick="setAspect(this)">OG</button>
-                <button class="asp-btn" data-key="special" onclick="setAspect(this)">Special</button>
+            
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+                <div id="aspectBar" style="display:flex; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; overflow:hidden;">
+                    <span style="font-size:0.72rem; color:var(--muted); white-space:nowrap; font-weight:400; margin-right:2px;">キャンバス</span>
+                    <button class="asp-btn active" data-key="free" onclick="setAspect(this)">オリジナル</button>
+                    <button class="asp-btn" data-key="1:1" onclick="setAspect(this)">1:1</button>
+                    <button class="asp-btn" data-key="3:2" onclick="setAspect(this)">3:2</button>
+                    <button class="asp-btn" data-key="4:3" onclick="setAspect(this)">4:3</button>
+                    <button class="asp-btn" data-key="3:4" onclick="setAspect(this)">3:4</button>
+                    <button class="asp-btn" data-key="2:3" onclick="setAspect(this)">2:3</button>
+                    <button class="asp-btn" data-key="thumb" onclick="setAspect(this)" style="display:none;">Thumbnail</button>
+                    <button class="asp-btn" data-key="og" onclick="setAspect(this)" style="display:none;">OG</button>
+                    <button class="asp-btn" data-key="special" onclick="setAspect(this)" style="display:none;">Special</button>
+                </div>
+                <div id="slotAssignBar" style="display:flex; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
+                    <button class="asp-btn" style="border-color:var(--accent); color:var(--accent);" onclick="assignCurrentToSlot('thumb')" title="現在の画像をThumbnailスロットに設定します">Thumbnailに使用</button>
+                    <button class="asp-btn" style="border-color:var(--accent); color:var(--accent);" onclick="assignCurrentToSlot('og')" title="現在の画像をOGスロットに設定します">OGに使用</button>
+                    <button class="asp-btn" style="border-color:var(--accent); color:var(--accent);" onclick="assignCurrentToSlot('special')" title="現在の画像をSpecialスロットに設定します">Specialに使用</button>
+                </div>
             </div>
             
             <div id="zoomContainer" style="position:relative; overflow:hidden; background:var(--bg); border-radius:0; cursor:grab; user-select:none; transition: width 0.26s ease, height 0.26s ease;">
@@ -240,23 +276,22 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
                 <img id="previewImg1" class="preview-layer" src="" alt="拡大">
             </div>
 
-            <!-- 彩度・明るさ・シャープネス スライダー -->
             <div id="filterBar" style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap; transition: width 0.26s ease;">
-                <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
-                    <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap; min-width:28px;">彩度</span>
-                    <input type="range" class="filter-slider" id="satSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()">
+                <div style="display:flex; align-items:center; gap:4px; flex:1; min-width:140px;">
+                    <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap;">彩度</span>
+                    <input type="range" class="filter-slider" id="satSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()" style="flex:1;">
                     <span id="satLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums;">100%</span>
                     <button id="ftoggle-sat" onclick="toggleFilter('sat')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s;">↺</button>
                 </div>
-                <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
-                    <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap; min-width:60px;">明るさ</span>
-                    <input type="range" class="filter-slider" id="conSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()">
+                <div style="display:flex; align-items:center; gap:4px; flex:1; min-width:140px;">
+                    <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap;">明るさ</span>
+                    <input type="range" class="filter-slider" id="conSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()" style="flex:1;">
                     <span id="conLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums;">100%</span>
                     <button id="ftoggle-bri" onclick="toggleFilter('bri')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s;">↺</button>
                 </div>
-                <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
-                    <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap; min-width:72px;">シャープ</span>
-                    <input type="range" class="filter-slider" id="sharpSlider" min="0" max="100" value="0" step="1" oninput="applyPreviewFilters()">
+                <div style="display:flex; align-items:center; gap:4px; flex:1; min-width:140px;">
+                    <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap;">シャープ</span>
+                    <input type="range" class="filter-slider" id="sharpSlider" min="0" max="100" value="0" step="1" oninput="applyPreviewFilters()" style="flex:1;">
                     <span id="sharpLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums;">0%</span>
                     <button id="ftoggle-sharp" onclick="toggleFilter('sharp')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s;">↺</button>
                 </div>
@@ -276,6 +311,7 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
                         <div id="previewMetaInfo" style="font-size:0.75rem; color:var(--muted); font-weight:300; white-space:nowrap;"></div>
                     </div>
                 </div>
+                <button id="previewDeleteBtn" onclick="deleteImage(currentPreviewIndex)" style="padding:7px 14px;border-radius:100px;border:none;background:var(--danger);color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0;">削除</button>
                 <button id="exportSingleBtn" onclick="exportCroppedView(event)" style="padding:7px 14px;border-radius:100px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0;">この画像を書き出す</button>
             </div>
         </div>
@@ -283,7 +319,6 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
     </div>
 </div>
 
-<!-- SVGフィルター（プレビュー用） -->
 <svg style="display:none" aria-hidden="true">
   <defs>
     <filter id="previewGamma" color-interpolation-filters="sRGB">
@@ -371,6 +406,7 @@ const pdfjsLib = window['pdfjs-dist/build/pdf'];
 if (pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 let processedImages = [], smallImages = [], japaneseImages = [];
+let currentPreviewData = null; 
 let _progressStartTime = 0, currentPreviewIndex = -1;
 
 const fileInput = byId('fileInput'), dropZone = byId('dropZone'), previewArea = byId('previewArea');
@@ -389,8 +425,10 @@ document.addEventListener('keydown', (e) => {
         const sb = byId('exportSingleBtn'); if (sb) sb.textContent = 'フォルダに書き出す';
     }
     if (imagePreviewModal.style.display === 'flex') {
-        if (e.key === 'ArrowLeft') changePreviewImage(-1);
-        if (e.key === 'ArrowRight') changePreviewImage(1);
+        const isPreset = ['thumb', 'og', 'special'].includes(currentAspectKey);
+        // 特別モードではキーボードの左右矢印による遷移を無効化
+        if (e.key === 'ArrowLeft' && !isPreset) changePreviewImage(-1);
+        if (e.key === 'ArrowRight' && !isPreset) changePreviewImage(1);
         if (e.key === 'Escape') closeImagePreview();
         if (e.key === '+' || e.key === '=') stepZoom(0.25);
         if (e.key === '-') stepZoom(-0.25);
@@ -434,10 +472,10 @@ function clampPos(x, y, w, h, cw = targetCw, ch = targetCh) {
 
 // サイズを計算して返し、コンテナにも適用する（計算結果を返すことでCSSアニメーション中の誤差を防ぐ）
 function resizeContainerToAspect(aspectKey) {
-    const maxW = window.innerWidth - 160, maxH = window.innerHeight * 0.9 - 110;
+    const maxW = window.innerWidth - 200, maxH = window.innerHeight * 0.9 - 110;
     let w, h;
     if (!aspectKey || aspectKey === 'free') {
-        const data = processedImages[currentPreviewIndex];
+        const data = currentPreviewData;
         const iw = data ? data.originalWidth : getActiveImg().naturalWidth;
         const ih = data ? data.originalHeight : getActiveImg().naturalHeight;
         if (!iw || !ih) {
@@ -569,8 +607,12 @@ imagePreviewModal.addEventListener('click', (e) => { if (e.target === imagePrevi
 
 let resizeRaf = null;
 window.addEventListener('resize', () => {
-    if (imagePreviewModal.style.display !== 'flex' || resizeRaf) return;
-    resizeRaf = requestAnimationFrame(() => { fitImage(); resizeRaf = null; });
+    if (resizeRaf) return;
+    resizeRaf = requestAnimationFrame(() => {
+        if (imagePreviewModal.style.display === 'flex') fitImage();
+        updatePreviewCentering();
+        resizeRaf = null;
+    });
 });
 
 const ASPECT_PRESETS = {
@@ -588,15 +630,74 @@ const EXPORT_SIZE = {
 const FIXED_FILENAME = { 'thumb': 'thumbnail.jpg', 'og': 'og.jpg', 'special': 'og_special.jpg' };
 let currentAspectKey = 'free';
 
+function updateAspectBarVisibility(aspKey) {
+    const isPreset = ['thumb', 'og', 'special'].includes(aspKey);
+    const allBtns = document.querySelectorAll('#aspectBar .asp-btn');
+    allBtns.forEach(btn => {
+        const key = btn.dataset.key;
+        if (isPreset) {
+            // プリセットの場合: 他のモードへの切り替えを不可にするため、現在のボタンのみ表示してクリック不可にする
+            if (key === aspKey) {
+                btn.style.display = 'inline-block';
+                btn.style.pointerEvents = 'none';
+            } else {
+                btn.style.display = 'none';
+            }
+        } else {
+            // 通常の場合: 一般的なサイズ変更ボタンを表示し、プリセットボタンを非表示
+            if (['free', '1:1', '3:2', '4:3', '3:4', '2:3'].includes(key)) {
+                btn.style.display = 'inline-block';
+                btn.style.pointerEvents = 'auto';
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+    });
+
+    // 「〜に使用」ボタンの表示制御（特別モード時は非表示）
+    const assignBar = byId('slotAssignBar');
+    if (assignBar) {
+        assignBar.style.display = isPreset ? 'none' : 'flex';
+    }
+
+    // 特別モード（プリセット）時は削除ボタンと左右ナビゲーションを非表示にする
+    const delBtn = byId('previewDeleteBtn');
+    if (delBtn) {
+        delBtn.style.display = isPreset ? 'none' : 'inline-block';
+    }
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.style.display = (processedImages.length <= 1 || isPreset) ? 'none' : 'flex';
+    });
+}
+
 function setAspect(btn) {
+    if (imagePreviewModal.style.display === 'flex') {
+        saveImageState(); // 切り替え前の状態を保存
+    }
     document.querySelectorAll('.asp-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentAspectKey = btn.dataset.key;
+    
+    updateAspectBarVisibility(currentAspectKey);
+    
     if (getActiveImg().naturalWidth) fitImage();
+
+    // 新しいアスペクト比でスロットを割り当てて保存
+    if (['thumb', 'og', 'special'].includes(currentAspectKey)) {
+        assignedSlots[currentAspectKey] = currentPreviewData;
+        saveImageState(); 
+    }
+}
+
+function assignCurrentToSlot(preset) {
+    if (!currentPreviewData) return;
+    assignedSlots[preset] = currentPreviewData;
+    renderPresetCanvas(preset);
+    showImagePreview(currentPreviewData, preset);
 }
 
 async function exportCroppedView(e) {
-    const data = processedImages[currentPreviewIndex];
+    const data = currentPreviewData;
     if (!data) return;
 
     const useFolder = e && e.shiftKey && window.showDirectoryPicker;
@@ -662,8 +763,8 @@ async function exportCroppedView(e) {
     canvas.width = outW; canvas.height = outH;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH);
-    const sat   = parseInt(byId('satSlider').value)   || 100;
-    const bri   = parseInt(byId('conSlider').value)   || 100;
+    const sat   = parseInt(byId('satSlider').value);
+    const bri   = parseInt(byId('conSlider').value);
     const sharp = parseInt(byId('sharpSlider').value) || 0;
     ctx.filter = sat !== 100 ? `saturate(${sat}%)` : 'none';
     ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
@@ -981,6 +1082,100 @@ dropZone.addEventListener('click', () => fileInput.click());
 dropZone.addEventListener('dragover', e => e.preventDefault());
 dropZone.addEventListener('drop', e => { e.preventDefault(); handleFiles(e.dataTransfer.files); });
 fileInput.addEventListener('change', e => handleFiles(e.target.files));
+byId('addFileInput').addEventListener('change', e => { addFiles(e.target.files); e.target.value = ''; });
+
+let isInternalDragging = false;
+let _dragCounter = 0;
+previewArea.addEventListener('dragenter', e => {
+    e.preventDefault(); 
+    if (isInternalDragging) return;
+    _dragCounter++;
+    if (processedImages.length) previewArea.classList.add('drag-over');
+});
+previewArea.addEventListener('dragleave', () => {
+    if (isInternalDragging) return;
+    _dragCounter--;
+    if (_dragCounter <= 0) { _dragCounter = 0; previewArea.classList.remove('drag-over'); }
+});
+previewArea.addEventListener('dragover', e => { e.preventDefault(); });
+previewArea.addEventListener('drop', e => {
+    e.preventDefault(); 
+    if (isInternalDragging) {
+        isInternalDragging = false;
+        return;
+    }
+    _dragCounter = 0;
+    previewArea.classList.remove('drag-over');
+    if (processedImages.length) addFiles(e.dataTransfer.files);
+    else handleFiles(e.dataTransfer.files);
+});
+
+async function addFiles(files) {
+    if (!files || !files.length) return;
+    showProgressPanel('追加読み込み中...');
+    let allTasks = [];
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i], name = file.name.toLowerCase();
+        if (name.endsWith('.zip')) {
+            try {
+                const zip = await new JSZip().loadAsync(file);
+                Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff|psd|ai)$/i.test(k))
+                    .forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip }));
+            } catch(e) { console.error(e); }
+        } else if (name.endsWith('.pdf')) { allTasks.push({ file, name: file.name, isPdf: true }); }
+        else if (name.endsWith('.psd')) { allTasks.push({ file, name: file.name, isPsd: true }); }
+        else if (name.endsWith('.ai')) { allTasks.push({ file, name: file.name, isAi: true }); }
+        else if (/\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(name)) { allTasks.push({ file, name: file.name }); }
+    }
+    allTasks.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+    let doneCount = 0;
+    for (const task of allTasks) {
+        updateFileProgress(doneCount, allTasks.length || 1, task.name);
+        await new Promise(r => setTimeout(r, 5));
+        try {
+            let blob, outName = task.name;
+            if (task.isPdf) {
+                const pdf = await pdfjsLib.getDocument({ data: await task.file.arrayBuffer() }).promise;
+                for (let j = 1; j <= pdf.numPages; j++) {
+                    const page = await pdf.getPage(j), viewport = page.getViewport({ scale: 2.0 });
+                    const canvasTmp = document.createElement('canvas'); canvasTmp.width = viewport.width; canvasTmp.height = viewport.height;
+                    await page.render({ canvasContext: canvasTmp.getContext('2d'), viewport }).promise;
+                    await processSingleFile(new File([await new Promise(r => canvasTmp.toBlob(r, 'image/jpeg', 0.95))], `${task.file.name.replace(/\.pdf$/i, '')}_p${j}.jpg`, { type: 'image/jpeg' }));
+                }
+                doneCount++; continue;
+            }
+            if (task.isPsd) {
+                try { blob = await decodePsdToBlob(task.file); outName = outName.replace(/\.psd$/i, '.jpg'); }
+                catch(e) {
+                    const detail = (e && e.message) ? `\n\n詳細: ${e.message}` : '';
+                    await showCustomDialog({ title: 'PSD読み込みエラー', message: `"${task.name}" の読み込みに失敗しました。${detail}`, okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' });
+                    doneCount++; continue;
+                }
+                await processSingleFile(new File([blob], outName, { type: 'image/jpeg' }));
+                doneCount++; continue;
+            }
+            if (task.isAi) {
+                try { blob = await decodeAiToBlob(task.file); outName = outName.replace(/\.ai$/i, '.jpg'); }
+                catch(e) {
+                    await showCustomDialog({ title: 'AI読み込みエラー', message: `"${task.name}" の読み込みに失敗しました。`, okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' });
+                    doneCount++; continue;
+                }
+                await processSingleFile(new File([blob], outName, { type: 'image/jpeg' }));
+                doneCount++; continue;
+            }
+            blob = task.zipKey ? await task.zipObj.file(task.zipKey).async("blob") : task.file;
+            if (/\.(heic|heif)$/i.test(outName)) { blob = await decodeHeicToBlob(new File([blob], outName)); outName = outName.replace(/\.(heic|heif)$/i, '.jpg'); }
+            else if (/\.(tif|tiff)$/i.test(outName)) { blob = await decodeTiffToBlob(new File([blob], outName)); outName = outName.replace(/\.(tif|tiff)$/i, '.jpg'); }
+            else if (/\.psd$/i.test(outName)) { blob = await decodePsdToBlob(new File([blob], outName)); outName = outName.replace(/\.psd$/i, '.jpg'); }
+            else if (/\.ai$/i.test(outName)) { blob = await decodeAiToBlob(new File([blob], outName)); outName = outName.replace(/\.ai$/i, '.jpg'); }
+            await processSingleFile(new File([blob], outName));
+        } catch(e) { console.error(e); }
+        doneCount++;
+    }
+    byId('progress').style.display = 'none';
+    if (smallImages.length || japaneseImages.length) alertModal.style.display = 'flex';
+    renderAllThumbs();
+}
 
 async function handleFiles(files) {
     if (!files || !files.length) return;
@@ -1057,7 +1252,7 @@ async function handleFiles(files) {
         doneCount++;
     }
     byId('progress').style.display = 'none';
-    if (processedImages.length) { byId('actionArea').style.display = 'block'; dropZone.style.display = 'none'; }
+    if (processedImages.length) { byId('actionArea').style.display = 'flex'; dropZone.style.display = 'none'; }
     if (smallImages.length || japaneseImages.length) alertModal.style.display = 'flex';
     renderAllThumbs();
 }
@@ -1088,28 +1283,71 @@ async function processSingleFile(file) {
     });
 }
 
+function updatePreviewCentering() {
+    const count = processedImages.length;
+    const containerW = previewArea.clientWidth - 16;
+    const fixedItemW = (containerW - 7 * 12) / 8;
+
+    if (count === 0 || count >= 9) {
+        // 9個以上：左揃え・サムネイルは % ベース（8列）
+        previewArea.style.removeProperty('--thumb-w');
+        previewArea.style.paddingLeft = '8px';
+        return;
+    }
+
+    // 7個以下：固定幅（縮小しない）＋センタリング
+    previewArea.style.setProperty('--thumb-w', fixedItemW + 'px');
+    const totalW = count * fixedItemW + (count - 1) * 12;
+    const offset = Math.max(0, (containerW - totalW) / 2);
+    previewArea.style.paddingLeft = (8 + offset) + 'px';
+}
+
 function renderAllThumbs() {
-    previewArea.innerHTML = '';
+    previewArea.innerHTML = '<div class="preview-drop-hint">ここにドロップして追加</div>';
     processedImages.forEach((data, i) => {
-        const box = document.createElement('div'); box.className = 'thumb-box'; box.onclick = () => showImagePreview(i);
+        const box = document.createElement('div'); box.className = 'thumb-box'; 
+        
+        box.onclick = () => {
+            let key = data._lastAspectKey || 'free';
+            if (['thumb', 'og', 'special'].includes(key)) key = 'free';
+            showImagePreview(data, key);
+        };
+
+        box.draggable = true;
+        box.ondragstart = (e) => {
+            isInternalDragging = true;
+            e.dataTransfer.setData('text/plain', i.toString());
+            e.dataTransfer.effectAllowed = 'copy';
+        };
+        box.ondragend = (e) => {
+            isInternalDragging = false;
+        };
         
         const frameClass = data.isSmall && data.hasJapanese ? 'is-both' : data.isSmall ? 'is-small' : data.hasJapanese ? 'is-japanese' : '';
-        let imgW, imgH;
+        // レスポンシブグリッド対応: サイズを % で指定
+        let imgStyle;
         if (data.isSmall) {
-            imgW = Math.max(8, Math.round(94 * (data.originalWidth / 1200))); imgH = Math.round(imgW * (data.originalHeight / data.originalWidth));
-            if (imgH > 94) { imgH = 94; imgW = Math.max(8, Math.round(imgH * (data.originalWidth / data.originalHeight))); }
+            const pct = Math.max(8, Math.round((data.originalWidth / 1200) * 100));
+            imgStyle = `width:${pct}%; height:auto; max-height:100%; border-radius:3px;`;
         } else {
-            const aspect = data.originalWidth / data.originalHeight;
-            imgW = aspect >= 1 ? 94 : Math.round(94 * aspect); imgH = aspect >= 1 ? Math.round(94 / aspect) : 94;
+            imgStyle = `width:100%; height:100%; object-fit:cover; border-radius:0px;`;
         }
         
+        const hasEdits = data._modeStates && Object.values(data._modeStates).some(ms =>
+            ms.sat !== '100' || ms.bri !== '100' || ms.sharp !== '0' || ms.imgW !== (ms.imgW === undefined ? undefined : ms.imgW)
+        );
+        const editedDot = hasEdits
+            ? `<span title="調整済み" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:4px;vertical-align:middle;flex-shrink:0;"></span>` : '';
+
+        // サイズ表記(data.sizeStr)を削除
         box.innerHTML = `
             <div class="custom-tooltip">${data.exportName}</div>
-            <div class="thumb-frame ${frameClass}"><img src="${data.thumbUrl}" class="thumb-inner-img" style="width:${imgW}px; height:${imgH}px; border-radius:${data.isSmall ? '3px' : '0px'};"></div>
-            <span class="thumb-name">${highlightJapanese(truncateName(data.exportName))}</span>
-            <span class="thumb-size">${data.sizeStr}</span>
+            <button class="thumb-delete-btn" title="削除">✕</button>
+            <div class="thumb-frame ${frameClass}"><img src="${data.thumbUrl}" class="thumb-inner-img" style="${imgStyle}"></div>
+            <span class="thumb-name" style="display:flex;align-items:center;justify-content:center;">${highlightJapanese(truncateName(data.exportName))}${editedDot}</span>
             <span class="thumb-dimensions"><span style="${data.isSmall ? 'color:#ef4444;font-weight:bold;' : ''}">${data.originalWidth}</span>x${data.originalHeight} px</span>
         `;
+        box.querySelector('.thumb-delete-btn').addEventListener('click', (e) => { e.stopPropagation(); deleteImage(i); });
         previewArea.appendChild(box);
     });
     
@@ -1130,92 +1368,283 @@ function renderAllThumbs() {
     byId('jpAlertList').innerHTML = japaneseImages.map(d => renderMiniThumb(d, 'japanese')).join('');
     byId('smallAlertContainer').style.display = smallImages.length ? 'block' : 'none';
     byId('jpAlertContainer').style.display = japaneseImages.length ? 'block' : 'none';
+    updatePreviewCentering();
 }
 
-function showImagePreview(index) {
-    if (index < 0 || index >= processedImages.length) return;
+async function deleteImage(index) {
     const data = processedImages[index];
+    if (!data) return;
+    const confirmed = await showCustomDialog({
+        title: '画像の削除',
+        message: 'この画像を削除してもよろしいでしょうか？\n（※Thumbnailなどの特別モードに設定済みの場合は保護され、書き出しにも含まれます）',
+        okText: '削除する',
+        okClass: 'btn btn-danger',
+        cancelText: 'キャンセル',
+        type: 'confirm'
+    });
+    if (!confirmed) return;
     
+    processedImages.splice(index, 1);
+
+    smallImages = smallImages.filter(d => d !== data);
+    japaneseImages = japaneseImages.filter(d => d !== data);
+    
+    const hasSlotData = assignedSlots.thumb || assignedSlots.og || assignedSlots.special;
+
+    if (processedImages.length === 0 && !hasSlotData) {
+        byId('actionArea').style.display = 'none';
+        dropZone.style.display = 'block';
+        previewArea.innerHTML = '<div class="preview-drop-hint">ここにドロップして追加</div>';
+    } else {
+        renderAllThumbs();
+    }
+    
+    // ▼▼ 修正箇所：プレビュー画面が開いている時だけ更新処理を行う ▼▼
+    const isPreviewOpen = imagePreviewModal.style.display === 'flex';
+
+    if (currentPreviewData === data) {
+        if (isPreviewOpen) {
+            const isSpecialMode = ['thumb', 'og', 'special'].includes(currentAspectKey);
+            if (isSpecialMode) {
+                // 特別モードでプレビュー中ならデータはスロットに保護されているので表示を維持
+            } else if (processedImages.length > 0) {
+                // 通常モードなら次の画像へ遷移
+                showImagePreview(Math.min(index, processedImages.length - 1), currentAspectKey);
+            } else {
+                // リストが空になったら閉じる
+                closeImagePreview();
+            }
+        }
+    } else {
+        currentPreviewIndex = processedImages.indexOf(currentPreviewData);
+    }
+}
+
+// ---- 個別保存スロット管理 ----
+let assignedSlots = { thumb: null, og: null, special: null };
+
+function saveImageState() {
+    if (!currentPreviewData) return;
+    const data = currentPreviewData;
+    if (!data._modeStates) data._modeStates = {};
+    data._modeStates[currentAspectKey] = {
+        sat:   byId('satSlider').value,
+        bri:   byId('conSlider').value,
+        sharp: byId('sharpSlider').value,
+        cw:    targetCw || zoomContainer.clientWidth,
+        ch:    targetCh || zoomContainer.clientHeight,
+        imgX, imgY, imgW, imgH
+    };
+    data._lastAspectKey = currentAspectKey;
+    
+    // スロットに該当するアスペクト比なら、割り当てを更新して再描画
+    if (['thumb','og','special'].includes(currentAspectKey)) {
+        assignedSlots[currentAspectKey] = data;
+        renderPresetCanvas(currentAspectKey);
+    }
+}
+
+// プリセットキャンバス描画（スロットに割り当てられた画像を描画する）
+async function renderPresetCanvas(preset) {
+    const el = byId('pc-' + preset);
+    if (!el) return;
+    const ctx = el.getContext('2d');
+    ctx.clearRect(0, 0, el.width, el.height);
+
+    const data = assignedSlots[preset];
+
+    // スロットが空の場合
+    if (!data) {
+        ctx.fillStyle = '#f5f5f7'; 
+        ctx.fillRect(0, 0, el.width, el.height);
+        return;
+    }
+
+    const img = new Image();
+    img.src = data.blobUrl;
+    await new Promise(r => { img.onload = r; if (img.complete && img.naturalWidth) r(); });
+    const iw = img.naturalWidth, ih = img.naturalHeight;
+    if (!iw || !ih) return;
+
+    const ms = data._modeStates?.[preset];
+    const pr = ASPECT_PRESETS[preset];
+    const ratio = pr.w / pr.h;
+    let srcX, srcY, srcW, srcH;
+
+    if (ms && ms.imgW) {
+        const cssScale = ms.imgW / iw;
+        const fw = ms.cw / ms.ch >= ratio ? ms.ch * ratio : ms.cw;
+        const fh = ms.cw / ms.ch >= ratio ? ms.ch : ms.cw / ratio;
+        srcX = Math.max(0, ((ms.cw - fw) / 2 - ms.imgX) / cssScale);
+        srcY = Math.max(0, ((ms.ch - fh) / 2 - ms.imgY) / cssScale);
+        srcW = Math.min(fw / cssScale, iw - srcX);
+        srcH = Math.min(fh / cssScale, ih - srcY);
+    } else {
+        const imgRatio = iw / ih;
+        if (imgRatio > ratio) { srcH = ih; srcW = ih * ratio; srcX = (iw - srcW) / 2; srcY = 0; }
+        else { srcW = iw; srcH = iw / ratio; srcX = 0; srcY = (ih - srcH) / 2; }
+    }
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, el.width, el.height);
+    const sat = ms ? parseInt(ms.sat) : 100;
+    if (sat !== 100) ctx.filter = `saturate(${sat}%)`;
+    ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, el.width, el.height);
+    ctx.filter = 'none';
+}
+
+function renderAllPresetCanvases() {
+    renderPresetCanvas('thumb');
+    renderPresetCanvas('og');
+    renderPresetCanvas('special');
+}
+
+function openInPreset(preset) {
+    let data = assignedSlots[preset];
+    if (!data) {
+        showCustomDialog({
+            title: '画像が未指定です',
+            message: 'このモードを使用するには、上のサムネイル一覧から画像をドラッグ＆ドロップして指定してください。',
+            okText: '確認',
+            okClass: 'btn btn-secondary',
+            type: 'alert'
+        });
+        return;
+    }
+    showImagePreview(data, preset);
+}
+
+function showImagePreview(dataOrIndex, forcePreset) {
+    let data, index;
+    if (typeof dataOrIndex === 'number') {
+        index = dataOrIndex;
+        data = processedImages[index];
+    } else {
+        data = dataOrIndex;
+        index = processedImages.indexOf(data);
+    }
+    if (!data) return;
+
+    if (currentPreviewData && imagePreviewModal.style.display === 'flex') {
+        saveImageState();
+    }
+
+    currentPreviewIndex = index;
+    currentPreviewData = data;
+    
+    const aspKey = forcePreset || data._lastAspectKey || 'free';
+    const ms = data._modeStates?.[aspKey];
+
     document.querySelectorAll('.asp-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector('.asp-btn[data-key="free"]').classList.add('active');
-    currentAspectKey = 'free';
-    resetPreviewFilters();
+    const activeBtn = document.querySelector(`.asp-btn[data-key="${aspKey}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+    currentAspectKey = aspKey;
+
+    updateAspectBarVisibility(aspKey);
+
+    if (ms) {
+        byId('satSlider').value   = ms.sat;
+        byId('conSlider').value   = ms.bri;
+        byId('sharpSlider').value = ms.sharp;
+        applyPreviewFilters();
+    } else {
+        resetPreviewFilters();
+    }
+
+    renderAllPresetCanvases();
 
     const isInitialOpen = (imagePreviewModal.style.display !== 'flex');
     const nextLayer = isInitialOpen ? activeLayer : (activeLayer === 0 ? 1 : 0);
     const nextImg = byId('previewImg' + nextLayer);
 
     const onLoad = () => {
-        currentPreviewIndex = index;
         activeLayer = nextLayer;
-        
         if (isInitialOpen) {
             imagePreviewModal.style.display = 'flex';
+            void imagePreviewModal.offsetWidth; // force reflow for transition
+            imagePreviewModal.style.opacity = '1';
         }
-        
         fitImage();
-        
+
+        if (ms && ms.imgW) {
+            const newCw = targetCw || zoomContainer.clientWidth;
+            const newCh = targetCh || zoomContainer.clientHeight;
+            const sw = ms.cw > 0 ? newCw / ms.cw : 1;
+            const sh = ms.ch > 0 ? newCh / ms.ch : 1;
+            imgW = Math.round(ms.imgW * sw);
+            imgH = Math.round(ms.imgH * sh);
+            imgX = Math.round(ms.imgX * sw);
+            imgY = Math.round(ms.imgY * sh);
+            const c = clampPos(imgX, imgY, imgW, imgH);
+            imgX = c.nx; imgY = c.ny;
+            applyPos();
+        }
+
         if (!isInitialOpen) {
             const oldImg = byId('previewImg' + (activeLayer === 0 ? 1 : 0));
-            oldImg.style.opacity = 0;
-            oldImg.style.zIndex = 1;
+            oldImg.style.opacity = 0; oldImg.style.zIndex = 1;
             nextImg.style.zIndex = 2;
         } else {
             nextImg.style.zIndex = 2;
         }
-        
         void nextImg.offsetWidth;
         nextImg.style.opacity = 1;
-
         byId('previewMetaName').innerHTML = highlightJapanese(data.exportName);
-        byId('previewMetaInfo').innerHTML = `${data.sizeStr} &nbsp;/&nbsp; ${data.isSmall ? `<span class="highlight-red" style="font-weight:bold;">${data.originalWidth}</span>` : data.originalWidth}×${data.originalHeight}px`;
+        byId('previewMetaInfo').innerHTML = `${data.isSmall ? `<span class="highlight-red" style="font-weight:bold;">${data.originalWidth}</span>` : data.originalWidth}×${data.originalHeight}px`;
     };
 
     nextImg.onload = null;
     nextImg.src = data.blobUrl;
-    
-    if (nextImg.complete && nextImg.naturalWidth) {
-        onLoad();
-    } else {
-        nextImg.onload = onLoad;
-    }
+    if (nextImg.complete && nextImg.naturalWidth) onLoad();
+    else nextImg.onload = onLoad;
 }
 
 function changePreviewImage(dir) {
     if (!processedImages.length) return;
-    let nextIndex = currentPreviewIndex + dir;
-    showImagePreview(nextIndex >= processedImages.length ? 0 : nextIndex < 0 ? processedImages.length - 1 : nextIndex);
+    
+    // スロットの画像で一覧に存在しない場合、次へは行かせず、一覧の最初に強制移動するか判定
+    let nextIndex = currentPreviewIndex;
+    if (nextIndex === -1) {
+        nextIndex = 0;
+    } else {
+        nextIndex = currentPreviewIndex + dir;
+        if (nextIndex >= processedImages.length) nextIndex = 0;
+        if (nextIndex < 0) nextIndex = processedImages.length - 1;
+    }
+    
+    showImagePreview(nextIndex, currentAspectKey);
 }
 
-function closeImagePreview() { 
-    imagePreviewModal.style.display = 'none'; 
-    byId('previewImg0').style.opacity = 0;
-    byId('previewImg1').style.opacity = 0;
+function closeImagePreview() {
+    saveImageState();
+    imagePreviewModal.style.opacity = '0';
+    setTimeout(() => {
+        imagePreviewModal.style.display = 'none'; 
+        byId('previewImg0').style.opacity = 0;
+        byId('previewImg1').style.opacity = 0;
+    }, 260); // CSS transition delay
 }
 
 function applyPreviewFilters() {
-    const sat   = parseInt(byId('satSlider').value)   || 100;
-    const bri   = parseInt(byId('conSlider').value)   || 100;
+    const sat   = parseInt(byId('satSlider').value);
+    const bri   = parseInt(byId('conSlider').value);
     const sharp = parseInt(byId('sharpSlider').value) || 0;
     byId('satLabel').textContent   = sat   + '%';
     byId('conLabel').textContent   = bri   + '%';
     byId('sharpLabel').textContent = sharp + '%';
 
-    // ガンマ
     const gamma = (100 / Math.max(1, bri)).toFixed(4);
     ['R','G','B'].forEach(ch => {
         const el = document.getElementById('gfunc' + ch);
         if (el) el.setAttribute('exponent', gamma);
     });
 
-    // シャープ kernel
     const k = sharp / 100;
     const c = 1 + 4 * k, s = -k;
     const kernel = document.getElementById('sharpKernel');
     if (kernel) kernel.setAttribute('kernelMatrix',
         `0 ${s.toFixed(4)} 0 ${s.toFixed(4)} ${c.toFixed(4)} ${s.toFixed(4)} 0 ${s.toFixed(4)} 0`);
 
-    // CSS filter チェーン
     const parts = [];
     if (sat !== 100)  parts.push(`saturate(${sat}%)`);
     if (bri !== 100)  parts.push(`url(#previewGamma)`);
@@ -1225,7 +1654,6 @@ function applyPreviewFilters() {
     updateFilterToggleBtns();
 }
 
-// 各フィルタの「前回値」記憶（デフォルトから変えたときの値）
 const filterMemory = { sat: 150, bri: 120, sharp: 30 };
 const filterDefaults = { sat: 100, bri: 100, sharp: 0 };
 const filterSliders  = { sat: 'satSlider', bri: 'conSlider', sharp: 'sharpSlider' };
@@ -1235,10 +1663,10 @@ function toggleFilter(name) {
     const current = parseInt(slider.value);
     const def     = filterDefaults[name];
     if (current !== def) {
-        filterMemory[name] = current;   // 現在値を記憶
-        slider.value = def;             // デフォルトへ
+        filterMemory[name] = current;   
+        slider.value = def;             
     } else {
-        slider.value = filterMemory[name]; // 記憶値を復元
+        slider.value = filterMemory[name]; 
     }
     applyPreviewFilters();
 }
@@ -1360,6 +1788,82 @@ exportZipBtn.addEventListener('click', async (e) => {
             } else zip.file(finalName, blobToSave);
         }
 
+        // スロットに割り当てられた画像を生成して書き出し
+        for (const preset of ['thumb', 'og', 'special']) {
+            const data = assignedSlots[preset];
+            if (data) {
+                const ms = data._modeStates?.[preset];
+                const img = new Image(); img.src = data.blobUrl;
+                await new Promise(res => { img.onload = res; if (img.complete) res(); });
+                const iw = img.naturalWidth, ih = img.naturalHeight;
+                let srcX, srcY, srcW, srcH;
+                const pr = ASPECT_PRESETS[preset], exp = EXPORT_SIZE[preset];
+                const outW = exp.w, outH = exp.h;
+
+                if (ms && ms.imgW) {
+                    const cssScale = ms.imgW / iw;
+                    const ratio = pr.w / pr.h;
+                    let fw = ms.cw / ms.ch >= ratio ? ms.ch * ratio : ms.cw;
+                    let fh = ms.cw / ms.ch >= ratio ? ms.ch : ms.cw / ratio;
+                    srcX = Math.max(0, ((ms.cw - fw) / 2 - ms.imgX) / cssScale);
+                    srcY = Math.max(0, ((ms.ch - fh) / 2 - ms.imgY) / cssScale);
+                    srcW = Math.min(fw / cssScale, iw - srcX);
+                    srcH = Math.min(fh / cssScale, ih - srcY);
+                } else {
+                    const ratio = pr.w / pr.h, imgRatio = iw / ih;
+                    if (imgRatio > ratio) { srcH = ih; srcW = ih * ratio; srcX = (iw - srcW) / 2; srcY = 0; }
+                    else { srcW = iw; srcH = iw / ratio; srcX = 0; srcY = (ih - srcH) / 2; }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = outW; canvas.height = outH;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH);
+                const sat = ms ? parseInt(ms.sat) : 100;
+                const bri = ms ? parseInt(ms.bri) : 100;
+                const sharp = ms ? parseInt(ms.sharp) : 0;
+
+                ctx.filter = sat !== 100 ? `saturate(${sat}%)` : 'none';
+                ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
+                ctx.filter = 'none';
+
+                if (bri !== 100) {
+                    const gamma = 100 / Math.max(1, bri);
+                    const lut = new Uint8Array(256);
+                    for (let i = 0; i < 256; i++) lut[i] = Math.round(Math.pow(i / 255, gamma) * 255);
+                    const id = ctx.getImageData(0, 0, outW, outH); const d = id.data;
+                    for (let i = 0; i < d.length; i += 4) { d[i] = lut[d[i]]; d[i+1] = lut[d[i+1]]; d[i+2] = lut[d[i+2]]; }
+                    ctx.putImageData(id, 0, 0);
+                }
+                if (sharp > 0) {
+                    const k = sharp / 100;
+                    const src = ctx.getImageData(0, 0, outW, outH);
+                    const dst = ctx.createImageData(outW, outH);
+                    const s = src.data, d = dst.data;
+                    for (let y = 0; y < outH; y++) {
+                        for (let x = 0; x < outW; x++) {
+                            const i = (y * outW + x) * 4;
+                            const up = (Math.max(0, y-1) * outW + x) * 4, dn = (Math.min(outH-1, y+1) * outW + x) * 4;
+                            const lt = (y * outW + Math.max(0, x-1)) * 4,  rt = (y * outW + Math.min(outW-1, x+1)) * 4;
+                            for (let c = 0; c < 3; c++) d[i+c] = Math.max(0, Math.min(255, Math.round((1+4*k)*s[i+c]-k*(s[up+c]+s[dn+c]+s[lt+c]+s[rt+c]))));
+                            d[i+3] = s[i+3];
+                        }
+                    }
+                    ctx.putImageData(dst, 0, 0);
+                }
+
+                const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
+                const filename = FIXED_FILENAME[preset];
+                if (useFolder) {
+                    const fh = await dirHandle.getFileHandle(filename, { create: true });
+                    const w = await fh.createWritable();
+                    await w.write(blob); await w.close();
+                } else {
+                    zip.file(filename, blob);
+                }
+            }
+        }
+
         if (smallImages.length || japaneseImages.length) {
             const alertUrl = await generateAlertImageCanvas();
             if (useFolder) {
@@ -1383,6 +1887,42 @@ exportZipBtn.addEventListener('click', async (e) => {
         });
     }
     finally { byId('progress').style.display = 'none'; }
+});
+
+function assignCurrentToSlot(preset) {
+    if (!currentPreviewData) return;
+    assignedSlots[preset] = currentPreviewData;
+    renderPresetCanvas(preset);
+    showImagePreview(currentPreviewData, preset);
+}
+
+// ---- ドラッグ&ドロップでのプリセット割り当て ----
+['thumb', 'og', 'special'].forEach(preset => {
+    const pBox = byId('presetBox-' + preset);
+    if (!pBox) return;
+    pBox.addEventListener('dragover', e => {
+        e.preventDefault(); // ドロップを許可
+        e.dataTransfer.dropEffect = 'copy';
+        pBox.style.opacity = '0.5'; // ハイライト
+    });
+    pBox.addEventListener('dragleave', e => {
+        pBox.style.opacity = '1';
+    });
+    pBox.addEventListener('drop', e => {
+        e.preventDefault();
+        e.stopPropagation();
+        pBox.style.opacity = '1';
+        const idxStr = e.dataTransfer.getData('text/plain');
+        if (!idxStr) return;
+        const idx = parseInt(idxStr, 10);
+        if (!isNaN(idx) && idx >= 0 && idx < processedImages.length) {
+            assignedSlots[preset] = processedImages[idx];
+            renderPresetCanvas(preset);
+            
+            // ドラッグ＆ドロップされたら自動的にプレビュー画面を開く/切り替える
+            showImagePreview(processedImages[idx], preset);
+        }
+    });
 });
 </script>
 </body>
