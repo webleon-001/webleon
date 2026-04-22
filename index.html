@@ -151,6 +151,17 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
 <div class="page-title">
     <h2>画像調整 &amp; 書き出しツール</h2>
     <p>Image Resize &amp; Export — 幅1200px自動リサイズ / ZIP一括書き出し</p>
+    <div style="position:absolute; right:36px; bottom:2px; display:flex; align-items:center; gap:12px;">
+        <span style="display:flex; align-items:center; gap:5px; font-size:0.72rem; color:var(--muted); font-weight:400;">
+            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; border:2px solid var(--danger); flex-shrink:0;"></span>幅1200px未満
+        </span>
+        <span style="display:flex; align-items:center; gap:5px; font-size:0.72rem; color:var(--muted); font-weight:400;">
+            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; border:2px solid var(--warn); flex-shrink:0;"></span>日本語ファイル名
+        </span>
+        <span style="display:flex; align-items:center; gap:5px; font-size:0.72rem; color:var(--muted); font-weight:400;">
+            <span style="display:inline-block; width:12px; height:12px; border-radius:3px; border:2px solid #a855f7; flex-shrink:0;"></span>両方
+        </span>
+    </div>
     <button id="helpBtn" class="help-btn" title="説明を表示">💡</button>
 </div>
 
@@ -161,12 +172,12 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
         <div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div>
     </div>
 
+    <div id="previewArea"></div>
+
     <div id="actionArea" style="display:none; margin-top:24px; padding-top:20px;">
         <button class="btn btn-secondary" onclick="location.reload()" style="margin-left:10px;">やり直す</button>
         <button class="btn btn-success" id="exportZipBtn">ZIP で書き出し</button>
     </div>
-
-    <div id="previewArea"></div>
 
     <div class="instruction-text" id="instructionBox" style="margin-top:20px;">
         <button class="close-inst-btn" id="closeInstBtn" title="閉じる">&times;</button>
@@ -235,18 +246,21 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
                     <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap; min-width:28px;">彩度</span>
                     <input type="range" class="filter-slider" id="satSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()">
                     <span id="satLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums;">100%</span>
+                    <button id="ftoggle-sat" onclick="toggleFilter('sat')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s;">↺</button>
                 </div>
                 <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
                     <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap; min-width:60px;">明るさ</span>
                     <input type="range" class="filter-slider" id="conSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()">
                     <span id="conLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums;">100%</span>
+                    <button id="ftoggle-bri" onclick="toggleFilter('bri')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s;">↺</button>
                 </div>
                 <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
                     <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap; min-width:72px;">シャープ</span>
                     <input type="range" class="filter-slider" id="sharpSlider" min="0" max="100" value="0" step="1" oninput="applyPreviewFilters()">
                     <span id="sharpLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums;">0%</span>
+                    <button id="ftoggle-sharp" onclick="toggleFilter('sharp')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s;">↺</button>
                 </div>
-                <button onclick="resetPreviewFilters()" style="padding:3px 10px; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:inherit; font-size:0.7rem; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">リセット</button>
+                <button onclick="resetPreviewFilters()" style="padding:3px 10px; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:inherit; font-size:0.7rem; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">全リセット</button>
             </div>
             
             <div id="zoomBar" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px; transition: width 0.26s ease;">
@@ -262,7 +276,7 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
                         <div id="previewMetaInfo" style="font-size:0.75rem; color:var(--muted); font-weight:300; white-space:nowrap;"></div>
                     </div>
                 </div>
-                <button onclick="exportCroppedView()" style="padding:7px 14px;border-radius:100px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0;">この画像を書き出す</button>
+                <button id="exportSingleBtn" onclick="exportCroppedView(event)" style="padding:7px 14px;border-radius:100px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0;">この画像を書き出す</button>
             </div>
         </div>
         <div class="nav-btn next" onclick="changePreviewImage(1)">❯</div>
@@ -370,7 +384,10 @@ const getActiveImg = () => byId('previewImg' + activeLayer);
 let targetCw = 0, targetCh = 0;
 
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Shift') exportZipBtn.textContent = 'フォルダに書き出し';
+    if (e.key === 'Shift') {
+        exportZipBtn.textContent = 'フォルダに書き出し';
+        const sb = byId('exportSingleBtn'); if (sb) sb.textContent = 'フォルダに書き出す';
+    }
     if (imagePreviewModal.style.display === 'flex') {
         if (e.key === 'ArrowLeft') changePreviewImage(-1);
         if (e.key === 'ArrowRight') changePreviewImage(1);
@@ -379,7 +396,12 @@ document.addEventListener('keydown', (e) => {
         if (e.key === '-') stepZoom(-0.25);
     }
 });
-document.addEventListener('keyup', (e) => { if (e.key === 'Shift') exportZipBtn.textContent = 'ZIP で書き出し'; });
+document.addEventListener('keyup', (e) => {
+    if (e.key === 'Shift') {
+        exportZipBtn.textContent = 'ZIP で書き出し';
+        const sb = byId('exportSingleBtn'); if (sb) sb.textContent = 'この画像を書き出す';
+    }
+});
 
 let imgW = 0, imgH = 0, imgX = 0, imgY = 0, fitW = 0;
 let isDragging = false, dragStartX = 0, dragStartY = 0, dragStartImgX = 0, dragStartImgY = 0;
@@ -573,9 +595,48 @@ function setAspect(btn) {
     if (getActiveImg().naturalWidth) fitImage();
 }
 
-async function exportCroppedView() {
+async function exportCroppedView(e) {
     const data = processedImages[currentPreviewIndex];
     if (!data) return;
+
+    const useFolder = e && e.shiftKey && window.showDirectoryPicker;
+
+    // 日本語ファイル名の場合のみダイアログ
+    let renameToSafe = false;
+    if (data.hasJapanese) {
+        const jpChoice = await showCustomDialog({
+            title: '日本語ファイル名の確認',
+            message: 'ファイル名に日本語が含まれています。\nWeb環境での不具合を防ぐため、日本語を削除して数字に置き換えてもよろしいですか？\n\n現在のファイル名：' + data.originalName,
+            okText: '置き換える',
+            cancelText: 'そのまま保存',
+            type: 'confirm'
+        });
+        if (jpChoice === null) return;
+        renameToSafe = !!jpChoice;
+    }
+
+    // 1200px未満の場合のみダイアログ
+    let forceUpscale = false;
+    if (data.isSmall) {
+        const sizeChoice = await showCustomDialog({
+            title: '幅1200px未満の画像です',
+            message: '幅1200pxに拡大しますか？\n\n拡大すると強制的に引き伸ばされるため画質が粗くなる場合があります。',
+            okText: '拡大する',
+            cancelText: 'オリジナルサイズのまま',
+            type: 'confirm'
+        });
+        if (sizeChoice === null) return;
+        forceUpscale = !!sizeChoice;
+    }
+
+    // --- フォルダ選択（シフトキー） ---
+    let dirHandle = null;
+    if (useFolder) {
+        try { dirHandle = await window.showDirectoryPicker({ startIn: 'desktop' }); }
+        catch(e) { return; }
+    }
+
+    // --- canvas 生成 ---
     const cw = zoomContainer.clientWidth, ch = zoomContainer.clientHeight;
     const iw = getActiveImg().naturalWidth, ih = getActiveImg().naturalHeight;
     const cssScale = imgW / iw;
@@ -586,7 +647,8 @@ async function exportCroppedView() {
     if (currentAspectKey === 'free') {
         srcX = Math.max(0, -imgX / cssScale); srcY = Math.max(0, -imgY / cssScale);
         srcW = Math.min(cw / cssScale, iw - srcX); srcH = Math.min(ch / cssScale, ih - srcY);
-        outW = Math.min(Math.round(srcW), 1200); outH = Math.round(outW * (srcH / srcW));
+        outW = Math.round(srcW); outH = Math.round(srcH);
+        if (forceUpscale || outW > 1200) { outH = Math.round(outH * (1200 / outW)); outW = 1200; }
     } else {
         const preset = ASPECT_PRESETS[currentAspectKey], ratio = preset.w / preset.h;
         let fw = cw / ch >= ratio ? ch * ratio : cw, fh = cw / ch >= ratio ? ch : cw / ratio;
@@ -603,21 +665,17 @@ async function exportCroppedView() {
     const sat   = parseInt(byId('satSlider').value)   || 100;
     const bri   = parseInt(byId('conSlider').value)   || 100;
     const sharp = parseInt(byId('sharpSlider').value) || 0;
-    // 彩度はCanvasのfilterで適用
     ctx.filter = sat !== 100 ? `saturate(${sat}%)` : 'none';
     ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
     ctx.filter = 'none';
-    // ガンマ補正（LUT）
     if (bri !== 100) {
         const gamma = 100 / Math.max(1, bri);
         const lut = new Uint8Array(256);
         for (let i = 0; i < 256; i++) lut[i] = Math.round(Math.pow(i / 255, gamma) * 255);
-        const id = ctx.getImageData(0, 0, outW, outH);
-        const d = id.data;
+        const id = ctx.getImageData(0, 0, outW, outH); const d = id.data;
         for (let i = 0; i < d.length; i += 4) { d[i] = lut[d[i]]; d[i+1] = lut[d[i+1]]; d[i+2] = lut[d[i+2]]; }
         ctx.putImageData(id, 0, 0);
     }
-    // シャープネス（クロスカーネル畳み込み）
     if (sharp > 0) {
         const k = sharp / 100;
         const src = ctx.getImageData(0, 0, outW, outH);
@@ -626,26 +684,37 @@ async function exportCroppedView() {
         for (let y = 0; y < outH; y++) {
             for (let x = 0; x < outW; x++) {
                 const i = (y * outW + x) * 4;
-                const up    = (Math.max(0, y-1) * outW + x) * 4;
-                const dn    = (Math.min(outH-1, y+1) * outW + x) * 4;
-                const lt    = (y * outW + Math.max(0, x-1)) * 4;
-                const rt    = (y * outW + Math.min(outW-1, x+1)) * 4;
-                for (let c = 0; c < 3; c++) {
-                    d[i+c] = Math.max(0, Math.min(255, Math.round(
-                        (1 + 4*k) * s[i+c] - k * (s[up+c] + s[dn+c] + s[lt+c] + s[rt+c])
-                    )));
-                }
+                const up = (Math.max(0, y-1) * outW + x) * 4, dn = (Math.min(outH-1, y+1) * outW + x) * 4;
+                const lt = (y * outW + Math.max(0, x-1)) * 4,  rt = (y * outW + Math.min(outW-1, x+1)) * 4;
+                for (let c = 0; c < 3; c++) d[i+c] = Math.max(0, Math.min(255, Math.round((1+4*k)*s[i+c]-k*(s[up+c]+s[dn+c]+s[lt+c]+s[rt+c]))));
                 d[i+3] = s[i+3];
             }
         }
         ctx.putImageData(dst, 0, 0);
     }
 
-    const filename = FIXED_FILENAME[currentAspectKey] || `${data.exportName.replace(/\.jpg$/i, '')}_${currentAspectKey === 'free' ? 'original' : currentAspectKey.replace(':', 'x')}.jpg`;
-    canvas.toBlob(blob => {
+    // --- ファイル名決定 ---
+    const suffix = currentAspectKey === 'free' ? 'original' : currentAspectKey.replace(':', 'x');
+    let safeBase;
+    if (renameToSafe) {
+        safeBase = `01_${data.originalName.replace(/\.[^/.]+$/, '').replace(/ /g, '_').replace(/[^\x01-\x7E]/g, '')}`;
+    } else {
+        safeBase = data.exportName.replace(/\.jpg$/i, '');
+    }
+    const filename = FIXED_FILENAME[currentAspectKey] || `${safeBase}_${suffix}.jpg`;
+
+    // --- 保存 ---
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
+    if (dirHandle) {
+        try {
+            const fh = await dirHandle.getFileHandle(filename, { create: true });
+            const w = await fh.createWritable();
+            await w.write(blob); await w.close();
+        } catch(err) { console.error(err); }
+    } else {
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
         a.download = filename; a.click();
-    }, 'image/jpeg', 0.95);
+    }
 }
 
 function formatBytes(bytes) {
@@ -1132,27 +1201,60 @@ function applyPreviewFilters() {
     byId('conLabel').textContent   = bri   + '%';
     byId('sharpLabel').textContent = sharp + '%';
 
-    // ガンマ: slider100=gamma1.0, >100=明るい, <100=暗い
+    // ガンマ
     const gamma = (100 / Math.max(1, bri)).toFixed(4);
     ['R','G','B'].forEach(ch => {
         const el = document.getElementById('gfunc' + ch);
         if (el) el.setAttribute('exponent', gamma);
     });
 
-    // シャープ: k = slider/100 (0〜1.0)
-    // クロスカーネル: center=1+4k, 上下左右=-k
+    // シャープ kernel
     const k = sharp / 100;
     const c = 1 + 4 * k, s = -k;
     const kernel = document.getElementById('sharpKernel');
     if (kernel) kernel.setAttribute('kernelMatrix',
         `0 ${s.toFixed(4)} 0 ${s.toFixed(4)} ${c.toFixed(4)} ${s.toFixed(4)} 0 ${s.toFixed(4)} 0`);
 
-    // CSS filter チェーン組み立て
+    // CSS filter チェーン
     const parts = [];
     if (sat !== 100)  parts.push(`saturate(${sat}%)`);
     if (bri !== 100)  parts.push(`url(#previewGamma)`);
     if (sharp > 0)    parts.push(`url(#previewSharp)`);
     zoomContainer.style.filter = parts.length ? parts.join(' ') : 'none';
+
+    updateFilterToggleBtns();
+}
+
+// 各フィルタの「前回値」記憶（デフォルトから変えたときの値）
+const filterMemory = { sat: 150, bri: 120, sharp: 30 };
+const filterDefaults = { sat: 100, bri: 100, sharp: 0 };
+const filterSliders  = { sat: 'satSlider', bri: 'conSlider', sharp: 'sharpSlider' };
+
+function toggleFilter(name) {
+    const slider  = byId(filterSliders[name]);
+    const current = parseInt(slider.value);
+    const def     = filterDefaults[name];
+    if (current !== def) {
+        filterMemory[name] = current;   // 現在値を記憶
+        slider.value = def;             // デフォルトへ
+    } else {
+        slider.value = filterMemory[name]; // 記憶値を復元
+    }
+    applyPreviewFilters();
+}
+
+function updateFilterToggleBtns() {
+    const active = {
+        sat:   parseInt(byId('satSlider').value)   !== 100,
+        bri:   parseInt(byId('conSlider').value)   !== 100,
+        sharp: parseInt(byId('sharpSlider').value) !== 0
+    };
+    Object.entries(active).forEach(([name, on]) => {
+        const btn = byId('ftoggle-' + name);
+        if (!btn) return;
+        btn.style.color = on ? 'var(--accent)' : 'var(--border)';
+        btn.title = on ? 'クリックでリセット（再クリックで復元）' : 'クリックで前回値を復元';
+    });
 }
 
 function resetPreviewFilters() {
