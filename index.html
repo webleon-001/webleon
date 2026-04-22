@@ -8,6 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/heic-to@1.4.2/dist/iife/heic-to.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
+<script src="https://unpkg.com/ag-psd@14.3.2/dist/bundle.js"></script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
@@ -114,6 +115,12 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
 .asp-btn:hover { border-color: var(--accent); color: var(--accent); }
 .asp-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
 
+/* スライダー */
+.filter-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 3px; background: var(--border); border-radius: 100px; outline: none; cursor: pointer; transition: background 0.15s; }
+.filter-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; transition: transform 0.1s; box-shadow: 0 1px 4px rgba(99,102,241,0.3); }
+.filter-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+.filter-slider::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: none; cursor: pointer; box-shadow: 0 1px 4px rgba(99,102,241,0.3); }
+
 /* 独自ダイアログ */
 #customDialogModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
 .custom-dialog-card { position: relative; background: var(--card); padding: 28px; border-radius: var(--radius); width: 90%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); border: 1px solid var(--border); text-align: center; }
@@ -127,7 +134,7 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
 </head>
 <body>
 
-<div class="version-label">Ver 1.0.0</div>
+<div class="version-label">Ver 1.1.0</div>
 
 <div id="progress">
   <div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px;">処理中...</div>
@@ -148,16 +155,10 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
 </div>
 
 <div class="section-card">
-    <div class="instruction-text" id="instructionBox">
-        <button class="close-inst-btn" id="closeInstBtn" title="閉じる">&times;</button>
-        書き出し時に全て幅1200pxにリサイズされます。幅1200pxに満たない画像はオリジナルサイズで書き出すか強制的に幅1200pxにリサイズ（画質が劣化）させるかを選択できます。また、日本語が含まれるファイル名はWeb環境での不具合を防ぐため、自動的に日本語は削除されファイル名の頭に連番が付加されます。書き出される名前は「webleon_images.zip」です。シフトキーを押すと「フォルダに書き出し」が使用可能になります。アラートが2度表示されますが、それぞれ「許可する」「変更を保存」を選んでください。<br>
-        <span style="display:block; margin-top:6px;">※ コラム（枠付き）に使用する画像は幅600px以上であれば問題ありません。</span>
-    </div>
-
     <div class="upload-zone" id="dropZone">
-        <div class="upload-btn-main">画像・PDF・ZIP を選択 / ドロップ</div>
-        <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip" style="display:none">
-        <div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; ZIP</div>
+        <div class="upload-btn-main">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div>
+        <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none">
+        <div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div>
     </div>
 
     <div id="actionArea" style="display:none; margin-top:24px; padding-top:20px;">
@@ -166,6 +167,13 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
     </div>
 
     <div id="previewArea"></div>
+
+    <div class="instruction-text" id="instructionBox" style="margin-top:20px;">
+        <button class="close-inst-btn" id="closeInstBtn" title="閉じる">&times;</button>
+        書き出し時に全て幅1200pxにリサイズされます。幅1200pxに満たない画像はオリジナルサイズで書き出すか強制的に幅1200pxにリサイズ（画質が劣化）させるかを選択できます。また、日本語が含まれるファイル名はWeb環境での不具合を防ぐため、自動的に日本語は削除されファイル名の頭に連番が付加されます。書き出される名前は「webleon_images.zip」です。シフトキーを押すと「フォルダに書き出し」が使用可能になります。アラートが2度表示されますが、それぞれ「許可する」「変更を保存」を選んでください。<br>
+        <span style="display:block; margin-top:6px;">※ .psd はPSD.js で合成済み画像として読み込みます。.ai はPDF互換形式で保存されたファイルのみ対応しています。</span>
+        <span style="display:block; margin-top:4px;">※ コラム（枠付き）に使用する画像は幅600px以上であれば問題ありません。</span>
+    </div>
 </div>
 
 <div id="customDialogModal">
@@ -220,6 +228,26 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
                 <img id="previewImg0" class="preview-layer" src="" alt="拡大">
                 <img id="previewImg1" class="preview-layer" src="" alt="拡大">
             </div>
+
+            <!-- 彩度・明るさ・シャープネス スライダー -->
+            <div id="filterBar" style="display:flex; align-items:center; gap:10px; margin-top:9px; flex-wrap:wrap; transition: width 0.26s ease;">
+                <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
+                    <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap; min-width:28px;">彩度</span>
+                    <input type="range" class="filter-slider" id="satSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()">
+                    <span id="satLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums;">100%</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
+                    <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap; min-width:60px;">明るさ</span>
+                    <input type="range" class="filter-slider" id="conSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()">
+                    <span id="conLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums;">100%</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:140px;">
+                    <span style="font-size:0.7rem; color:var(--muted); white-space:nowrap; min-width:72px;">シャープ</span>
+                    <input type="range" class="filter-slider" id="sharpSlider" min="0" max="100" value="0" step="1" oninput="applyPreviewFilters()">
+                    <span id="sharpLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums;">0%</span>
+                </div>
+                <button onclick="resetPreviewFilters()" style="padding:3px 10px; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:inherit; font-size:0.7rem; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">リセット</button>
+            </div>
             
             <div id="zoomBar" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px; transition: width 0.26s ease;">
                 <div style="display:flex; align-items:center; gap:6px; flex-shrink:0;">
@@ -241,6 +269,23 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
     </div>
 </div>
 
+<!-- SVGフィルター（プレビュー用） -->
+<svg style="display:none" aria-hidden="true">
+  <defs>
+    <filter id="previewGamma" color-interpolation-filters="sRGB">
+      <feComponentTransfer>
+        <feFuncR type="gamma" id="gfuncR" amplitude="1" exponent="1" offset="0"/>
+        <feFuncG type="gamma" id="gfuncG" amplitude="1" exponent="1" offset="0"/>
+        <feFuncB type="gamma" id="gfuncB" amplitude="1" exponent="1" offset="0"/>
+      </feComponentTransfer>
+    </filter>
+    <filter id="previewSharp" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+      <feConvolveMatrix id="sharpKernel" order="3"
+        kernelMatrix="0 0 0 0 1 0 0 0 0"
+        divisor="1" bias="0" preserveAlpha="false" edgeMode="duplicate"/>
+    </filter>
+  </defs>
+</svg>
 <script>
 const byId = id => document.getElementById(id);
 
@@ -400,6 +445,8 @@ function resizeContainerToAspect(aspectKey) {
         card.style.width = (w + 40) + 'px';
         const bar = card.querySelector('#zoomBar');
         if (bar) bar.style.width = w + 'px';
+        const filterBar = card.querySelector('#filterBar');
+        if (filterBar) filterBar.style.width = w + 'px';
     }
     return { cw: w, ch: h };
 }
@@ -553,7 +600,46 @@ async function exportCroppedView() {
     canvas.width = outW; canvas.height = outH;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH);
+    const sat   = parseInt(byId('satSlider').value)   || 100;
+    const bri   = parseInt(byId('conSlider').value)   || 100;
+    const sharp = parseInt(byId('sharpSlider').value) || 0;
+    // 彩度はCanvasのfilterで適用
+    ctx.filter = sat !== 100 ? `saturate(${sat}%)` : 'none';
     ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
+    ctx.filter = 'none';
+    // ガンマ補正（LUT）
+    if (bri !== 100) {
+        const gamma = 100 / Math.max(1, bri);
+        const lut = new Uint8Array(256);
+        for (let i = 0; i < 256; i++) lut[i] = Math.round(Math.pow(i / 255, gamma) * 255);
+        const id = ctx.getImageData(0, 0, outW, outH);
+        const d = id.data;
+        for (let i = 0; i < d.length; i += 4) { d[i] = lut[d[i]]; d[i+1] = lut[d[i+1]]; d[i+2] = lut[d[i+2]]; }
+        ctx.putImageData(id, 0, 0);
+    }
+    // シャープネス（クロスカーネル畳み込み）
+    if (sharp > 0) {
+        const k = sharp / 100;
+        const src = ctx.getImageData(0, 0, outW, outH);
+        const dst = ctx.createImageData(outW, outH);
+        const s = src.data, d = dst.data;
+        for (let y = 0; y < outH; y++) {
+            for (let x = 0; x < outW; x++) {
+                const i = (y * outW + x) * 4;
+                const up    = (Math.max(0, y-1) * outW + x) * 4;
+                const dn    = (Math.min(outH-1, y+1) * outW + x) * 4;
+                const lt    = (y * outW + Math.max(0, x-1)) * 4;
+                const rt    = (y * outW + Math.min(outW-1, x+1)) * 4;
+                for (let c = 0; c < 3; c++) {
+                    d[i+c] = Math.max(0, Math.min(255, Math.round(
+                        (1 + 4*k) * s[i+c] - k * (s[up+c] + s[dn+c] + s[lt+c] + s[rt+c])
+                    )));
+                }
+                d[i+3] = s[i+3];
+            }
+        }
+        ctx.putImageData(dst, 0, 0);
+    }
 
     const filename = FIXED_FILENAME[currentAspectKey] || `${data.exportName.replace(/\.jpg$/i, '')}_${currentAspectKey === 'free' ? 'original' : currentAspectKey.replace(':', 'x')}.jpg`;
     canvas.toBlob(blob => {
@@ -576,6 +662,235 @@ async function decodeTiffToBlob(file) {
     const ctx = canvas.getContext('2d'), imgData = ctx.createImageData(canvas.width, canvas.height);
     imgData.data.set(UTIF.toRGBA8(ifds[0])); ctx.putImageData(imgData, 0, 0);
     return new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+}
+
+// PackBits (PSD RLE) 展開
+function unpackBitsInto(src, srcStart, srcEnd, dst, dstStart, dstEnd) {
+    let s = srcStart, d = dstStart;
+    while (s < srcEnd && d < dstEnd) {
+        const n = src[s++];
+        if (n < 128) {
+            const count = n + 1;
+            for (let i = 0; i < count && s < srcEnd && d < dstEnd; i++) dst[d++] = src[s++];
+        } else if (n > 128) {
+            const count = 257 - n;
+            if (s >= srcEnd) break;
+            const b = src[s++];
+            for (let i = 0; i < count && d < dstEnd; i++) dst[d++] = b;
+        }
+        // n === 128 は no-op
+    }
+}
+
+// CMYK 8bit PSDを手動パースしてRGBキャンバスに描画
+async function decodePsdCmykManual(arrayBuffer) {
+    const view = new DataView(arrayBuffer);
+    const bytes = new Uint8Array(arrayBuffer);
+
+    // --- ヘッダ ---
+    const sig = String.fromCharCode(bytes[0], bytes[1], bytes[2], bytes[3]);
+    if (sig !== '8BPS') throw new Error('Not a PSD file');
+    const version = view.getUint16(4);
+    if (version !== 1) throw new Error(`PSB (v2) は手動パース未対応`);
+    const channels = view.getUint16(12);
+    const height = view.getUint32(14);
+    const width = view.getUint32(18);
+    const depth = view.getUint16(22);
+    const colorMode = view.getUint16(24);
+
+    if (depth !== 8) throw new Error(`${depth}bit/channel は未対応（8bitのみ）`);
+    if (colorMode !== 4) throw new Error(`ColorMode=${colorMode}（CMYKではない）`);
+    if (channels < 4) throw new Error('CMYK channels < 4');
+
+    let pos = 26;
+    // Color Mode Data
+    pos += 4 + view.getUint32(pos);
+    // Image Resources
+    pos += 4 + view.getUint32(pos);
+    // Layer and Mask Info
+    pos += 4 + view.getUint32(pos);
+
+    // --- Image Data (composite) ---
+    const compression = view.getUint16(pos); pos += 2;
+    const planeSize = width * height;
+    const planes = [
+        new Uint8Array(planeSize), new Uint8Array(planeSize),
+        new Uint8Array(planeSize), new Uint8Array(planeSize)
+    ];
+
+    if (compression === 0) {
+        // Raw planar
+        for (let c = 0; c < 4; c++) {
+            if (pos + planeSize > bytes.length) throw new Error('Image data truncated (raw)');
+            planes[c].set(bytes.subarray(pos, pos + planeSize));
+            pos += planeSize;
+        }
+    } else if (compression === 1) {
+        // RLE: まず全スキャンライン分のバイト数テーブル
+        const totalScanlines = channels * height;
+        const byteCounts = new Uint16Array(totalScanlines);
+        for (let i = 0; i < totalScanlines; i++) {
+            byteCounts[i] = view.getUint16(pos); pos += 2;
+        }
+        // 先頭 4 チャンネル (CMYK) をデコード
+        let sci = 0;
+        for (let c = 0; c < 4; c++) {
+            let dst = 0;
+            for (let y = 0; y < height; y++) {
+                const len = byteCounts[sci++];
+                unpackBitsInto(bytes, pos, pos + len, planes[c], dst, dst + width);
+                pos += len;
+                dst += width;
+            }
+        }
+        // 残りチャンネル（アルファ等）はスキップ
+        for (let c = 4; c < channels; c++) {
+            for (let y = 0; y < height; y++) pos += byteCounts[sci++];
+        }
+    } else {
+        throw new Error(`Compression method ${compression} は未対応`);
+    }
+
+    // --- CMYK → RGB 変換 ---
+    // PSDのCMYKは反転保存 (255=インク無し)。R = c*k/255, G = m*k/255, B = y*k/255
+    const canvas = document.createElement('canvas');
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    const imgData = ctx.createImageData(width, height);
+    const data = imgData.data;
+    const C = planes[0], M = planes[1], Y = planes[2], K = planes[3];
+    for (let i = 0; i < planeSize; i++) {
+        const k = K[i];
+        data[i*4]     = Math.round(C[i] * k / 255);
+        data[i*4 + 1] = Math.round(M[i] * k / 255);
+        data[i*4 + 2] = Math.round(Y[i] * k / 255);
+        data[i*4 + 3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+}
+
+// ag-psd の initializeCanvas は一度だけ呼ぶ
+let _agPsdInitialized = false;
+function ensureAgPsdInit() {
+    if (_agPsdInitialized) return;
+    agPsd.initializeCanvas((width, height) => {
+        const c = document.createElement('canvas');
+        c.width = width; c.height = height;
+        return c;
+    });
+    _agPsdInitialized = true;
+}
+
+async function decodePsdToBlob(file) {
+    const arrayBuffer = await file.arrayBuffer();
+
+    // --- ヘッダーを先読みしてカラーモードを判定 ---
+    // 8bit CMYK の場合は ag-psd では読めないので手動パーサーで処理
+    try {
+        const view = new DataView(arrayBuffer);
+        const sig = String.fromCharCode(
+            view.getUint8(0), view.getUint8(1), view.getUint8(2), view.getUint8(3)
+        );
+        if (sig === '8BPS') {
+            const version = view.getUint16(4);
+            const depth = view.getUint16(22);
+            const colorMode = view.getUint16(24);
+            if (version === 1 && colorMode === 4 && depth === 8) {
+                console.log('Detected 8-bit CMYK PSD, using manual parser');
+                return await decodePsdCmykManual(arrayBuffer);
+            }
+        }
+    } catch(e) {
+        console.warn('PSD header pre-check failed:', e);
+    }
+
+    ensureAgPsdInit();
+
+    // 複数の読み込み設定を試す（厳格→寛容へ）
+    const attempts = [
+        { skipLayerImageData: true, throwForMissingFeatures: false },
+        { skipLayerImageData: true, skipCompositeImageData: true, throwForMissingFeatures: false },
+        { skipLayerImageData: true, skipCompositeImageData: true, skipThumbnail: false, throwForMissingFeatures: false, useImageData: true }
+    ];
+
+    let psd = null;
+    let lastError = null;
+    for (const opts of attempts) {
+        try {
+            psd = agPsd.readPsd(arrayBuffer, opts);
+            if (psd) break;
+        } catch(e) {
+            lastError = e;
+            console.warn('ag-psd attempt failed with opts', opts, e);
+        }
+    }
+
+    if (!psd) {
+        throw new Error(lastError?.message || 'PSD解析失敗');
+    }
+
+    const W = psd.width, H = psd.height;
+    const out = document.createElement('canvas');
+    out.width = W; out.height = H;
+    const ctx = out.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    // 1) 合成済みcanvas（Maximize Compatibility ON の場合）
+    if (psd.canvas) {
+        ctx.drawImage(psd.canvas, 0, 0);
+        return new Promise(r => out.toBlob(r, 'image/jpeg', 0.95));
+    }
+
+    // 2) サムネイル画像
+    if (psd.imageResources && psd.imageResources.thumbnail) {
+        ctx.drawImage(psd.imageResources.thumbnail, 0, 0, W, H);
+        return new Promise(r => out.toBlob(r, 'image/jpeg', 0.95));
+    }
+
+    // 3) 全レイヤーを重ねて疑似合成（Maximize Compatibility OFF でも対応）
+    const flattenLayers = (layers) => {
+        const result = [];
+        if (!layers) return result;
+        for (const l of layers) {
+            if (l.children) result.push(...flattenLayers(l.children));
+            else result.push(l);
+        }
+        return result;
+    };
+    const layers = flattenLayers(psd.children || []).filter(l => l.canvas && !l.hidden);
+    if (layers.length > 0) {
+        for (const layer of layers.reverse()) {
+            ctx.globalAlpha = (layer.opacity !== undefined ? layer.opacity : 255) / 255;
+            ctx.drawImage(layer.canvas, layer.left || 0, layer.top || 0);
+        }
+        ctx.globalAlpha = 1;
+        return new Promise(r => out.toBlob(r, 'image/jpeg', 0.95));
+    }
+
+    // 4) どれも取れない場合、カラーモード情報付きで失敗
+    const cmModes = { 0: 'Bitmap', 1: 'Grayscale', 2: 'Indexed', 3: 'RGB', 4: 'CMYK', 7: 'Multichannel', 8: 'Duotone', 9: 'Lab' };
+    const mode = cmModes[psd.colorMode] ?? `mode${psd.colorMode}`;
+    const bits = psd.bitsPerChannel || '?';
+    throw new Error(`${mode}カラーモード / ${bits}bit は抽出不可`);
+}
+
+async function decodeAiToBlob(file) {
+    // .ai ファイルはPDFベースのため、pdf.js で最初のページを画像化
+    try {
+        const arrayBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 2.0 });
+        const canvas = document.createElement('canvas');
+        canvas.width = viewport.width; canvas.height = viewport.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+        return new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+    } catch(e) {
+        console.error('AI file decode error (PDF parsing failed):', e);
+        throw new Error('このAIファイルはPDF互換形式ではないため読み込めませんでした。');
+    }
 }
 
 function updateFileProgress(current, total, fileName) {
@@ -608,10 +923,12 @@ async function handleFiles(files) {
         if (name.endsWith('.zip')) {
             try {
                 const zip = await new JSZip().loadAsync(file);
-                Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(k))
+                Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff|psd|ai)$/i.test(k))
                     .forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip }));
             } catch(e) { console.error(e); }
         } else if (name.endsWith('.pdf')) { allTasks.push({ file, name: file.name, isPdf: true }); }
+        else if (name.endsWith('.psd')) { allTasks.push({ file, name: file.name, isPsd: true }); }
+        else if (name.endsWith('.ai')) { allTasks.push({ file, name: file.name, isAi: true }); }
         else if (/\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(name)) { allTasks.push({ file, name: file.name }); }
     }
     allTasks.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
@@ -632,9 +949,40 @@ async function handleFiles(files) {
                 }
                 doneCount++; continue;
             }
+            if (task.isPsd) {
+                try {
+                    blob = await decodePsdToBlob(task.file);
+                    outName = outName.replace(/\.psd$/i, '.jpg');
+                } catch(e) {
+                    console.error('PSD decode error:', e);
+                    const detail = (e && e.message) ? `\n\n詳細: ${e.message}` : '';
+                    await showCustomDialog({
+                        title: 'PSD読み込みエラー',
+                        message: `"${task.name}" の読み込みに失敗しました。\nCMYK / 16bit / PSB 形式など未対応の可能性があります。\n一度PhotoshopでRGB・8bitとして保存し直してください。${detail}`,
+                        okText: '閉じる', okClass: 'btn btn-danger', type: 'alert'
+                    });
+                    doneCount++; continue;
+                }
+                await processSingleFile(new File([blob], outName, { type: 'image/jpeg' }));
+                doneCount++; continue;
+            }
+            if (task.isAi) {
+                try {
+                    blob = await decodeAiToBlob(task.file);
+                    outName = outName.replace(/\.ai$/i, '.jpg');
+                } catch(e) {
+                    console.error('AI decode error:', e);
+                    await showCustomDialog({ title: 'AI読み込みエラー', message: `"${task.name}" の読み込みに失敗しました。\nPDF互換形式で保存されたAIファイルのみ対応しています。`, okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' });
+                    doneCount++; continue;
+                }
+                await processSingleFile(new File([blob], outName, { type: 'image/jpeg' }));
+                doneCount++; continue;
+            }
             blob = task.zipKey ? await task.zipObj.file(task.zipKey).async("blob") : task.file;
             if (/\.(heic|heif)$/i.test(outName)) { blob = await decodeHeicToBlob(new File([blob], outName)); outName = outName.replace(/\.(heic|heif)$/i, '.jpg'); }
             else if (/\.(tif|tiff)$/i.test(outName)) { blob = await decodeTiffToBlob(new File([blob], outName)); outName = outName.replace(/\.(tif|tiff)$/i, '.jpg'); }
+            else if (/\.psd$/i.test(outName)) { blob = await decodePsdToBlob(new File([blob], outName)); outName = outName.replace(/\.psd$/i, '.jpg'); }
+            else if (/\.ai$/i.test(outName)) { blob = await decodeAiToBlob(new File([blob], outName)); outName = outName.replace(/\.ai$/i, '.jpg'); }
             await processSingleFile(new File([blob], outName));
         } catch(e) { console.error(e); }
         doneCount++;
@@ -722,6 +1070,7 @@ function showImagePreview(index) {
     document.querySelectorAll('.asp-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('.asp-btn[data-key="free"]').classList.add('active');
     currentAspectKey = 'free';
+    resetPreviewFilters();
 
     const isInitialOpen = (imagePreviewModal.style.display !== 'flex');
     const nextLayer = isInitialOpen ? activeLayer : (activeLayer === 0 ? 1 : 0);
@@ -773,6 +1122,44 @@ function closeImagePreview() {
     imagePreviewModal.style.display = 'none'; 
     byId('previewImg0').style.opacity = 0;
     byId('previewImg1').style.opacity = 0;
+}
+
+function applyPreviewFilters() {
+    const sat   = parseInt(byId('satSlider').value)   || 100;
+    const bri   = parseInt(byId('conSlider').value)   || 100;
+    const sharp = parseInt(byId('sharpSlider').value) || 0;
+    byId('satLabel').textContent   = sat   + '%';
+    byId('conLabel').textContent   = bri   + '%';
+    byId('sharpLabel').textContent = sharp + '%';
+
+    // ガンマ: slider100=gamma1.0, >100=明るい, <100=暗い
+    const gamma = (100 / Math.max(1, bri)).toFixed(4);
+    ['R','G','B'].forEach(ch => {
+        const el = document.getElementById('gfunc' + ch);
+        if (el) el.setAttribute('exponent', gamma);
+    });
+
+    // シャープ: k = slider/100 (0〜1.0)
+    // クロスカーネル: center=1+4k, 上下左右=-k
+    const k = sharp / 100;
+    const c = 1 + 4 * k, s = -k;
+    const kernel = document.getElementById('sharpKernel');
+    if (kernel) kernel.setAttribute('kernelMatrix',
+        `0 ${s.toFixed(4)} 0 ${s.toFixed(4)} ${c.toFixed(4)} ${s.toFixed(4)} 0 ${s.toFixed(4)} 0`);
+
+    // CSS filter チェーン組み立て
+    const parts = [];
+    if (sat !== 100)  parts.push(`saturate(${sat}%)`);
+    if (bri !== 100)  parts.push(`url(#previewGamma)`);
+    if (sharp > 0)    parts.push(`url(#previewSharp)`);
+    zoomContainer.style.filter = parts.length ? parts.join(' ') : 'none';
+}
+
+function resetPreviewFilters() {
+    byId('satSlider').value   = 100;
+    byId('conSlider').value   = 100;
+    byId('sharpSlider').value = 0;
+    applyPreviewFilters();
 }
 function closeAlertModal() { alertModal.style.display = 'none'; }
 
