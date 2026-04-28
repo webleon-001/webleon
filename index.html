@@ -263,13 +263,12 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); bor
         <div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div>
     </div>
 
-    <div style="display:flex; justify-content:flex-end; width:100%; margin-top:0px; margin-bottom:-8px; padding:0 4px; z-index:10; position:relative;">
+<div id="searchBarContainer" style="display:none; justify-content:flex-end; width:100%; margin-top:0px; margin-bottom:-8px; padding:0 4px; z-index:10; position:relative;">
         <div style="position:relative;">
             <input type="text" id="searchInput" placeholder="ファイル名で検索..." style="padding:6px 12px 6px 30px; border-radius:100px; border:1px solid var(--border); font-size:0.8rem; outline:none; transition:border-color 0.2s; width: 180px; background:var(--card); color:var(--text);">
             <svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--muted);" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         </div>
     </div>
-
     <div id="previewArea"><div class="preview-drop-hint">ここにドロップして追加</div></div>
 
     <div id="actionArea" style="display:none; margin-top:24px; padding-top:20px; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%; transition: opacity 0.2s;">
@@ -793,8 +792,14 @@ async function loadAppState(slotId) {
     updateSlotLabels();
 }
 
+// ▼ 追加：起動時判定用のフラグ
+let isAppBooting = true; 
+
 async function updateSlotLabels() {
     const selector = byId('slotSelector');
+    const slotsInfo = [];
+    let emptyCount = 0; 
+
     for (let i = 1; i <= 10; i++) {
         const id = i.toString();
         const tx = db.transaction(STORE_NAME, 'readonly');
@@ -802,19 +807,103 @@ async function updateSlotLabels() {
             const req = tx.objectStore(STORE_NAME).get('state_' + id);
             req.onsuccess = () => res(req.result);
         });
-        const option = selector.querySelector(`option[value="${id}"]`);
+
         const name = slotNames[id] || `スロット ${id}`;
-        let count = data && data.processedImages ? data.processedImages.length : 0;
-        let hasSpecial = data && data.assignedSlotsData && Object.keys(data.assignedSlotsData).length > 0;
-        if (count > 0 || hasSpecial) { option.textContent = `${name} (${count}枚${hasSpecial ? ' + 特殊' : ''})`; } else { option.textContent = `${name} (空)`; }
+        const count = data && data.processedImages ? data.processedImages.length : 0;
+        const hasSpecial = data && data.assignedSlotsData && Object.keys(data.assignedSlotsData).length > 0;
+        const isEmpty = (count === 0 && !hasSpecial);
+        if (isEmpty) emptyCount++; 
+
+        const lastUsed = parseInt(localStorage.getItem(`slot_last_used_${id}`) || 0);
+        
+        slotsInfo.push({
+            id, name, isEmpty, lastUsed,
+            label: isEmpty ? `${name} (空)` : `${name} (${count}枚${hasSpecial ? ' + 特殊' : ''})`
+        });
+    }
+
+    const emptySlots = slotsInfo.filter(s => s.isEmpty).sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    const usedSlots = slotsInfo.filter(s => !s.isEmpty).sort((a, b) => b.lastUsed - a.lastUsed);
+
+    let finalOrder = [];
+    if (emptySlots.length > 0) {
+        const firstEmpty = emptySlots.shift();
+        finalOrder = [firstEmpty, ...usedSlots, ...emptySlots];
+    } else {
+        finalOrder = usedSlots;
+    }
+
+    const currentValue = selector.value;
+    selector.innerHTML = '';
+    finalOrder.forEach(slot => {
+        const option = document.createElement('option');
+        option.value = slot.id;
+        option.textContent = slot.label;
+        selector.appendChild(option);
+    });
+    selector.value = currentValue;
+
+    // ▼ 追加：空きスロットが1つでもできた場合は、警告アラートをDOMから削除する
+    if (emptyCount > 0) {
+        const alertDiv = document.getElementById('slot-full-alert');
+        if (alertDiv) {
+            alertDiv.remove();
+        }
+    }
+
+    // 起動直後の1回目のみ、空きスロット数（emptyCount）を見てアラートを出す
+    if (isAppBooting) {
+        if (emptyCount === 0) {
+            showSlotFullWarning();
+        }
+        isAppBooting = false; 
     }
 }
+function showSlotFullWarning() {
+    // 既に表示されている場合は何もしない
+    if (document.getElementById('slot-full-alert')) return;
 
+    const alertDiv = document.createElement('div');
+    alertDiv.id = 'slot-full-alert';
+    alertDiv.style.cssText = `
+        background: var(--danger-soft);
+        color: var(--danger);
+        border: 1px solid #fecaca;
+        padding: 12px 20px;
+        border-radius: var(--radius-sm);
+        margin-bottom: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        text-align: center;
+        width: 100%;
+        max-width: 900px;
+        animation: fadeIn 0.3s ease;
+    `;
+    alertDiv.innerHTML = `
+        <span style="margin-right:8px;">⚠️</span>
+        すべての保存スロットが使用中です。新しいスロットを使用するには、不要なスロットを削除してください。
+    `;
+
+    // タイトルの直下に挿入
+    const header = document.querySelector('.page-header');
+    header.parentNode.insertBefore(alertDiv, header.nextSibling);
+}
+
+// fadeInアニメーションがCSSにない場合はstyleタグへ追加、もしくはJSで直接指定
 byId('slotSelector').addEventListener('change', async (e) => {
-    showProgressPanel('スロット切替中...'); await saveAppState(); await loadAppState(e.target.value);
-    localStorage.setItem('lastUsedSlot', e.target.value); byId('progress').style.display = 'none'; showToast(`スロット ${e.target.value} を読み込みました`);
-});
+    const slotId = e.target.value;
+    showProgressPanel('スロット切替中...');
+    
+    // 使用履歴（タイムスタンプ）を保存
+    localStorage.setItem(`slot_last_used_${slotId}`, Date.now());
+    localStorage.setItem('lastUsedSlot', slotId);
 
+    await saveAppState(); 
+    await loadAppState(slotId);
+    
+    byId('progress').style.display = 'none'; 
+    showToast(`スロット ${slotId} を読み込みました`);
+});
 byId('renameSlotBtn').addEventListener('click', async () => {
     const newName = prompt("スロットの名前を入力してください", slotNames[currentSlotId] || `スロット ${currentSlotId}`);
     if (newName !== null) { slotNames[currentSlotId] = newName; await saveAppState(); showToast("スロット名を変更しました"); }
@@ -834,7 +923,9 @@ window.addEventListener('DOMContentLoaded', async () => {
     await initDB();
     const lastSlot = localStorage.getItem('lastUsedSlot') || "1";
     byId('slotSelector').value = lastSlot;
-    await loadAppState(lastSlot);
+    
+    await loadAppState(lastSlot); // この中でスロットのラベル更新も行われます
+    
     renderLogoLibrary();
 });
 
@@ -914,13 +1005,9 @@ function showToast(msg) {
         toast = document.createElement('div'); 
         toast.id = 'app-toast'; 
         toast.style.position = 'fixed'; 
-        
-        // ▼ ここを画面の中央に配置するように変更しました
         toast.style.top = '50%'; 
         toast.style.left = '50%'; 
         toast.style.transform = 'translate(-50%, -50%)'; 
-        
-        // 中央に出るので、少しだけサイズを大きく・四角くしています（お好みで変更可能です）
         toast.style.background = 'rgba(24, 24, 27, 0.9)'; 
         toast.style.color = '#fff'; 
         toast.style.padding = '16px 32px'; 
@@ -934,7 +1021,12 @@ function showToast(msg) {
     }
     toast.textContent = msg; toast.style.display = 'block'; void toast.offsetWidth; toast.style.opacity = '1';
     if(toast._timer) clearTimeout(toast._timer);
-    toast._timer = setTimeout(() => { toast.style.opacity = '0'; setTimeout(()=>toast.style.display='none', 300); }, 2000); // 表示時間を少し短め(2秒)にしています
+    
+    // 2000ms * 1.8 = 3600ms
+    toast._timer = setTimeout(() => { 
+        toast.style.opacity = '0'; 
+        setTimeout(() => toast.style.display = 'none', 300); 
+    }, 3600); 
 }
 
 let isSelectingForSplit = false, splitTargetCount = 0, splitSelectedImages = [], isSplitPreviewActive = false;
