@@ -1543,26 +1543,36 @@ allBtns.forEach(btn => {
     document.querySelectorAll('.nav-btn').forEach(btn => { btn.style.display = (processedImages.length <= 1 || isPreset || isSplitPreviewActive) ? 'none' : 'flex'; });
 }
 
+// --- 修正後の setAspect 関数 ---
 async function setAspect(btn) {
     const targetKey = btn.dataset.key;
-    if (hasUnsavedChanges && targetKey !== currentAspectKey) {
-        const confirmChange = await showCustomDialog({ title: '確認', message: '保存されていませんが、変更を破棄して切り替えますか？', okText: '切り替える', okClass: 'btn btn-danger', cancelText: 'キャンセル', type: 'confirm' });
-        if (!confirmChange) return;
-    }
+    
+    // 保存確認ダイアログのブロックを削除しました
     
     const isSpecial = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(targetKey);
-    if (isSpecial) { const incoming = isSplitPreviewActive ? null : currentPreviewData; if (!await confirmSlotOverwrite(targetKey, incoming)) return; }
+    // スロット（保存先）への切り替え時も、既存画像がある場合の上書き確認のみ残し、
+    // 通常の編集破棄確認は行わないようにしています。
+    if (isSpecial) { 
+        const incoming = isSplitPreviewActive ? null : currentPreviewData; 
+        if (!await confirmSlotOverwrite(targetKey, incoming)) return; 
+    }
     
-    // 【重要】ここで saveImageState() を呼ばない
     clearUnsaved();
     cancelAnimation('zoom');
-    document.querySelectorAll('.asp-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-    currentAspectKey = targetKey; updateAspectBarVisibility(currentAspectKey);
+    document.querySelectorAll('.asp-btn').forEach(b => b.classList.remove('active')); 
+    btn.classList.add('active');
+    
+    currentAspectKey = targetKey; 
+    updateAspectBarVisibility(currentAspectKey);
+    
     if (isSplitPreviewActive) {
-        splitModePreservedAspect = currentAspectKey; resizeContainerToAspect(currentAspectKey); centerAllSplitImages(); 
+        splitModePreservedAspect = currentAspectKey; 
+        resizeContainerToAspect(currentAspectKey); 
+        centerAllSplitImages(); 
         if (isSpecial) setTimeout(() => saveSplitDataToSlot(currentAspectKey, true), 50);
         return;
     }
+    
     if (getActiveImg().naturalWidth) fitImage();
     if (isInLogoMode()) clampAllLogos();
     if (isSpecial) { assignedSlots[currentAspectKey] = currentPreviewData; saveImageState(); }
