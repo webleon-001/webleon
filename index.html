@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/heic-to@1.4.2/dist/iife/heic-to.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
 <script src="https://unpkg.com/ag-psd@14.3.2/dist/bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');
@@ -55,6 +56,8 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
 
 .help-btn { background: none; border: none; font-size: 1.4rem; cursor: pointer; padding: 0; transition: transform 0.15s; line-height: 1; margin-left: 4px; }
 .help-btn:hover { transform: scale(1.1); }
+.qr-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); width: 32px; height: 32px; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; transition: all 0.15s; color: var(--muted); }
+.qr-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); transform: scale(1.05); }
 
 .section-card { background: var(--card); padding: 28px; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); width: 100%; max-width: 900px; text-align: center; }
 
@@ -155,44 +158,8 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
 .custom-dialog-actions .btn { white-space: nowrap; }
 .dialog-overwrite-preview { display: block; width: 100%; max-height: 220px; margin: 14px auto 0; border-radius: var(--radius-sm); border: 1px solid #d4d4d8; background: #fff; object-fit: cover; }
 
-#logoLibStrip::-webkit-scrollbar { height: 6px; }
-#logoLibStrip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-.logo-lib-item { position:relative; flex-shrink:0; }
-.logo-lib-item img { width:36px; height:36px; object-fit:contain; cursor:pointer; border:1px solid var(--border); border-radius:4px; padding:2px; background:#fff; transition:border-color 0.2s; display:block; }
-.logo-lib-item img:hover { border-color:var(--accent); }
-.logo-lib-del { position:absolute; top:-5px; right:-5px; width:16px; height:16px; border-radius:50%; background:var(--danger); color:#fff; border:1.5px solid #fff; font-size:9px; line-height:1; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.2); opacity:0; transition:opacity 0.15s; }
-.logo-lib-item:hover .logo-lib-del { opacity:1; }
-
-.logo-container { position: absolute; transform-origin: center; user-select: none; cursor: move; touch-action: none; pointer-events: auto; }
-.logo-container.selected { outline: 2px dashed var(--accent); outline-offset: 2px; }
-.logo-container img { width: 100%; height: 100%; display: block; pointer-events: none; }
-.logo-handle { position: absolute; width: 14px; height: 14px; background: #fff; border: 2px solid var(--accent); border-radius: 50%; display: none; z-index: 10; touch-action: none; }
-.logo-container.selected .logo-handle { display: block; }
-.logo-handle.tl { top: -7px; left: -7px; cursor: nwse-resize; }
-.logo-handle.tr { top: -7px; right: -7px; cursor: nesw-resize; }
-.logo-handle.bl { bottom: -7px; left: -7px; cursor: nesw-resize; }
-.logo-handle.br { bottom: -7px; right: -7px; cursor: nwse-resize; }
-.logo-rot-handle { position: absolute; width: 26px; height: 26px; background: transparent; display: none; z-index: 9; touch-action: none; cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><path d='M10 2.5 A7.5 7.5 0 1 0 17.5 10' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round'/><polyline points='15,1 18,7 12,7' fill='none' stroke='%236366f1' stroke-width='2' stroke-linejoin='round'/></svg>") 10 10, crosshair; }
-.logo-rot-handle.tl { top: -27px; left: -27px; }
-.logo-rot-handle.tr { top: -27px; right: -27px; }
-.logo-rot-handle.bl { bottom: -27px; left: -27px; }
-.logo-rot-handle.br { bottom: -27px; right: -27px; }
-.logo-container.selected .logo-rot-handle { display: block; }
 input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
 input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); border-radius: 4px; }
-
-#logoLayer { transition: opacity 0.3s ease; opacity: 0; pointer-events: none; }
-#logoLayer.logo-layer-visible { opacity: 1; pointer-events: none; }
-@keyframes logoLibFadeIn { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
-#logoLibStrip img { animation: logoLibFadeIn 0.25s ease forwards; }
-#logoToolbarArea {
-    overflow: hidden; max-height: 0; opacity: 0; margin-bottom: 0 !important; pointer-events: none;
-    transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease, margin-bottom 0.3s ease;
-}
-#logoToolbarArea.logo-panel-open { max-height: 140px; opacity: 1; margin-bottom: 10px !important; pointer-events: auto; }
-#logoToggleBtn.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 500; }
-.logo-container.hidden-logo > img { opacity: 0.2; }
-.logo-container.hidden-logo { outline-style: dashed; }
 @keyframes pulseRed {
     0% { background-color: #ef4444; border-color: #ef4444; color: white; box-shadow: 0 0 0 rgba(239, 68, 68, 0.4); }
     50% { background-color: #f87171; border-color: #f87171; color: white; box-shadow: 0 0 10px rgba(239, 68, 68, 0.8); }
@@ -269,36 +236,6 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); bor
 #psdCropModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9500; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
 .psd-crop-wrap { background:var(--card); border-radius:var(--radius); width:fit-content; min-width:580px; max-width:96vw; max-height:96vh; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,0.5); border:1px solid var(--border); overflow:hidden; margin: 0 auto; }
 .psd-crop-asp-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:500; }
-/* 透明画像の削除ボタン */
-.logo-delete-btn {
-    position: absolute;
-    top: -16px;
-    right: -16px;
-    width: 26px;
-    height: 26px;
-    background: var(--danger);
-    color: #fff;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    line-height: 1;
-    cursor: pointer;
-    z-index: 20;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    pointer-events: auto;
-    transition: transform 0.1s, background 0.1s;
-}
-/* 選択中のみ表示 */
-.logo-container.selected .logo-delete-btn {
-    display: flex;
-}
-.logo-delete-btn:hover {
-    background: #dc2626;
-    transform: scale(1.1);
-}
 /* 画像選択中の誤操作防止用オーバーレイ */
 #selection-guard {
     position: fixed;
@@ -328,6 +265,10 @@ body.selecting-mode .version-label {
 body.selecting-mode #previewArea {
     margin-top: 80px !important;
 }
+
+#qrCodeCanvas img { display: none !important; }
+#qrCodeCanvas canvas { display: block; margin: 0 auto; }
+#qrCodeCanvas canvas:active { cursor: grabbing; }
 </style>
 </head>
 <body>
@@ -370,6 +311,20 @@ body.selecting-mode #previewArea {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             </button>
         </div>
+        <button id="qrBtn" class="qr-btn" title="QRコードを生成">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="4" y="4" width="4" height="4" rx="0.5"/>
+                <rect x="14" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="16" y="4" width="4" height="4" rx="0.5"/>
+                <rect x="2" y="14" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/>
+                <rect x="4" y="16" width="4" height="4" rx="0.5"/>
+                <rect x="14" y="14" width="3" height="3" rx="0.5"/>
+                <rect x="19" y="14" width="3" height="3" rx="0.5"/>
+                <rect x="14" y="19" width="3" height="3" rx="0.5"/>
+                <rect x="19" y="19" width="3" height="3" rx="0.5"/>
+            </svg>
+        </button>
         <button id="helpBtn" class="help-btn" title="説明を表示">💡</button>
     </div>
 </div>
@@ -404,16 +359,7 @@ body.selecting-mode #previewArea {
             <div class="preset-box" id="presetBox-special" draggable="true" onclick="openInPreset('special')" title="Specialプリセットで開く">
                 <canvas id="pc-special" width="71" height="40"></canvas><span>Special</span>
             </div>
-            <div style="width:1px; height:40px; background:var(--border); margin:0 4px; align-self:center; flex-shrink:0;"></div>
-            <div class="preset-box" id="presetBox-save1" draggable="true" onclick="openInPreset('save1')" title="保存1スロットで開く">
-                <canvas id="pc-save1" width="71" height="40"></canvas><span>保存1</span>
-            </div>
-            <div class="preset-box" id="presetBox-save2" draggable="true" onclick="openInPreset('save2')" title="保存2スロットで開く">
-                <canvas id="pc-save2" width="71" height="40"></canvas><span>保存2</span>
-            </div>
-            <div class="preset-box" id="presetBox-save3" draggable="true" onclick="openInPreset('save3')" title="保存3スロットで開く">
-                <canvas id="pc-save3" width="71" height="40"></canvas><span>保存3</span>
-            </div>
+
         </div>
         <div style="display:flex; gap:10px; align-items:center;">
             <input type="file" id="addFileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none">
@@ -428,9 +374,7 @@ body.selecting-mode #previewArea {
         <button class="close-inst-btn" id="closeInstBtn" title="閉じる">&times;</button>
         <strong>【基本仕様】</strong> 書き出しは自動で幅1200pxにリサイズされます（1200px未満はそのままか拡大かを選択可能）。日本語ファイル名はエラー防止のため自動で連番に変換されます。<br>
         <strong>【主な便利機能】</strong><br>
-        ・<strong>透明画像（ロゴ）合成：</strong>PNGに加え、PSD・AI・PDFファイルを読み込むと抽出してライブラリに登録・配置できます。※AIは<strong>PDF互換形式のみ</strong>対応。<br>
-        ・<strong>画像の分割・合成：</strong>プレビュー画面の「分割」から、2〜4枚の画像を1枚にまとめて書き出し・リスト追加が可能です。<br>
-        ・<strong>専用キャンバス保存：</strong>編集中に「Thumbnail」や「保存1」などのスロットへ状態を保持したままストックできます。<br>
+        ・<strong>専用キャンバス保存：</strong>編集中に「Thumbnail」などのスロットへ状態を保持したままストックできます。<br>
         <span style="display:block; margin-top:6px; color:var(--muted);">
             ※ 読み込みの目安として数百MB以上の大容量ZIPや、大量の重い画像（PSD/AI等）を一度に入れるとフリーズする場合があります。その場合ZIPは事前に解凍するか、数回に分けて追加してください。<br>
             ※ Shiftキーを押しながら「フォルダに書き出し」を押すとローカルフォルダへの直接書き出しも可能になります。
@@ -450,18 +394,6 @@ body.selecting-mode #previewArea {
     </div>
 </div>
 
-<div id="splitDialogModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px);">
-    <div class="custom-dialog-card">
-        <button class="custom-dialog-close" onclick="closeSplitDialog()" title="閉じる（キャンセル）">&times;</button>
-        <h3 class="custom-dialog-title">画面の分割</h3>
-        <p class="custom-dialog-message">プレビュー画面を何分割にしますか？</p>
-        <div class="custom-dialog-actions" style="gap:8px;">
-            <button class="btn btn-secondary" onclick="startSplitMode(2)">2分割</button>
-            <button class="btn btn-secondary" onclick="startSplitMode(3)">3分割</button>
-            <button class="btn btn-secondary" onclick="startSplitMode(4)">4分割</button>
-        </div>
-    </div>
-</div>
 
 <div id="alertModal">
   <div class="modal-content">
@@ -496,8 +428,6 @@ body.selecting-mode #previewArea {
                     <button class="asp-btn" data-key="4:3" onclick="setAspect(this)">4:3</button>
                     <button class="asp-btn" data-key="3:4" onclick="setAspect(this)">3:4</button>
                     <button class="asp-btn" data-key="2:3" onclick="setAspect(this)">2:3</button>
-                    <button class="asp-btn" id="splitModeBtn" onclick="openSplitDialog()">分割</button>
-                    <button class="asp-btn" id="logoToggleBtn" onclick="toggleLogoMode()">透明画像</button>
                     <button class="asp-btn" id="gridToggleBtn" onclick="toggleGrid()">グリッド</button>
                 </div>
                 
@@ -505,9 +435,6 @@ body.selecting-mode #previewArea {
                     <button class="asp-btn" data-key="thumb" onclick="setAspect(this)">Thumbnail</button>
                     <button class="asp-btn" data-key="og" onclick="setAspect(this)">OG</button>
                     <button class="asp-btn" data-key="special" onclick="setAspect(this)">Special</button>
-                    <button class="asp-btn split-save-btn" data-slot="save1" onclick="saveSplitDataToSlot('save1')" style="display:none; border-color:var(--accent); color:var(--accent);">保存1</button>
-                    <button class="asp-btn split-save-btn" data-slot="save2" onclick="saveSplitDataToSlot('save2')" style="display:none; border-color:var(--accent); color:var(--accent);">保存2</button>
-                    <button class="asp-btn split-save-btn" data-slot="save3" onclick="saveSplitDataToSlot('save3')" style="display:none; border-color:var(--accent); color:var(--accent);">保存3</button>
                     <button class="asp-btn btn-manual-save" onclick="performManualSave()" disabled>保存</button>
                 </div>
 
@@ -515,40 +442,19 @@ body.selecting-mode #previewArea {
                     <button class="asp-btn slot-assign-btn" data-slot="thumb" style="border-color:var(--accent); color:var(--accent);" onclick="assignCurrentToSlot('thumb')">Thumbnail</button>
                     <button class="asp-btn slot-assign-btn" data-slot="og" style="border-color:var(--accent); color:var(--accent);" onclick="assignCurrentToSlot('og')">OG</button>
                     <button class="asp-btn slot-assign-btn" data-slot="special" style="border-color:var(--accent); color:var(--accent);" onclick="assignCurrentToSlot('special')">Special</button>
-                    <button class="asp-btn slot-assign-btn" data-slot="save1" style="border-color:var(--accent); color:var(--accent);" onclick="assignCurrentToSlot('save1')">保存1</button>
-                    <button class="asp-btn slot-assign-btn" data-slot="save2" style="border-color:var(--accent); color:var(--accent);" onclick="assignCurrentToSlot('save2')">保存2</button>
-                  <button class="asp-btn slot-assign-btn" data-slot="save3" style="border-color:var(--accent); color:var(--accent);" onclick="assignCurrentToSlot('save3')">保存3</button>
 <button class="asp-btn btn-manual-save" onclick="performManualSave()" disabled>保存</button>
                 </div>
             </div>
             
-            <div id="splitToolbarArea" style="display:none; align-items:center; flex-wrap:nowrap; transition: width 0.26s ease; margin-bottom:6px;"></div>
 
-            <div id="logoToolbarArea" style="align-items:center; gap:10px; flex-wrap:wrap; background: var(--bg); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); width: 100%; transition: width 0.26s ease; display:flex;">
-                <div id="logoLibStrip" style="display:flex; gap:8px; overflow-x:auto; padding:4px; min-height:44px; flex:1; border: 1.5px dashed var(--border); border-radius: 6px; align-items: center; background: #fff;"></div>
-                <input type="file" id="logoFileInput" accept="image/png" multiple style="display:none">
-                <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
-                <div style="position:relative;" id="pngAddWrapper">
-                    <button id="pngAddBtn" onclick="openPngAddDialog()" style="padding:5px 12px; font-size:0.75rem; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer; transition:all 0.15s; white-space:nowrap;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">＋ 透明画像追加</button>
-                </div>
-                <input type="file" id="pngAddFileInput" accept=".png,.psd,.ai" multiple style="display:none">
-                    <div style="width:1px; height:20px; background:var(--border); flex-shrink:0;"></div>
-                    <div style="display:flex; align-items:center; gap:4px;">
-                        <span style="font-size:0.7rem; color: var(--muted);">色</span>
-                        <input type="color" id="logoColorPicker" value="#ffffff" title="選択中のPNGの色を変更" style="width: 26px; height: 26px; border: none; background: none; cursor: pointer; padding: 0;">
-                    </div>
-                    <button id="logoCropBtn" onclick="openLogoCropEditor()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 100px; border: none; background: #6366f1; color: white; cursor: pointer; transition: background 0.15s; display: none;">切り抜き</button>
- 
-                </div>
-            </div>
+            <div id="logoToolbarArea" style="display:none;"></div>
 
             <div id="zoomContainer" style="position:relative; overflow:hidden; background:var(--bg); border-radius:0; cursor:grab; user-select:none; transition: width 0.26s ease, height 0.26s ease;">
                 <img id="previewImg0" class="preview-layer" src="" alt="拡大">
                 <img id="previewImg1" class="preview-layer" src="" alt="拡大">
                 
-                <div id="logoLayer" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:40; overflow:hidden;"></div>
+                <div id="logoLayer" style="display:none;"></div>
 
-                <div id="splitContainer" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:30; background:transparent; flex-direction:row; flex-wrap:nowrap;"></div>
 
                 <div id="overallGridOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:50; background-size:50px 50px; background-image:linear-gradient(to right, rgba(0, 200, 255, 0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 200, 255, 0.4) 1px, transparent 1px); background-position:calc(50% + 25px) calc(50% + 25px);"></div>
             </div>
@@ -664,22 +570,7 @@ function isSplitStateChanged(oldStates, newStates) {
     }
     return false;
 }
-function isLogoStateChanged(oldLogos, newLogos) {
-    if (!oldLogos || !newLogos || oldLogos.length !== newLogos.length) return true;
-    for (let i = 0; i < oldLogos.length; i++) {
-        const o = oldLogos[i], n = newLogos[i];
-        if (
-            o.id !== n.id ||
-            o.src !== n.src ||
-            o.color !== n.color ||
-            Math.round(o.x) !== Math.round(n.x) ||
-            Math.round(o.y) !== Math.round(n.y) ||
-            o.scale.toFixed(3) !== n.scale.toFixed(3) ||
-            Math.round(o.angle) !== Math.round(n.angle)
-        ) return true;
-    }
-    return false;
-}
+function isLogoStateChanged(oldLogos, newLogos) { return false; }
 function forceClearUnsaved() {
     hasUnsavedChanges = false;
     document.querySelectorAll('.btn-manual-save').forEach(btn => {
@@ -1827,8 +1718,8 @@ function removeSplitImage(index) {
     }
 }
 function renderSplitContainer() {
-    const container = byId('splitContainer'); container.style.display = 'flex'; container.innerHTML = '';
-    const tArea = byId('splitToolbarArea'); tArea.style.display = 'flex'; tArea.innerHTML = '';
+    const container = byId('splitContainer'); if (!container) return; container.style.display = 'flex'; container.innerHTML = '';
+    const tArea = byId('splitToolbarArea'); if (!tArea) return; tArea.style.display = 'flex'; tArea.innerHTML = '';
 
     splitSelectedImages.forEach((data, index) => {
         const state = splitStates[index];
@@ -1967,14 +1858,10 @@ function restoreSplitPreview(data, aspectKey) {
 
     const isSlot = ['thumb','og','special','save1','save2','save3'].includes(currentAspectKey);
     const ms = data._modeStates?.[currentAspectKey];
-    const logosData = data._logos || (ms?.logos ? { cw: ms.cw, ch: ms.ch, items: ms.logos } : null);
-    const hasLogos = logosData && logosData.items && logosData.items.length > 0;
+    const logosData = null; const hasLogos = false;
     if (hasLogos) {
-        currentLogos = JSON.parse(JSON.stringify(logosData.items)); activeLogoId = null; showLogoLayer();
-        if (!logoModeActive) { logoModeActive = true; requestAnimationFrame(() => byId('logoToolbarArea').classList.add('logo-panel-open')); const lb = byId('logoToggleBtn'); if (lb) lb.classList.add('active'); }
-        clampAllLogos();
+        // logo feature removed
     } else {
-        if (logoModeActive) { logoModeActive = false; byId('logoToolbarArea').classList.remove('logo-panel-open'); const lb = byId('logoToggleBtn'); if (lb) lb.classList.remove('active'); }
         hideLogoLayer(); currentLogos = []; byId('logoLayer').innerHTML = '';
     }
     setTimeout(() => { isPreviewLoading = false; updateSavedState(); }, 150); // ★変更
@@ -2510,18 +2397,12 @@ async function assignCurrentToSlot(preset) {
     if (!currentPreviewData) return;
     const inPresetView = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey);
     const targetPresets = { 'thumb': 'Thumbnail', 'og': 'OG', 'special': 'Special' };
-    const isTransitionTarget = !!targetPresets[preset] && currentAspectKey !== preset;
 
-    const confirmResult = await confirmSlotOverwrite(preset, inPresetView ? null : currentPreviewData, isTransitionTarget);
+    // slotAssignBarからの保存は遷移を行わない（元画像の比率を変えない）
+    const confirmResult = await confirmSlotOverwrite(preset, inPresetView ? null : currentPreviewData, false);
     if (!confirmResult) return;
 
-    if (confirmResult === 'transit') {
-        const btn = document.querySelector(`.asp-btn[data-key="${preset}"]`);
-        if (btn) await setAspect(btn, true, true);
-        return;
-    }
-
-    refreshGlobalTimestamp(); // 全体の日時更新
+    refreshGlobalTimestamp();
 
     const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
     if (isBgVisible(imgX, imgY, imgW, imgH, rot, targetCw || zoomContainer.clientWidth, targetCh || zoomContainer.clientHeight)) {
@@ -2531,42 +2412,24 @@ async function assignCurrentToSlot(preset) {
 
     const d = { ...currentPreviewData, _modeStates: JSON.parse(JSON.stringify(currentPreviewData._modeStates || {})) };
     d._modeStates[preset] = { sat: byId('satSlider').value, bri: byId('conSlider').value, sharp: byId('sharpSlider').value, rot: byId('rotSlider') ? byId('rotSlider').value : 0, cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, imgX, imgY, imgW, imgH };
-    if (isInLogoMode() && currentLogos.length > 0) {
-        d._logos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: JSON.parse(JSON.stringify(currentLogos)) };
-        d._modeStates[preset].logos = JSON.parse(JSON.stringify(currentLogos));
-    }
     d._lastAspectKey = preset;
     assignedSlots[preset] = d;
     renderPresetCanvas(preset);
-    
+
     if (!inPresetView) {
         const target = processedImages.find(p => p.originalName === d.originalName && p.originalWidth === d.originalWidth);
         if (target) { delete target._modeStates; delete target._logos; target._lastAspectKey = 'free'; }
         renderAllThumbs();
     }
-    
+
     await saveAppState();
 
-    let displayName = preset.replace('save', '保存');
+    let displayName = preset;
     if (preset === 'thumb') displayName = 'Thumbnail';
     else if (preset === 'og') displayName = 'OG';
     else if (preset === 'special') displayName = 'Special';
 
-    if (isTransitionTarget) {
-        const wantsToTransit = await showCustomDialog({
-            title: '保存完了',
-            message: `${displayName} スロットに保存しました。<br>続けて「${targetPresets[preset]}」キャンバスに遷移しますか？`,
-            okText: 'はい',
-            cancelText: 'いいえ',
-            type: 'confirm'
-        });
-        if (wantsToTransit) {
-            const btn = document.querySelector(`.asp-btn[data-key="${preset}"]`);
-            if (btn) await setAspect(btn, true, false); 
-        }
-    } else {
-        showToast(`${displayName} スロットに保存しました`);
-    }
+    showToast(`${displayName} スロットに保存しました`);
 }
 
 async function exportCroppedView(e) {
@@ -3121,7 +2984,7 @@ function renderAllThumbs() {
                 ${statusBadges}
                 <img src="${data.thumbUrl}" class="thumb-inner-img" style="${imgStyle}">
             </div>
-            <span class="thumb-name" style="display:flex;align-items:center;justify-content:center;">
+            <span class="thumb-name" style="text-align:center;">
                 ${highlightJapanese(truncateName(data.exportName))}${editedDot}
             </span>
             <span class="thumb-dimensions">${data.originalWidth}x${data.originalHeight} px</span>`;
@@ -3179,7 +3042,7 @@ async function closeImagePreview(skipCheck = false) {
 
     forceClearUnsaved(); // ★変更
     disableSplitPreview();
-    if (logoModeActive) { logoModeActive = false; byId('logoToolbarArea').classList.remove('logo-panel-open'); hideLogoLayer(); const lb = byId('logoToggleBtn'); if (lb) lb.classList.remove('active'); }
+    if (logoModeActive) { logoModeActive = false; hideLogoLayer(); }
     imagePreviewModal.style.opacity = '0'; 
     setTimeout(() => { imagePreviewModal.style.display = 'none'; byId('previewImg0').style.opacity = 0; byId('previewImg1').style.opacity = 0; }, 260);
 }
@@ -3383,7 +3246,7 @@ function showImagePreview(dataOrIndex, forcePreset) {
         const logosData = data._logos || (legacyLogos ? { cw: data._modeStates[aspKey].cw, ch: data._modeStates[aspKey].ch, items: legacyLogos } : null); 
         const hasLogos = logosData && logosData.items && logosData.items.length > 0;
 
-        if (hasLogos) { currentLogos = JSON.parse(JSON.stringify(logosData.items)); activeLogoId = null; showLogoLayer(); if (!logoModeActive) { logoModeActive = true; requestAnimationFrame(() => byId('logoToolbarArea').classList.add('logo-panel-open')); const lb = byId('logoToggleBtn'); if (lb) lb.classList.add('active'); } clampAllLogos(); } else if (logoModeActive) { logoModeActive = false; byId('logoToolbarArea').classList.remove('logo-panel-open'); const lb = byId('logoToggleBtn'); if (lb) lb.classList.remove('active'); hideLogoLayer(); currentLogos = []; byId('logoLayer').innerHTML = ''; } else { hideLogoLayer(); byId('logoLayer').innerHTML = ''; currentLogos = []; }
+        if (true) { hideLogoLayer(); byId('logoLayer').innerHTML = ''; currentLogos = []; }
         if (!isInitialOpen) { const oldImg = byId('previewImg' + (activeLayer === 0 ? 1 : 0)); oldImg.style.opacity = 0; oldImg.style.zIndex = 1; nextImg.style.zIndex = 2; } else nextImg.style.zIndex = 2;
         void nextImg.offsetWidth; nextImg.style.opacity = 1; byId('previewMetaName').innerHTML = highlightJapanese(data.exportName); byId('previewMetaInfo').innerHTML = `${data.isSmall ? `<span class="highlight-red" style="font-weight:bold;">${data.originalWidth}</span>` : data.originalWidth}×${data.originalHeight}px`;
         
@@ -3823,255 +3686,40 @@ assignedSlots[preset] = newSlotData;
     });
 });
 
-let savedLogos = JSON.parse(localStorage.getItem('webLeonLogos') || '[]');
-let currentLogos = []; let activeLogoId = null; let logoAction = null; 
+// ---- Logo feature stubs (feature removed) ----
+let savedLogos = []; let currentLogos = []; let activeLogoId = null; let logoAction = null; let logoModeActive = false;
 function generateId() { return Math.random().toString(36).substr(2, 9); }
-
-// ---- PNG Add D&D Dialog ----
-function openPngAddDialog() { byId('pngAddDialog').style.display = 'flex'; }
-function closePngAddDialog() { byId('pngAddDialog').style.display = 'none'; }
-
-byId('pngAddFileInput').addEventListener('change', (e) => {
-    handlePngAddFiles(e.target.files); e.target.value = '';
-});
-
-
-
-function detectLogoThumbBg(imgEl, src) {
-    const probe = new Image();
-    probe.onload = () => {
-        try {
-            const SZ = 40;
-            const cvs = document.createElement('canvas'); cvs.width = SZ; cvs.height = SZ;
-            const ctx = cvs.getContext('2d'); ctx.drawImage(probe, 0, 0, SZ, SZ);
-            // Sample 12 points along the border
-            const pts = [
-                [0,0],[SZ-1,0],[0,SZ-1],[SZ-1,SZ-1],
-                [SZ>>1,0],[SZ>>1,SZ-1],[0,SZ>>1],[SZ-1,SZ>>1],
-                [3,3],[SZ-4,3],[3,SZ-4],[SZ-4,SZ-4]
-            ];
-            let lightOpaque = 0, totalOpaque = 0;
-            for (const [px, py] of pts) {
-                const d = ctx.getImageData(px, py, 1, 1).data;
-                if (d[3] > 40) {          // non-transparent
-                    totalOpaque++;
-                    if (d[0] > 215 && d[1] > 215 && d[2] > 215) lightOpaque++; // near-white
-                }
-            }
-            // >55% of opaque border pixels are light → image has white background
-            if (totalOpaque > 0 && lightOpaque / totalOpaque > 0.55) {
-                imgEl.style.background = '#1a1a1a';
-                imgEl.title = '白背景のため黒表示';
-            }
-        } catch(e) {} // tainted canvas (cross-origin) → ignore
-    };
-    probe.src = src;
-}
-async function handlePngAddFiles(files) {
-    if (!files || !files.length) return;
-    closePngAddDialog();
-    
-    let addedPngCount = 0;
-    let psdOrAiFile = null;
-
-    for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const ext = file.name.split('.').pop().toLowerCase();
-        
-        if (ext === 'png') {
-            await new Promise(resolve => {
-                const reader = new FileReader();
-                reader.onload = ev => {
-                    savedLogos.push(ev.target.result);
-                    if (savedLogos.length > 16) savedLogos.shift();
-                    addedPngCount++;
-                    resolve();
-                };
-                reader.readAsDataURL(file);
-            });
-        } else if ((ext === 'psd' || ext === 'ai' || ext === 'pdf') && !psdOrAiFile) {
-            psdOrAiFile = file;
-        }
-    }
-
-    if (addedPngCount > 0) {
-        localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos));
-        renderLogoLibrary();
-        showToast(`${addedPngCount}枚の透明画像をライブラリに追加しました`);
-    }
-
-    if (psdOrAiFile) {
-        const ext = psdOrAiFile.name.split('.').pop().toLowerCase();
-        if (ext === 'psd') {
-            await parsePsdForLayers(psdOrAiFile);
-        } else if (ext === 'pdf' || ext === 'ai') {
-            // 新しく追加するPDF解析関数を呼び出す
-            await parsePdfForLayers(psdOrAiFile);
-        }
-    } else if (addedPngCount === 0) {
-        await showCustomDialog({ title: '非対応形式', message: '透明画像(PNG)・PSD・AI・PDF ファイルを選択してください。', okText: '閉じる', type: 'alert' });
-    }
-}
-function renderLogoLibrary() {
-    const strip = byId('logoLibStrip'); if (!strip) return; strip.innerHTML = '';
-    if (savedLogos.length === 0) { strip.innerHTML = '<span style="font-size:0.65rem; color:var(--muted); margin:auto; pointer-events:none;">透明画像を追加してください</span>'; return; }
-    savedLogos.forEach((src, idx) => {
-        const wrap = document.createElement('div'); wrap.className = 'logo-lib-item';
-        const img = document.createElement('img'); img.src = src; img.draggable = true; img.onclick = () => selectLogoForOverlay(src);
-        img.ondragstart = (e) => { e.dataTransfer.setData('text/plain', 'logo:' + src); e.dataTransfer.effectAllowed = 'copy'; if (!logoModeActive) toggleLogoMode(); };
-        detectLogoThumbBg(img, src); // 白背景PNGはサムネイルを黒背景に
-        const del = document.createElement('div'); del.className = 'logo-lib-del'; del.textContent = '×';
-        del.onclick = (e) => { e.stopPropagation(); savedLogos.splice(idx, 1); localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos)); renderLogoLibrary(); };
-        wrap.appendChild(img); wrap.appendChild(del); strip.appendChild(wrap);
-    });
-}
-window.addEventListener('DOMContentLoaded', renderLogoLibrary);
-
-const logoFileInput = byId('logoFileInput');
-if (logoFileInput) {
-    logoFileInput.addEventListener('change', e => {
-        const files = Array.from(e.target.files).filter(f => f.type === 'image/png');
-        files.forEach(f => { const reader = new FileReader(); reader.onload = ev => { savedLogos.push(ev.target.result); if (savedLogos.length > 16) savedLogos.shift(); localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos)); renderLogoLibrary(); }; reader.readAsDataURL(f); });
-        e.target.value = '';
-    });
-}
-
-function selectLogoForOverlay(src, dropX, dropY) {
-    const tmp = new Image();
-    const onTmpLoad = () => {
-        const cw = targetCw || zoomContainer.clientWidth, ch = targetCh || zoomContainer.clientHeight;
-        const initialScale = (cw * 0.25) / tmp.naturalWidth;
-        const targetX = dropX !== undefined ? dropX : cw / 2;
-        const targetY = dropY !== undefined ? dropY : ch / 2;
-        const newLogo = { id: generateId(), src: src, colorizedSrc: null, color: '#ffffff', x: targetX, y: targetY, scale: initialScale, angle: 0, baseW: tmp.naturalWidth, baseH: tmp.naturalHeight, hidden: false };
-        currentLogos.push(newLogo); activeLogoId = newLogo.id; clampLogoPos(newLogo); applyLogoStyles(); markUnsaved();
-    };
-    tmp.onload = () => { if (tmp.naturalWidth) onTmpLoad(); }; tmp.src = src; if(tmp.complete && tmp.naturalWidth) { tmp.onload = null; onTmpLoad(); }
-}
-
-let logoModeActive = false;
-function showLogoLayer() { byId('logoLayer').classList.add('logo-layer-visible'); }
-function hideLogoLayer() { byId('logoLayer').classList.remove('logo-layer-visible'); }
-function isInLogoMode() { return logoModeActive; }
-
-function toggleLogoMode() {
-    if (logoModeActive) return;
-    logoModeActive = true; const toolbar = document.getElementById('logoToolbarArea'), btn = document.getElementById('logoToggleBtn');
-    showLogoLayer(); requestAnimationFrame(() => toolbar.classList.add('logo-panel-open')); btn.classList.add('active'); btn.style.pointerEvents = 'none';
-    if (currentPreviewData) {
-        const asp = currentPreviewData._lastAspectKey || 'free';
-        const legacyLogos = currentPreviewData._modeStates?.[asp]?.logos;
-        const logosData = currentPreviewData._logos || (legacyLogos ? { cw: currentPreviewData._modeStates[asp].cw, ch: currentPreviewData._modeStates[asp].ch, items: legacyLogos } : null);
-        currentLogos = logosData ? JSON.parse(JSON.stringify(logosData.items || [])) : [];
-    } else { currentLogos = []; }
-    activeLogoId = null; clampAllLogos();
-}
-
-function clampLogoPos(logo) {
-    const cw = targetCw || zoomContainer.clientWidth, ch = targetCh || zoomContainer.clientHeight, rad = logo.angle * Math.PI / 180, ac = Math.abs(Math.cos(rad)), as = Math.abs(Math.sin(rad));
-    let boxW = logo.baseW * logo.scale * ac + logo.baseH * logo.scale * as, boxH = logo.baseW * logo.scale * as + logo.baseH * logo.scale * ac;
-    if (boxW > cw || boxH > ch) { const scaleX = cw / (logo.baseW * ac + logo.baseH * as), scaleY = ch / (logo.baseW * as + logo.baseH * ac); logo.scale = Math.min(scaleX, scaleY); boxW = logo.baseW * logo.scale * ac + logo.baseH * logo.scale * as; boxH = logo.baseW * logo.scale * as + logo.baseH * logo.scale * ac; }
-    const hw = boxW / 2, hh = boxH / 2;
-    logo.x = Math.max(hw, Math.min(cw - hw, logo.x)); logo.y = Math.max(hh, Math.min(ch - hh, logo.y));
-}
-
-function clampAllLogos() { if (currentLogos && currentLogos.length) { currentLogos.forEach(logo => clampLogoPos(logo)); } applyLogoStyles(); }
-
-function updateLogoSelection() {
-    document.querySelectorAll('.logo-container').forEach(el => { el.classList.toggle('selected', el.dataset.id === activeLogoId); });
-    const logo = currentLogos.find(l => l.id === activeLogoId); 
-    if (logo) {
-        const picker = document.getElementById('logoColorPicker');
-        if (picker) picker.value = logo.color;
-    }
-    // 切り抜きボタンの表示制御
-    const cropBtn = document.getElementById('logoCropBtn');
-    if (cropBtn) cropBtn.style.display = activeLogoId ? 'inline-block' : 'none';
-}
-
-function removeSelectedLogo() {
-    if (!activeLogoId) return;
-    currentLogos = currentLogos.filter(l => l.id !== activeLogoId); activeLogoId = null; applyLogoStyles();
-    if (currentPreviewData) { if (currentPreviewData._logos) currentPreviewData._logos.items = [...currentLogos]; if (currentPreviewData._modeStates) { Object.values(currentPreviewData._modeStates).forEach(ms => { if (ms && ms.logos) ms.logos = [...currentLogos]; }); } }
-    markUnsaved();
-}
-
-async function clearAllLogos() {
-    const confirmClear = await showCustomDialog({
-        title: '透明画像の全消去',
-        message: 'すべての透明画像を消去しますか？',
-        okText: '消去する',
-        okClass: 'btn btn-danger',
-        cancelText: 'キャンセル',
-        type: 'confirm'
-    });
-    if(!confirmClear) return;
-
-    currentLogos = []; activeLogoId = null; applyLogoStyles();
-    if (currentPreviewData) { 
-        if (currentPreviewData._logos) currentPreviewData._logos.items = []; 
-        if (currentPreviewData._modeStates) { 
-            Object.values(currentPreviewData._modeStates).forEach(ms => { 
-                if (ms && ms.logos) ms.logos = []; 
-            }); 
-        } 
-    }
-    markUnsaved();
-}
-
-function colorizeLogo(logo, targetColor) {
-    logo.color = targetColor; const img = new Image();
-    const onColLoad = () => { const cvs = document.createElement('canvas'); cvs.width = img.width; cvs.height = img.height; const ctx = cvs.getContext('2d'); ctx.drawImage(img, 0, 0); ctx.globalCompositeOperation = 'source-in'; ctx.fillStyle = targetColor; ctx.fillRect(0, 0, cvs.width, cvs.height); logo.colorizedSrc = cvs.toDataURL('image/png'); applyLogoStyles(); };
-    img.onload = () => { if (img.naturalWidth) onColLoad(); }; img.src = logo.src; if(img.complete && img.naturalWidth) { img.onload = null; onColLoad(); }
-}
-
-byId('logoColorPicker').oninput = (e) => { if (!activeLogoId) return; const logo = currentLogos.find(l => l.id === activeLogoId); if (logo) { colorizeLogo(logo, e.target.value); markUnsaved(); } };
-
-function applyLogoStyles() {
-    const layer = byId('logoLayer'); layer.innerHTML = '';
-    currentLogos.forEach(logo => {
-        const container = document.createElement('div'); let cls = 'logo-container'; if (logo.id === activeLogoId) cls += ' selected'; if (logo.hidden) cls += ' hidden-logo'; container.className = cls; container.dataset.id = logo.id;
-        const w = logo.baseW * logo.scale, h = logo.baseH * logo.scale; container.style.width = w + 'px'; container.style.height = h + 'px'; container.style.left = logo.x + 'px'; container.style.top = logo.y + 'px'; container.style.transform = `translate(-50%, -50%) rotate(${logo.angle}deg)`;
-        const img = document.createElement('img'); img.src = logo.colorizedSrc || logo.src; container.appendChild(img);
-        ['tl','tr','bl','br'].forEach(n => { const rh = document.createElement('div'); rh.className = `logo-rot-handle ${n}`; container.appendChild(rh); });
-        ['tl','tr','bl','br'].forEach(n => { const handle = document.createElement('div'); handle.className = `logo-handle ${n}`; container.appendChild(handle); });
-        
-        // ★ 削除ボタンの追加
-        const delBtn = document.createElement('div');
-        delBtn.className = 'logo-delete-btn';
-        delBtn.innerHTML = '&times;';
-        delBtn.title = '削除';
-        
-        // クリックやドラッグイベントが親に誤爆しないよう保護
-        delBtn.onmousedown = (e) => { e.stopPropagation(); e.preventDefault(); };
-        delBtn.onclick = (e) => { 
-            e.stopPropagation(); 
-            activeLogoId = logo.id; 
-            removeSelectedLogo(); 
-        };
-        // スマートフォン/タブレットのタップ対応
-        delBtn.ontouchstart = (e) => { 
-            e.stopPropagation(); 
-            e.preventDefault(); 
-            activeLogoId = logo.id; 
-            removeSelectedLogo(); 
-        };
-        
-        container.appendChild(delBtn);
-        layer.appendChild(container);
-    });
-    updateLogoSelection();
-}
+function isInLogoMode() { return false; }
+function toggleLogoMode() {}
+function showLogoLayer() {}
+function hideLogoLayer() {}
+function clampLogoPos() {}
+function clampAllLogos() {}
+function updateLogoSelection() {}
+function applyLogoStyles() {}
+function renderLogoLibrary() {}
+function openPngAddDialog() {}
+function closePngAddDialog() {}
+function handlePngAddFiles() {}
+function selectLogoForOverlay() {}
+function removeSelectedLogo() {}
+function clearAllLogos() {}
+function colorizeLogo() {}
+function detectLogoThumbBg() {}
+function openLogoCropEditor() {}
+function confirmLogoCrop() {}
+function confirmPsdCropToLogo() {}
+function registerLayersToPngLibrary() {}
 
 zoomContainer.addEventListener('dragover', (e) => { if (e.dataTransfer.types.includes('text/plain')) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
 zoomContainer.addEventListener('drop', (e) => {
     const data = e.dataTransfer.getData('text/plain');
-    if (data && data.startsWith('logo:')) {
-        e.preventDefault(); e.stopPropagation();
-        const src = data.replace('logo:', ''), rect = zoomContainer.getBoundingClientRect(), dropX = e.clientX - rect.left, dropY = e.clientY - rect.top;
-        selectLogoForOverlay(src, dropX, dropY);
-    }
+    if (data && data.startsWith('logo:')) { e.preventDefault(); e.stopPropagation(); }
 });
+
+
+
+
 
 // ============================================================
 // PSD Layer Export Feature
@@ -5178,36 +4826,115 @@ async function exportPsdLayersIndividual() {
     closePsdLayerModal();
     showToast(`✦ ${selected.length}レイヤーをZIPで書き出し完了`);
 }
-</script>
+// ============================================================
+// QR Code Generator
+// ============================================================
+byId('qrBtn').addEventListener('click', () => {
+    byId('qrDialog').style.display = 'flex';
+    byId('qrUrlInput').focus();
+    byId('qrCodeArea').style.display = 'none';
+    byId('qrErrorMsg').style.display = 'none';
+    byId('qrUrlInput').value = '';
+    byId('qrCodeCanvas').innerHTML = '';
+});
 
-<!-- PNG Add D&D Dialog -->
-<div id="pngAddDialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:9600; align-items:center; justify-content:center; backdrop-filter:blur(6px);" onclick="if(event.target===this)closePngAddDialog()">
-  <div style="background:var(--card); border-radius:var(--radius); width:90%; max-width:440px; box-shadow:0 20px 60px rgba(0,0,0,0.3); border:1px solid var(--border); overflow:hidden;">
-    <div style="padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-      <h3 style="margin:0; font-size:1rem; font-weight:500; color:var(--text);">透明画像ライブラリに追加</h3>
-      <button onclick="closePngAddDialog()" style="background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;padding:0;line-height:1;">&times;</button>
-    </div>
-    <div style="padding:20px;">
-      <div id="pngAddDrop"
-        style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:36px 20px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--bg);"
-        onclick="byId('pngAddFileInput').click()"
-        ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--accent-soft)';"
-        ondragleave="this.style.borderColor='var(--border)'; this.style.background='var(--bg)';"
-        ondrop="event.preventDefault(); this.style.borderColor='var(--border)'; this.style.background='var(--bg)'; handlePngAddFiles(event.dataTransfer.files);">
-        <div style="font-size:2rem; margin-bottom:10px; pointer-events:none;">📂</div>
-        <div style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:6px; pointer-events:none;">ここにファイルをドロップ</div>
-        <div style="font-size:0.78rem; color:var(--muted); margin-bottom:16px; pointer-events:none;">またはクリックして選択</div>
-        <div style="display:inline-flex; gap:8px; pointer-events:none;">
-          <span style="font-size:0.7rem; background:#e0e7ff; color:#4338ca; padding:3px 8px; border-radius:4px; font-weight:500;">PNG</span>
-          <span style="font-size:0.7rem; background:#fce7f3; color:#9d174d; padding:3px 8px; border-radius:4px; font-weight:500;">PSD</span>
-          <span style="font-size:0.7rem; background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:4px; font-weight:500;">AI</span>
-          <span style="font-size:0.7rem; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:4px; font-weight:500;">PDF</span>
-        </div>
-      </div>
-      <p style="margin:10px 0 0; font-size:0.72rem; color:var(--muted); text-align:center; line-height:1.5;">ファイル形式は自動判別。PSD・AI・PDFはレイヤー抽出画面へ移行します。<br>（※AIはPDF互換のみ）</p>
-    </div>
-  </div>
-</div>
+function closeQrDialog() {
+    byId('qrDialog').style.display = 'none';
+}
+
+function generateQrCode() {
+    const url = byId('qrUrlInput').value.trim();
+    const errEl = byId('qrErrorMsg');
+    const area = byId('qrCodeArea');
+    const container = byId('qrCodeCanvas');
+
+    errEl.style.display = 'none';
+    if (!url) {
+        errEl.textContent = 'URLを入力してください。';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    container.innerHTML = '';
+    area.style.display = 'none';
+    area.classList.remove('qr-visible');
+
+    try {
+        new QRCode(container, {
+            text: url,
+            width: 280,
+            height: 280,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        setTimeout(() => {
+            const canvas = container.querySelector('canvas');
+            if (!canvas) return;
+            // サイズ設定・中央配置
+            canvas.style.width  = '280px';
+            canvas.style.height = '280px';
+            canvas.style.display = 'block';
+            canvas.style.margin = '0 auto';
+            canvas.style.cursor = 'grab';
+            canvas.title = 'デスクトップにドラッグして保存できます';
+            // ドラッグ&ドロップでPCに保存
+            canvas.draggable = true;
+            canvas.addEventListener('dragstart', (e) => {
+                // 400×400の高解像度版を生成してドロップデータにセット
+                const tmp = document.createElement('canvas');
+                tmp.width = 400; tmp.height = 400;
+                tmp.getContext('2d').drawImage(canvas, 0, 0, 400, 400);
+                e.dataTransfer.setData('DownloadURL',
+                    `image/png:webleon_qr.png:${tmp.toDataURL('image/png')}`);
+            });
+            // 明るさ0でエリアを表示
+            canvas.style.transition = 'none';
+            canvas.style.filter = 'brightness(0)';
+            area.style.display = 'block';
+            // リフロー後に明るさ100へ
+            void canvas.offsetHeight;
+            canvas.style.transition = 'filter 0.3s ease';
+            canvas.style.filter = 'brightness(1)';
+        }, 50);
+    } catch (e) {
+        errEl.textContent = 'QRコードの生成に失敗しました。URLを確認してください。';
+        errEl.style.display = 'block';
+    }
+}
+
+function downloadQrCode() {
+    const url = byId('qrUrlInput').value.trim();
+    if (!url) return;
+    // Re-generate at 400x400 in a hidden off-screen container for full resolution download
+    const hidden = document.createElement('div');
+    hidden.style.cssText = 'position:fixed;left:-9999px;top:-9999px;visibility:hidden;';
+    document.body.appendChild(hidden);
+    try {
+        new QRCode(hidden, {
+            text: url,
+            width: 400,
+            height: 400,
+            colorDark: '#000000',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        setTimeout(() => {
+            const canvas = hidden.querySelector('canvas');
+            if (canvas) {
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL('image/png');
+                a.download = 'webleon_qr.png';
+                a.click();
+            }
+            document.body.removeChild(hidden);
+        }, 100);
+    } catch(e) {
+        document.body.removeChild(hidden);
+    }
+}
+
+</script>
 
 <!-- PSD Crop Editor Modal -->
 <div id="psdCropModal">
@@ -5228,7 +4955,6 @@ async function exportPsdLayersIndividual() {
       <button class="asp-btn psd-crop-asp-btn" data-ratio="1.778" onclick="setCropAspect(16/9)">16:9</button>
       <div style="width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0;"></div>
       <button class="asp-btn" onclick="resetCropRect()" title="全体を選択">全体</button>
-
       <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
         <span style="font-size:0.7rem;color:var(--muted);font-weight:500;white-space:nowrap;">背景</span>
         <button class="asp-btn psd-crop-bg-btn" data-bg="transparent" onclick="setPsdCropBg('transparent')">透明</button>
@@ -5241,15 +4967,10 @@ async function exportPsdLayersIndividual() {
     </div>
     <div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; flex-wrap:wrap;">
       <button class="btn btn-secondary" onclick="closePsdCropModal()">キャンセル</button>
-      
       <div id="psdCropNormalBtns" style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="btn" style="background:#10b981;color:#fff;" onclick="confirmPsdCropToLogo()">透明画像に追加</button>
         <button class="btn" style="background:#8b5cf6;color:#fff;" onclick="confirmPsdCropToList()">この範囲を一覧に追加</button>
       </div>
-
-      <div id="psdCropLogoBtns" style="display:none; gap:10px; flex-wrap:wrap;">
-        <button class="btn" style="background:#6366f1;color:#fff;" onclick="confirmLogoCrop()">この画像に適用</button>
-      </div>
+      <div id="psdCropLogoBtns" style="display:none; gap:10px; flex-wrap:wrap;"></div>
     </div>
   </div>
 </div>
@@ -5271,10 +4992,32 @@ async function exportPsdLayersIndividual() {
       <span class="psd-sel-count" id="psdSelCount">0 / 0 レイヤー選択中</span>
     </div>
     <div class="psd-modal-body" id="psdLayerList"></div>
-<div class="psd-modal-foot">
+    <div class="psd-modal-foot">
       <button class="btn btn-secondary" onclick="closePsdLayerModal()">キャンセル</button>
       <button class="btn" style="background:#6366f1;color:#fff;" onclick="registerLayersToThumbnailList()" title="選択したレイヤーをメインの画像リストに追加">📋 一覧に追加</button>
-      <button class="btn" style="background:#10b981;color:#fff;" onclick="registerLayersToPngLibrary()" title="選択したレイヤーを透明画像ライブラリに追加">📌 透明画像に登録</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR Code Dialog -->
+<div id="qrDialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9900; align-items:center; justify-content:center; backdrop-filter:blur(6px);" onclick="if(event.target===this)closeQrDialog()">
+  <div style="background:var(--card); border-radius:var(--radius); width:90%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.25); border:1px solid var(--border); overflow:hidden;">
+    <div style="padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:1rem; font-weight:500; color:var(--text);">QRコード生成</h3>
+      <button onclick="closeQrDialog()" style="background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;padding:0;line-height:1;">&times;</button>
+    </div>
+    <div style="padding:20px;">
+      <div style="display:flex; gap:8px; margin-bottom:16px;">
+        <input id="qrUrlInput" type="url" placeholder="https://example.com" style="flex:1; padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:inherit; font-size:0.85rem; outline:none; transition:border-color 0.2s; color:var(--text); background:var(--bg);" oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'" onkeydown="if(event.key==='Enter')generateQrCode()">
+        <button onclick="generateQrCode()" style="padding:8px 18px; border-radius:var(--radius-sm); border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:0.85rem; font-weight:500; cursor:pointer; white-space:nowrap; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">生成</button>
+      </div>
+      <div id="qrCodeArea" style="display:none; text-align:center;">
+        <div id="qrCodeCanvas" style="display:block; width:100%; padding:12px; background:#fff; border-radius:var(--radius-sm); border:1px solid var(--border); box-sizing:border-box;"></div>
+        <div style="margin-top:14px;">
+          <button onclick="downloadQrCode()" style="padding:9px 22px; border-radius:100px; border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:0.85rem; font-weight:500; cursor:pointer; transition:opacity 0.15s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 webleon_qr.png として保存</button>
+        </div>
+      </div>
+      <p id="qrErrorMsg" style="display:none; margin:8px 0 0; font-size:0.78rem; color:var(--danger); text-align:center;"></p>
     </div>
   </div>
 </div>
