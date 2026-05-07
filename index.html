@@ -379,8 +379,11 @@ body.selecting-mode #previewArea {
             ※ 読み込みの目安として数百MB以上の大容量ZIPや、大量の重い画像（PSD/AI等）を一度に入れるとフリーズする場合があります。その場合ZIPは事前に解凍するか、数回に分けて追加してください。<br>
             ※ Shiftキーを押しながら「フォルダに書き出し」を押すとローカルフォルダへの直接書き出しも可能になります。
         </span>
+        <div style="margin-top:12px; padding-top:10px; border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+            <span style="font-size:0.72rem; color:var(--muted); font-weight:400;">※ この画像調整&amp;書き出しツールで使用されている全ての画像データは使用者のPCに保存されています</span>
+            <button onclick="resetAppData()" style="flex-shrink:0; padding:5px 14px; border-radius:100px; border:1px solid var(--danger); background:transparent; color:var(--danger); font-family:inherit; font-size:0.75rem; cursor:pointer; transition:all 0.15s;" onmouseover="this.style.background='var(--danger-soft)'" onmouseout="this.style.background='transparent'">初期化</button>
+        </div>
     </div>
-</div>
 
 <div id="customDialogModal">
     <div class="custom-dialog-card">
@@ -1005,6 +1008,29 @@ async function initDB() {
         request.onsuccess = (e) => { db = e.target.result; resolve(); };
         request.onerror = reject;
     });
+}
+
+async function resetAppData() {
+    const confirmed = await showCustomDialog({
+        title: '初期化',
+        message: '保存されているすべての画像データ・スロット・設定を削除します。この操作は元に戻せません。',
+        okText: '初期化する',
+        okClass: 'btn btn-danger',
+        cancelText: 'キャンセル',
+        type: 'confirm'
+    });
+    if (!confirmed) return;
+    // IndexedDB を削除
+    if (db) { db.close(); db = null; }
+    await new Promise((resolve) => {
+        const req = indexedDB.deleteDatabase(DB_NAME);
+        req.onsuccess = resolve;
+        req.onerror = resolve;
+    });
+    // localStorage も削除
+    localStorage.clear();
+    // ページをリロードして初期状態に
+    location.reload();
 }
 
 async function saveAppState() {
