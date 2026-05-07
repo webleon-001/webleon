@@ -146,11 +146,11 @@ body { font-family: 'DM Sans', 'Noto Sans JP', sans-serif; background: var(--bg)
 .filter-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); cursor: pointer; transition: transform 0.1s; box-shadow: 0 1px 4px rgba(99,102,241,0.3); }
 
 #customDialogModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px); }
-.custom-dialog-card { position: relative; background: var(--card); padding: 28px; border-radius: var(--radius); width: 90%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); border: 1px solid var(--border); text-align: center; }
+.custom-dialog-card { position: relative; background: var(--card); padding: 28px; border-radius: var(--radius); width: 90%; max-width: 480px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); border: 1px solid var(--border); text-align: center; }
 .custom-dialog-close { position: absolute; top: 12px; right: 16px; font-size: 1.5rem; color: var(--muted); background: none; border: none; cursor: pointer; transition: color 0.15s; line-height: 1; padding: 0; }
 .custom-dialog-close:hover { color: var(--text); }
 .custom-dialog-title { font-size: 1.15rem; font-weight: 500; margin: 0 0 14px; color: var(--text); letter-spacing:-0.01em; }
-.custom-dialog-message { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 24px; text-align: center; background: var(--bg); padding: 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.custom-dialog-message { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 24px; text-align: left; background: var(--bg); padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
 .custom-dialog-actions { display: flex; justify-content: center; gap: 12px; }
 .custom-dialog-actions .btn { white-space: nowrap; }
 .dialog-overwrite-preview { display: block; width: 100%; max-height: 220px; margin: 14px auto 0; border-radius: var(--radius-sm); border: 1px solid #d4d4d8; background: #fff; object-fit: cover; }
@@ -267,8 +267,67 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); bor
 .psd-crop-trigger-btn:hover:not(:disabled) { border-color:#8b5cf6; color:#8b5cf6; background:#f5f3ff; }
 .psd-crop-trigger-btn:disabled { cursor:not-allowed; }
 #psdCropModal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9500; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
-.psd-crop-wrap { background:var(--card); border-radius:var(--radius); width:92%; max-width:860px; max-height:94vh; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,0.5); border:1px solid var(--border); overflow:hidden; }
+.psd-crop-wrap { background:var(--card); border-radius:var(--radius); width:fit-content; min-width:580px; max-width:96vw; max-height:96vh; display:flex; flex-direction:column; box-shadow:0 24px 64px rgba(0,0,0,0.5); border:1px solid var(--border); overflow:hidden; margin: 0 auto; }
 .psd-crop-asp-btn.active { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:500; }
+/* 透明画像の削除ボタン */
+.logo-delete-btn {
+    position: absolute;
+    top: -16px;
+    right: -16px;
+    width: 26px;
+    height: 26px;
+    background: var(--danger);
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 20;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    pointer-events: auto;
+    transition: transform 0.1s, background 0.1s;
+}
+/* 選択中のみ表示 */
+.logo-container.selected .logo-delete-btn {
+    display: flex;
+}
+.logo-delete-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+/* 画像選択中の誤操作防止用オーバーレイ */
+#selection-guard {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(255,255,255,0.2); /* ほんのり白くする */
+    z-index: 8000; /* ヘッダーやプルダウンより上に配置 */
+    display: none;
+    cursor: not-allowed;
+}
+/* サムネイルだけはこのガードより上に表示させる */
+.thumb-item { position: relative; }
+.thumb-item.selectable { z-index: 8001 !important; cursor: pointer; }
+.selection-hidden {
+    display: none !important;
+}
+/* 画像選択モード中：JavaScriptの書き換えに負けない最強の非表示設定 */
+body.selecting-mode .page-header, 
+body.selecting-mode #actionArea, 
+body.selecting-mode #instructionBox, 
+body.selecting-mode #searchBarContainer,
+body.selecting-mode .version-label {
+    display: none !important;
+}
+
+/* サムネイル一覧の上部余白を調整 */
+body.selecting-mode #previewArea {
+    margin-top: 80px !important;
+}
 </style>
 </head>
 <body>
@@ -365,10 +424,17 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); bor
         </div>
     </div>
 
-    <div class="instruction-text" id="instructionBox" style="margin-top:20px;">
+<div class="instruction-text" id="instructionBox" style="margin-top:20px;">
         <button class="close-inst-btn" id="closeInstBtn" title="閉じる">&times;</button>
-        書き出しは全て幅1200pxにリサイズ。1200px未満の場合はオリジナルサイズか強制拡大（画質劣化）を選択できます。日本語ファイル名は自動で連番に変換されます。ZIP名は「webleon_images.zip」、Shiftキーでフォルダ書き出しも可能です。<br>
-        <span style="display:block; margin-top:6px; color:var(--muted);">※ .psd は合成済み画像として読み込み / .ai はPDF互換形式のみ対応 / コラム用画像は幅600px以上推奨</span>
+        <strong>【基本仕様】</strong> 書き出しは自動で幅1200pxにリサイズされます（1200px未満はそのままか拡大かを選択可能）。日本語ファイル名はエラー防止のため自動で連番に変換されます。<br>
+        <strong>【主な便利機能】</strong><br>
+        ・<strong>透明画像（ロゴ）合成：</strong>PNGに加え、PSD・AI・PDFファイルを読み込むと抽出してライブラリに登録・配置できます。※AIは<strong>PDF互換形式のみ</strong>対応。<br>
+        ・<strong>画像の分割・合成：</strong>プレビュー画面の「分割」から、2〜4枚の画像を1枚にまとめて書き出し・リスト追加が可能です。<br>
+        ・<strong>専用キャンバス保存：</strong>編集中に「Thumbnail」や「保存1」などのスロットへ状態を保持したままストックできます。<br>
+        <span style="display:block; margin-top:6px; color:var(--muted);">
+            ※ 読み込みの目安として数百MB以上の大容量ZIPや、大量の重い画像（PSD/AI等）を一度に入れるとフリーズする場合があります。その場合ZIPは事前に解凍するか、数回に分けて追加してください。<br>
+            ※ Shiftキーを押しながら「フォルダに書き出し」を押すとローカルフォルダへの直接書き出しも可能になります。
+        </span>
     </div>
 </div>
 
@@ -465,14 +531,14 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); bor
                 <div style="position:relative;" id="pngAddWrapper">
                     <button id="pngAddBtn" onclick="openPngAddDialog()" style="padding:5px 12px; font-size:0.75rem; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer; transition:all 0.15s; white-space:nowrap;" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">＋ 透明画像追加</button>
                 </div>
-                <input type="file" id="pngAddFileInput" accept=".png,.psd,.ai" style="display:none">
+                <input type="file" id="pngAddFileInput" accept=".png,.psd,.ai" multiple style="display:none">
                     <div style="width:1px; height:20px; background:var(--border); flex-shrink:0;"></div>
                     <div style="display:flex; align-items:center; gap:4px;">
                         <span style="font-size:0.7rem; color: var(--muted);">色</span>
                         <input type="color" id="logoColorPicker" value="#ffffff" title="選択中のPNGの色を変更" style="width: 26px; height: 26px; border: none; background: none; cursor: pointer; padding: 0;">
                     </div>
-                    <button onclick="removeSelectedLogo()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 100px; border: none; background: #e4e4e7; color: var(--text); cursor: pointer; transition: background 0.15s;">選択消去</button>
-                    <button onclick="clearAllLogos()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 100px; border: none; background: var(--danger); color: white; cursor: pointer; transition: background 0.15s;">全消去</button>
+                    <button id="logoCropBtn" onclick="openLogoCropEditor()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 100px; border: none; background: #6366f1; color: white; cursor: pointer; transition: background 0.15s; display: none;">切り抜き</button>
+ 
                 </div>
             </div>
 
@@ -529,7 +595,6 @@ input[type="color"]::-webkit-color-swatch { border: 1px solid var(--border); bor
                     </div>
                 </div>
                 <button id="previewDeleteBtn" onclick="deleteImage(currentPreviewIndex)" style="padding:7px 14px;border-radius:100px;border:none;background:var(--danger);color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0;">削除</button>
-                <button id="mergeSplitBtn" onclick="mergeSplitAsNewImage()" style="display:none; padding:7px 14px;border-radius:100px;border:none;background:#10b981;color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0;">✦ 分割画像を一覧に追加</button>
                 <button id="exportSingleBtn" onclick="exportCroppedView(event)" style="padding:7px 14px;border-radius:100px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0;">この画像を書き出す</button>
             </div>
         </div>
@@ -763,26 +828,43 @@ function clearUnsaved() {
 }
 
 async function performManualSave() {
-    if (isSplitPreviewActive) {
-        const isSlot = ['thumb','og','special','save1','save2','save3'].includes(currentAspectKey);
-        if (isSlot) {
-            // スロット編集中はスロットに保存
-            await saveSplitDataToSlot(currentAspectKey, true);
+    if (performManualSave.isLocked) return;
+    performManualSave.isLocked = true;
+
+    try {
+        if (isSplitPreviewActive) {
+            const isSlot = ['thumb','og','special','save1','save2','save3'].includes(currentAspectKey);
+            if (isSlot) {
+                // 各種スロットへの保存（これまで通り）
+                await saveSplitDataToSlot(currentAspectKey, true);
+                return; 
+            } else {
+                // ★修正：ダイアログを出さず、現在の画像を分割画像として上書き保存する
+                const success = await saveSplitToNormalImage();
+                if (!success) return;
+                
+                clearUnsaved();
+                renderAllThumbs();
+                showToast('保存しました');
+                return;
+            }
         } else {
-            // 通常画像編集中は元の画像を分割画像で上書き保存
-            const success = await saveSplitToNormalImage();
-            if (!success) return;
+            // 通常の単体画像保存
+            saveImageState();
         }
-    } else {
-        saveImageState();
+        
+        clearUnsaved();
+        renderAllThumbs();
+        showToast('保存しました');
+
+    } finally {
+        setTimeout(() => { performManualSave.isLocked = false; }, 500);
     }
-    clearUnsaved();
-    renderAllThumbs();
-    showToast('編集内容を保存しました。');
 }
 async function saveSplitToNormalImage() {
     if (!isSplitPreviewActive || splitSelectedImages.length < splitTargetCount) return false;
 
+    // 余白チェックなどは維持
     let hasBg = false;
     for(let i=0; i<splitTargetCount; i++) {
         const st = splitStates[i], d = splitSelectedImages[i];
@@ -795,8 +877,6 @@ async function saveSplitToNormalImage() {
         if (!confirmBg) return false;
     }
 
-    showProgressPanel('分割画像を保存中...');
-
     ensureSplitBaseScales();
     const effectiveAspect = splitModePreservedAspect || currentAspectKey || 'free';
     const expSize = EXPORT_SIZE[effectiveAspect] || { w: 1200, h: Math.round(1200 * targetCh / (targetCw || 1200)) };
@@ -805,6 +885,7 @@ async function saveSplitToNormalImage() {
     const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH;
     const ctx = canvas.getContext('2d'), segWidth = outW / splitTargetCount, exportRatio = outW / targetCw;
 
+    // 分割画像のレンダリング処理（中身は変更なし）
     await Promise.all(splitSelectedImages.map(async (imgData, i) => {
         const img = new Image(); img.src = imgData.blobUrl; await new Promise(r => { img.onload = r; if (img.complete) r(); });
         const st = splitStates[i], finalScale = st.baseScale * st.scale;
@@ -830,13 +911,11 @@ async function saveSplitToNormalImage() {
     const thumbBlob = await new Promise(res => { const cvs = document.createElement('canvas'); cvs.width = 150; cvs.height = Math.round(outH * (150/outW)); cvs.getContext('2d').drawImage(canvas, 0, 0, 150, cvs.height); cvs.toBlob(res, 'image/jpeg', 0.8); });
 
     const origData = processedImages[currentPreviewIndex];
-    const safeName = origData ? origData.exportName : `split_${Date.now()}.jpg`;
-    const originalName = origData ? origData.originalName : `split_${Date.now()}.jpg`;
-
+    
+    // ★変更：常に現在のインデックスを上書きし、名前も引き継ぐ
     const newData = {
+        ...origData, // 元のプロパティ（名前等）を引き継ぐ
         isSplitData: true,
-        originalName: originalName,
-        exportName: safeName,
         splitTargetCount,
         splitSelectedImages: [...splitSelectedImages],
         splitStates: JSON.parse(JSON.stringify(splitStates)),
@@ -852,12 +931,10 @@ async function saveSplitToNormalImage() {
         thumbBlob: thumbBlob,
         originalWidth: outW,
         originalHeight: outH,
-        isSmall: false,
-        hasJapanese: false,
-        sizeStr: '-'
+        lastUpdated: getFormattedDate()
     };
 
-    if (currentPreviewIndex !== -1 && processedImages[currentPreviewIndex]) {
+    if (currentPreviewIndex !== -1) {
         processedImages[currentPreviewIndex] = newData;
     } else {
         processedImages.push(newData);
@@ -867,8 +944,6 @@ async function saveSplitToNormalImage() {
     currentPreviewData = newData;
     await saveAppState();
     renderAllThumbs();
-
-    byId('progress').style.display = 'none';
     return true;
 }
 
@@ -1056,20 +1131,26 @@ async function saveAppState() {
                 assignedSlotsIndices[key] = idx;
             } else {
                 assignedSlotsIndices[key] = -1;
+                // スロット専用データのクローンを作成
                 if (slotImg.isSplitData) {
-                    assignedSlotsData[key] = { ...slotImg, blobUrl: null, thumbUrl: null, splitSelectedImages: null };
+                    assignedSlotsData[key] = { ...slotImg, blobUrl: null, thumbUrl: null };
                 } else {
-                    assignedSlotsData[key] = { ...slotImg, blobUrl: null, thumbUrl: null, splitSelectedImages: null, splitSelectedImagesIndices: null };
+                    assignedSlotsData[key] = { ...slotImg, blobUrl: null, thumbUrl: null };
                 }
             }
         }
     });
 
-const state = {
+    // ★重要：.filter(img => !img.isSplitData) を削除し、分割画像も保存対象に含める
+    const state = {
         slotName: slotNames[currentSlotId] || `スロット ${currentSlotId}`,
-        lastUpdated: globalLastUpdated, // ★ 更新日時を保存データに追加
-        processedImages: processedImages.filter(img => !img.isSplitData).map(img => ({
-            ...img, blobUrl: null, thumbUrl: null, splitSelectedImages: null, splitSelectedImagesIndices: null
+        lastUpdated: globalLastUpdated,
+        processedImages: processedImages.map(img => ({
+            ...img, 
+            blobUrl: null, 
+            thumbUrl: null, 
+            splitSelectedImages: null, 
+            splitSelectedImagesIndices: null
         })),
         assignedSlotsIndices,
         assignedSlotsData
@@ -1080,7 +1161,6 @@ const state = {
     tx.objectStore(STORE_NAME).put(slotNames, 'slotNames');
     updateSlotLabels();
 }
-
 async function loadAppState(slotId) {
     if (!db) return;
     currentSlotId = slotId;
@@ -1507,7 +1587,37 @@ async function openSplitDialog() {
 }
 
 function closeSplitDialog() { byId('splitDialogModal').style.display = 'none'; }
+function toggleSelectionUIBlock(isBlock) {
+    if (isBlock) {
+        // bodyにクラスを付与（CSSが発動して一斉に消える）
+        document.body.classList.add('selecting-mode');
 
+        // サムネイルの選別
+        document.querySelectorAll('.thumb-box').forEach((box, index) => {
+            const data = processedImages[index];
+            if (!data) return;
+            const isSplit = data.isSplitData;
+            const isAlreadySelected = splitSelectedImages.some(img => img === data);
+
+            if (isSplit || isAlreadySelected) {
+                box.style.opacity = '0.1';
+                box.style.pointerEvents = 'none';
+                box.style.filter = 'grayscale(100%)';
+            } else {
+                box.style.opacity = '1';
+                box.style.pointerEvents = 'auto';
+                box.style.filter = 'none';
+            }
+        });
+    } else {
+        // クラスを削除（すべてのUIが元の状態に戻る）
+        document.body.classList.remove('selecting-mode');
+
+        document.querySelectorAll('.thumb-box').forEach(box => {
+            box.style.opacity = '1'; box.style.pointerEvents = 'auto'; box.style.filter = 'none';
+        });
+    }
+}
 function startSplitMode(count) {
     forceClearUnsaved(); // ★変更
 
@@ -1537,9 +1647,9 @@ function startSplitMode(count) {
     initialSplitState = { sat, bri, sharp, rot, absoluteScale, cxRatio, cyRatio };
     setupSplitFilters(count);
     zoomContainer.style.filter = 'none';
-
-    closeImagePreview(true);
+closeImagePreview(true);
     showSplitMessage();
+    toggleSelectionUIBlock(true);
     renderAllThumbs(); 
 }
 function showSplitMessage() {
@@ -1553,7 +1663,14 @@ function showSplitMessage() {
 
 function hideSplitMessage() { const msgEl = byId('splitMessage'); if (msgEl) msgEl.style.display = 'none'; }
 
-function cancelSplitMode() { isSelectingForSplit = false; hideSplitMessage(); initialSplitState = null; renderAllThumbs(); showImagePreview(splitSelectedImages[0], splitModePreservedAspect || currentAspectKey); }
+function cancelSplitMode() { 
+    isSelectingForSplit = false; 
+    hideSplitMessage(); 
+    toggleSelectionUIBlock(false); // ★追加
+    initialSplitState = null; 
+    renderAllThumbs(); 
+    showImagePreview(splitSelectedImages[0], splitModePreservedAspect || currentAspectKey); 
+}
 
 function cancelReselect() {
     // ▼ 追加：バックアップがあれば復元する
@@ -1563,14 +1680,13 @@ function cancelReselect() {
         splitTargetCount = backupSplitState.count;
         backupSplitState = null;
     }
-
-    reselectingSplitIndex = -1;
+reselectingSplitIndex = -1;
     isSelectingForSplit = false;
     hideSplitMessage();
+    toggleSelectionUIBlock(false); // ★追加
     renderAllThumbs();
-    showSplitPreview(); // 保存されていた分割プレビューを再度開く
+    showSplitPreview();
 }
-
 function initSplitStates() {
     splitStates = splitSelectedImages.map((data, index) => {
         if (index === 0 && initialSplitState) return { scale: 1, baseScale: 0, dx: 0, dy: 0, sat: initialSplitState.sat, bri: initialSplitState.bri, sharp: initialSplitState.sharp, rot: initialSplitState.rot || 0 };
@@ -1610,9 +1726,19 @@ function showSplitPreview() {
     resizeContainerToAspect(currentAspectKey);
     byId('previewMetaName').innerHTML = `分割モード (${splitTargetCount}分割)`; byId('previewMetaInfo').innerHTML = 'クリックで選択 / ドラッグで移動 / 拡大縮小・色調整';
     renderSplitContainer(); updateSlidersToSplitState();
-    setTimeout(() => { isPreviewLoading = false; updateSavedState(); }, 150);
-}
-function recalcSplitBaseScales() {
+    
+    setTimeout(() => { 
+        isPreviewLoading = false; 
+        updateSavedState(); 
+        
+        // ★修正：新規で分割画面に入った直後は、すぐに一覧へ保存できるようにボタンを強制的に有効化（赤色）にする
+        hasUnsavedChanges = true;
+        document.querySelectorAll('.btn-manual-save').forEach(btn => {
+            btn.classList.add('unsaved');
+            btn.disabled = false;
+        });
+    }, 150);
+}function recalcSplitBaseScales() {
     if (!isSplitPreviewActive) return;
     const slotW = targetCw / splitTargetCount, slotH = targetCh;
     
@@ -1634,21 +1760,61 @@ function recalcSplitBaseScales() {
     });
 }
 function removeSplitImage(index) {
-    // 選択された画像と調整データを削除してカウントを減らす
+    // 1. まずはUI表示用の配列から削除
     splitSelectedImages.splice(index, 1);
     splitStates.splice(index, 1);
     splitTargetCount--;
 
+    // 保存ボタンを有効化する共通処理
+    const enableSaveBtn = () => {
+        hasUnsavedChanges = true;
+        document.querySelectorAll('.btn-manual-save').forEach(btn => {
+            btn.classList.add('unsaved');
+            btn.disabled = false;
+        });
+    };
+
     if (splitTargetCount <= 1) {
-        // 残り1枚になったら分割モードを終了し、通常モードで開き直す
+        // 【1枚になった場合】
         const remainData = splitSelectedImages[0];
         disableSplitPreview();
-        let key = remainData._lastAspectKey || 'free'; 
-        if (['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(key)) key = 'free'; 
-        showImagePreview(remainData, key);
+
+        // ★重要：元の参照を切るために「スプレッド演算子(...)」で新しいオブジェクト（コピー）を作る
+        // これにより、保存するまでは processedImages 内の元の分割データは書き換わりません
+        const tempPreviewData = { 
+            ...remainData, 
+            isSplitData: false,
+            _lastAspectKey: 'free'
+        };
+        
+        // 分割用のプロパティを削除（コピーに対して行うので安全）
+        delete tempPreviewData.splitSelectedImages;
+        delete tempPreviewData.splitStates;
+        delete tempPreviewData.splitTargetCount;
+        delete tempPreviewData.splitSelectedImagesData;
+        delete tempPreviewData._modeStates;
+        delete tempPreviewData._logos;
+
+        // 一時的なプレビューデータとしてセット
+        currentPreviewData = tempPreviewData;
+        currentAspectKey = 'free';
+        updateAspectBarVisibility('free');
+        
+        // プレビュー画面をリロード
+        showImagePreview(currentPreviewData, 'free');
         renderAllThumbs(); 
+
+        setTimeout(enableSaveBtn, 300); 
     } else {
-        // 2枚以上残っている場合は、枠のサイズを再計算して再描画する
+        // 【2枚以上残っている場合】
+        // 分割継続中も、元データが壊れないよう currentPreviewData をコピーで更新しておく
+        currentPreviewData = {
+            ...currentPreviewData,
+            splitSelectedImages: [...splitSelectedImages],
+            splitStates: JSON.parse(JSON.stringify(splitStates)),
+            splitTargetCount: splitTargetCount
+        };
+
         if (activeSplitIndex >= splitTargetCount) activeSplitIndex = splitTargetCount - 1;
         setupSplitFilters(splitTargetCount);
         byId('previewMetaName').innerHTML = `分割モード (${splitTargetCount}分割)`;
@@ -1656,7 +1822,8 @@ function removeSplitImage(index) {
         recalcSplitBaseScales();
         updateActiveSplitSlotDOM();
         updateSlidersToSplitState();
-        markUnsaved();
+        
+        enableSaveBtn();
     }
 }
 function renderSplitContainer() {
@@ -1837,10 +2004,23 @@ window.addEventListener('blur', () => { exportZipBtn.textContent = 'ZIP で書�
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Shift') { exportZipBtn.textContent = 'フォルダに書き出し'; const sb = byId('exportSingleBtn'); if (sb) sb.textContent = 'フォルダに書き出す'; }
     if (imagePreviewModal.style.display === 'flex') {
-        if (isSplitPreviewActive) { if (e.key === 'Escape') closeImagePreview(); if (e.key === '+' || e.key === '=') stepZoom(0.25); if (e.key === '-') stepZoom(-0.25); return; }
+        const isLoopPreset = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey);
+        
+        if (isSplitPreviewActive) { 
+            if (e.key === 'Escape') closeImagePreview(); 
+            if (e.key === '+' || e.key === '=') stepZoom(0.25); 
+            if (e.key === '-') stepZoom(-0.25); 
+            // ★追加：分割画面であってもループ対象なら矢印キーを許可
+            if (e.key === 'ArrowLeft' && isLoopPreset) changePreviewImage(-1);
+            if (e.key === 'ArrowRight' && isLoopPreset) changePreviewImage(1);
+            return; 
+        }
+        
         const isPreset = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey);
-        if (e.key === 'ArrowLeft' && !isPreset) changePreviewImage(-1);
-        if (e.key === 'ArrowRight' && !isPreset) changePreviewImage(1);
+        // ★変更：ループ対象のプリセットなら矢印キーを許可
+        if (e.key === 'ArrowLeft' && (!isPreset || isLoopPreset)) changePreviewImage(-1);
+        if (e.key === 'ArrowRight' && (!isPreset || isLoopPreset)) changePreviewImage(1);
+        
         if (e.key === 'Escape') closeImagePreview();
         if (e.key === '+' || e.key === '=') stepZoom(0.25); if (e.key === '-') stepZoom(-0.25);
     }
@@ -1879,7 +2059,20 @@ function resizeContainerToAspect(aspectKey) {
         }
     } else {
         const preset = ASPECT_PRESETS[aspectKey];
-        if (!preset) { w = zoomContainer.clientWidth; h = zoomContainer.clientHeight; } else {
+        if (!preset) {
+            // ★修正：save1, save2, save3 などの場合、保存された時のキャンバス比率を復元する
+            let ms = null;
+            if (currentPreviewData && currentPreviewData._modeStates) ms = currentPreviewData._modeStates[aspectKey];
+            
+            if (ms && ms.cw > 0 && ms.ch > 0) {
+                const ratio = ms.ch / ms.cw;
+                let wByW = Math.floor(maxW), hByW = Math.floor(wByW * ratio);
+                let hByH = Math.floor(maxH), wByH = Math.floor(hByH / ratio);
+                if (hByW <= maxH) { w = wByW; h = hByW; } else { w = wByH; h = hByH; }
+            } else {
+                w = zoomContainer.clientWidth || maxW; h = zoomContainer.clientHeight || maxH;
+            }
+        } else {
             const ratio = preset.h / preset.w; let wByW = Math.floor(maxW), hByW = Math.floor(wByW * ratio), hByH = Math.floor(maxH), wByH = Math.floor(hByH / ratio);
             if (hByW <= maxH) { w = wByW; h = hByW; } else { w = wByH; h = hByH; }
         }
@@ -2079,14 +2272,25 @@ let currentAspectKey = 'free';
 
 function updateAspectBarVisibility(aspKey) {
     const isPreset = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(aspKey);
+    const isSaveSlot = ['save1', 'save2', 'save3'].includes(aspKey); // ★保存スロットかどうかの判定を追加
     const allBtns = document.querySelectorAll('#aspectBar .asp-btn');
     const specialBtns = document.querySelectorAll('#specialSizeBar .asp-btn');
     
-allBtns.forEach(btn => {
+    allBtns.forEach(btn => {
         const key = btn.dataset.key;
         if (btn.id === 'logoToggleBtn') { btn.style.display = 'inline-block'; btn.style.pointerEvents = logoModeActive ? 'none' : 'auto'; return; }
-        if (btn.id === 'splitModeBtn') { btn.style.display = 'inline-block'; btn.style.pointerEvents = isSplitPreviewActive ? 'none' : 'auto'; return; }
-        if (btn.id === 'gridToggleBtn') { btn.style.display = 'inline-block'; return; } // ← ここを追加
+        if (btn.id === 'splitModeBtn') { 
+            btn.style.display = 'inline-block'; 
+            if (processedImages.length <= 1) {
+                btn.style.opacity = '0.4';
+                btn.style.pointerEvents = 'none';
+            } else {
+                btn.style.opacity = '1';
+                btn.style.pointerEvents = isSplitPreviewActive ? 'none' : 'auto'; 
+            }
+            return; 
+        }
+        if (btn.id === 'gridToggleBtn') { btn.style.display = 'inline-block'; return; } 
 
         if (isSplitPreviewActive) {
             if (['1:1', '3:2', '4:3', '3:4', '2:3'].includes(key)) { 
@@ -2095,16 +2299,43 @@ allBtns.forEach(btn => {
                 btn.style.display = 'none'; 
             } 
         }
-        else if (isPreset) { if (key === aspKey) { btn.style.display = 'inline-block'; btn.style.pointerEvents = 'none'; } else { btn.style.display = 'none'; } }
-        else { if (['free', '1:1', '3:2', '4:3', '3:4', '2:3'].includes(key)) { btn.style.display = 'inline-block'; btn.style.pointerEvents = (key === aspKey) ? 'none' : 'auto'; } else { btn.style.display = 'none'; } }
+        else if (isPreset) { 
+            if (key === aspKey) { 
+                btn.style.display = 'inline-block'; btn.style.pointerEvents = 'none'; 
+            } 
+            // ★追加：save1〜3の場合は、比率ボタンを表示して押せるようにする
+            else if (isSaveSlot && ['free', '1:1', '3:2', '4:3', '3:4', '2:3'].includes(key)) {
+                btn.style.display = 'inline-block';
+                btn.style.pointerEvents = 'auto';
+            }
+            else { 
+                btn.style.display = 'none'; 
+            } 
+        }
+        else { 
+            if (['free', '1:1', '3:2', '4:3', '3:4', '2:3'].includes(key)) { 
+                btn.style.display = 'inline-block'; btn.style.pointerEvents = (key === aspKey) ? 'none' : 'auto'; 
+            } else { 
+                btn.style.display = 'none'; 
+            } 
+        }
     });
+
     specialBtns.forEach(btn => {
         const key = btn.dataset.key;
         if (isSplitPreviewActive) { btn.style.display = 'inline-block'; btn.style.pointerEvents = 'auto'; if (key === aspKey) btn.classList.add('active'); else btn.classList.remove('active'); }
         else if (isPreset) { btn.style.display = key === aspKey ? 'inline-block' : 'none'; btn.style.pointerEvents = 'none'; } else { btn.style.display = 'none'; }
     });
     const specialBar = byId('specialSizeBar'); if (specialBar) specialBar.style.display = isSplitPreviewActive ? 'flex' : 'none';
-    document.querySelectorAll('.split-save-btn').forEach(btn => { btn.style.display = isSplitPreviewActive ? 'inline-block' : 'none'; });
+    document.querySelectorAll('.split-save-btn').forEach(btn => { 
+        btn.style.display = isSplitPreviewActive ? 'inline-block' : 'none'; 
+        
+        // ★追加：現在開いているスロットと同じなら青く塗りつぶして無効化する
+        const isCurrentSlot = isPreset && btn.dataset.slot === aspKey;
+        btn.style.background = isCurrentSlot ? 'var(--accent)' : ''; 
+        btn.style.color = isCurrentSlot ? '#fff' : 'var(--accent)'; 
+        btn.style.pointerEvents = isCurrentSlot ? 'none' : 'auto';
+    });
     const assignBar = byId('slotAssignBar');
     if (assignBar) {
         assignBar.style.display = isSplitPreviewActive ? 'none' : 'flex';
@@ -2114,15 +2345,90 @@ allBtns.forEach(btn => {
         });
     }
     const delBtn = byId('previewDeleteBtn'); if (delBtn) delBtn.style.display = (isPreset || isSplitPreviewActive) ? 'none' : 'inline-block';
-    const mergeBtn = byId('mergeSplitBtn'); if (mergeBtn) mergeBtn.style.display = isSplitPreviewActive ? 'inline-block' : 'none';
-    document.querySelectorAll('.nav-btn').forEach(btn => { btn.style.display = (processedImages.length <= 1 || isPreset || isSplitPreviewActive) ? 'none' : 'flex'; });
+    
+    // ★保存1〜3のグループも含めてループ対象とする
+// ナビゲーションボタン（左右の矢印）の表示制御
+    document.querySelectorAll('.nav-btn').forEach(btn => { 
+        const thumbGroup = ['thumb', 'og', 'special'];
+        const saveGroup = ['save1', 'save2', 'save3'];
+        
+        // 1. スロット（Thumbnail系 または 保存1-3系）を開いている場合
+        if (thumbGroup.includes(aspKey) || saveGroup.includes(aspKey)) {
+            const currentGroup = thumbGroup.includes(aspKey) ? thumbGroup : saveGroup;
+            const activeLoopCount = currentGroup.filter(k => assignedSlots[k] !== null).length;
+            // そのグループ内に2つ以上画像があれば表示
+            btn.style.display = activeLoopCount > 1 ? 'flex' : 'none'; 
+        } 
+        // 2. 通常の画像リストを表示している場合
+        else {
+            // リストに2枚以上あれば表示（分割画像かどうかは問わない）
+            // ただし、プリセット表示中(isPreset)はここでは判定しない
+            btn.style.display = (processedImages.length <= 1 || isPreset) ? 'none' : 'flex'; 
+        }
+    });
 }
 async function setAspect(btn, skipConfirm = false, forceTransit = false) {
     const targetKey = btn.dataset.key;
-    const isSpecial = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(targetKey);
+    const isSpecialTarget = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(targetKey);
+    const isCurrentlySaveSlot = ['save1', 'save2', 'save3'].includes(currentAspectKey);
+
+    // ★追加：保存スロット(save1, 2, 3)の編集中に比率ボタン(1:1など)を押した場合の処理
+    if (isCurrentlySaveSlot && !isSpecialTarget) {
+        const ratioKey = targetKey;
+        const maxW = window.innerWidth - 200, maxH = window.innerHeight * 0.9 - (isSplitPreviewActive ? 140 : 110);
+        let w, h;
+        
+        if (ratioKey === 'free') {
+            const data = currentPreviewData;
+            const iw = data ? data.originalWidth : getActiveImg().naturalWidth;
+            const ih = data ? data.originalHeight : getActiveImg().naturalHeight;
+            if (!iw || !ih) { w = zoomContainer.clientWidth || maxW; h = zoomContainer.clientHeight || maxH; } 
+            else { const scale = Math.min(maxW / iw, maxH / ih); w = Math.floor(iw * scale); h = Math.floor(ih * scale); }
+        } else {
+            const preset = ASPECT_PRESETS[ratioKey];
+            if (preset) {
+                const ratio = preset.h / preset.w; 
+                let wByW = Math.floor(maxW), hByW = Math.floor(wByW * ratio), hByH = Math.floor(maxH), wByH = Math.floor(hByH / ratio);
+                if (hByW <= maxH) { w = wByW; h = hByW; } else { w = wByH; h = hByH; }
+            }
+        }
+
+        targetCw = w; targetCh = h;
+        zoomContainer.style.width = w + 'px'; zoomContainer.style.height = h + 'px';
+        const card = zoomContainer.closest('.preview-card');
+        if (card) {
+            card.style.width = (w + 40) + 'px';
+            ['#zoomBar', '#filterBar', '#splitToolbarArea', '#logoToolbarArea'].forEach(sel => { const el = card.querySelector(sel); if (el) el.style.width = w + 'px'; });
+        }
+        
+        // スロットの保存データのキャンバスサイズを更新
+        if (currentPreviewData && currentPreviewData._modeStates && currentPreviewData._modeStates[currentAspectKey]) {
+            currentPreviewData._modeStates[currentAspectKey].cw = w;
+            currentPreviewData._modeStates[currentAspectKey].ch = h;
+        }
+
+        // 比率ボタンの見た目を更新（スロットの青いボタン状態はそのまま維持）
+        document.querySelectorAll('#aspectBar .asp-btn:not(#logoToggleBtn):not(#splitModeBtn):not(#gridToggleBtn)').forEach(b => {
+            if (b.dataset.key && ['free', '1:1', '3:2', '4:3', '3:4', '2:3'].includes(b.dataset.key)) {
+                if (b.dataset.key === ratioKey) b.classList.add('active');
+                else b.classList.remove('active');
+            }
+        });
+
+        if (isSplitPreviewActive) {
+            recalcSplitBaseScales();
+            centerAllSplitImages();
+        } else {
+            fitImage();
+            if (isInLogoMode()) clampAllLogos();
+        }
+        markUnsaved(); // 保存ボタンを赤くして変更を通知
+        return; // ここで終了し、currentAspectKeyは 'save1' 等のまま維持する
+    }
+
     let overwriteMode = forceTransit ? 'transit' : 'overwrite';
 
-    if (isSpecial && !skipConfirm) { 
+    if (isSpecialTarget && !skipConfirm) { 
         const incoming = isSplitPreviewActive ? null : currentPreviewData; 
         const confirmResult = await confirmSlotOverwrite(targetKey, incoming, true); 
         if (!confirmResult) return; 
@@ -2140,7 +2446,7 @@ async function setAspect(btn, skipConfirm = false, forceTransit = false) {
         splitModePreservedAspect = currentAspectKey; 
         resizeContainerToAspect(currentAspectKey); 
         centerAllSplitImages(); 
-        if (isSpecial && overwriteMode !== 'transit') {
+        if (isSpecialTarget && overwriteMode !== 'transit') {
             setTimeout(() => saveSplitDataToSlot(currentAspectKey, true), 50);
         } else {
             setTimeout(markUnsaved, 100);
@@ -2151,8 +2457,7 @@ async function setAspect(btn, skipConfirm = false, forceTransit = false) {
     if (getActiveImg().naturalWidth) fitImage();
     if (isInLogoMode()) clampAllLogos();
     
-    if (isSpecial && overwriteMode !== 'transit') { 
-        // 【修正箇所】通常モードとスロットのデータを完全に分離する
+    if (isSpecialTarget && overwriteMode !== 'transit') { 
         const d = { ...currentPreviewData, _modeStates: JSON.parse(JSON.stringify(currentPreviewData._modeStates || {})) };
         if (isInLogoMode() && currentLogos.length > 0) {
             d._logos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: JSON.parse(JSON.stringify(currentLogos)) };
@@ -2161,7 +2466,7 @@ async function setAspect(btn, skipConfirm = false, forceTransit = false) {
         }
         d._lastAspectKey = currentAspectKey;
         currentPreviewData = d;
-        currentPreviewIndex = -1; // これ以降はスロットの独立した画像を編集している状態にする
+        currentPreviewIndex = -1; 
 
         assignedSlots[currentAspectKey] = currentPreviewData; 
         saveImageState(); 
@@ -2450,36 +2755,107 @@ previewArea.addEventListener('drop', e => { e.preventDefault(); if (isInternalDr
 
 async function addFiles(files) {
     if (!files || !files.length) return; 
+    
+    // PDF/PSD/AIが含まれているかチェック
+    let specialFiles = [];
+    for (let i = 0; i < files.length; i++) {
+        const ext = files[i].name.split('.').pop().toLowerCase();
+        if (ext === 'pdf' || ext === 'psd' || ext === 'ai') specialFiles.push(files[i]);
+    }
+
+    let readMode = 'image';
+    let layerCapableFile = null;
+
+    if (specialFiles.length > 0) {
+        const modeChoice = await showCustomDialog({
+            title: '読み込み方法の選択',
+            message: `<span style="font-weight:500; color:var(--text);">${specialFiles[0].name}</span> などの特殊ファイルが含まれています。どのように読み込みますか？<br><div style="font-size:0.75rem; color:var(--muted); line-height:1.7;"><b style="color:var(--text);">・レイヤー抽出：</b>各パーツを個別に透過素材として抽出します。<br><b style="color:var(--text);">・画像として読み込む：</b>PDFは全ページが個別の画像になります。</div>`,
+            okText: 'レイヤー抽出',
+            okClass: 'btn btn-success',
+            cancelText: 'キャンセル',
+            extraText: '画像として読み込む',
+            extraClass: 'btn btn-secondary',
+            type: 'confirm'
+        });
+
+        if (!modeChoice) return; // キャンセル
+        if (modeChoice === true) {
+            readMode = 'layer';
+            layerCapableFile = specialFiles[0];
+        } else if (modeChoice === 'extra') {
+            readMode = 'image';
+        }
+    }
+
     const backupProcessedCount = processedImages.length;
     const backupSmall = [...smallImages];
     const backupJapanese = [...japaneseImages];
-    showProgressPanel('追加読み込み中...'); let allTasks = [];
+    
+    showProgressPanel('追加読み込み中...'); 
+    let allTasks = [];
+
     for (let i = 0; i < files.length; i++) {
         if (isLoadingCanceled) break;
         const file = files[i], name = file.name.toLowerCase();
-        if (name.endsWith('.zip')) { try { const zip = await new JSZip().loadAsync(file); Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff|psd|ai)$/i.test(k)).forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip })); } catch(e) { console.error(e); } }
-        else if (name.endsWith('.pdf')) { allTasks.push({ file, name: file.name, isPdf: true }); } else if (name.endsWith('.psd')) { allTasks.push({ file, name: file.name, isPsd: true }); } else if (name.endsWith('.ai')) { allTasks.push({ file, name: file.name, isAi: true }); } else if (/\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(name)) { allTasks.push({ file, name: file.name }); }
+        const ext = name.split('.').pop();
+
+        if (name.endsWith('.zip')) { 
+            try { 
+                const zip = await new JSZip().loadAsync(file); 
+                Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff|psd|ai)$/i.test(k)).forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip })); 
+            } catch(e) { console.error(e); } 
+        }
+        else if (ext === 'pdf' || ext === 'psd' || ext === 'ai') {
+            if (readMode === 'layer' && file === layerCapableFile) {
+                // レイヤー抽出に回す
+            } else {
+                allTasks.push({ file, name: file.name, isSpecial: true, ext });
+            }
+        }
+        else if (/\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(name)) { 
+            allTasks.push({ file, name: file.name }); 
+        }
     }
+
     allTasks.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+    
     let doneCount = 0;
     for (const task of allTasks) {
         if (isLoadingCanceled) break;
-        updateFileProgress(doneCount, allTasks.length || 1, task.name); await new Promise(r => setTimeout(r, 10)); 
+        updateFileProgress(doneCount, allTasks.length || 1, task.name); 
+        await new Promise(r => setTimeout(r, 10)); 
         try {
             let blob, outName = task.name;
-            if (task.isPdf) {
-                const pdf = await pdfjsLib.getDocument({ data: await task.file.arrayBuffer() }).promise;
-                for (let j = 1; j <= pdf.numPages; j++) { 
-                    if (isLoadingCanceled) break;
-                    const page = await pdf.getPage(j), viewport = page.getViewport({ scale: 2.0 }); const canvasTmp = document.createElement('canvas'); canvasTmp.width = viewport.width; canvasTmp.height = viewport.height; await page.render({ canvasContext: canvasTmp.getContext('2d'), viewport }).promise; await processSingleFile(new File([await new Promise(r => canvasTmp.toBlob(r, 'image/jpeg', 0.95))], `${task.file.name.replace(/\.pdf$/i, '')}_p${j}.jpg`, { type: 'image/jpeg' })); 
+            if (task.isSpecial) {
+                if (task.ext === 'pdf') {
+                    const pdf = await pdfjsLib.getDocument({ 
+                        data: await task.file.arrayBuffer(),
+                        cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+                        cMapPacked: true
+                    }).promise;
+                    for (let j = 1; j <= pdf.numPages; j++) { 
+                        if (isLoadingCanceled) break;
+                        const page = await pdf.getPage(j), viewport = page.getViewport({ scale: 2.0 }); 
+                        const canvasTmp = document.createElement('canvas'); canvasTmp.width = viewport.width; canvasTmp.height = viewport.height; 
+                        await page.render({ canvasContext: canvasTmp.getContext('2d'), viewport }).promise; 
+                        const blobTmp = await new Promise(r => canvasTmp.toBlob(r, 'image/jpeg', 0.95));
+                        await processSingleFile(new File([blobTmp], `${task.file.name.replace(/\.pdf$/i, '')}_p${j}.jpg`, { type: 'image/jpeg' })); 
+                    }
+                    doneCount++; continue;
+                } else if (task.ext === 'ai') {
+                    blob = await decodeAiToBlob(task.file);
+                    outName = outName.replace(/\.ai$/i, '.jpg');
+                } else {
+                    blob = await decodePsdToBlob(task.file);
+                    outName = outName.replace(/\.psd$/i, '.jpg');
                 }
-                doneCount++; continue;
+                await processSingleFile(new File([blob], outName));
+            } else {
+                blob = task.zipKey ? await task.zipObj.file(task.zipKey).async("blob") : task.file;
+                if (/\.(heic|heif)$/i.test(outName)) { blob = await decodeHeicToBlob(new File([blob], outName)); outName = outName.replace(/\.(heic|heif)$/i, '.jpg'); } 
+                else if (/\.(tif|tiff)$/i.test(outName)) { blob = await decodeTiffToBlob(new File([blob], outName)); outName = outName.replace(/\.(tif|tiff)$/i, '.jpg'); }
+                await processSingleFile(new File([blob], outName));
             }
-            if (task.isPsd) { try { blob = await decodePsdToBlob(task.file); outName = outName.replace(/\.psd$/i, '.jpg'); } catch(e) { await showCustomDialog({ title: 'PSDエラー', message: `失敗: ${e.message}`, okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' }); doneCount++; continue; } await processSingleFile(new File([blob], outName, { type: 'image/jpeg' })); doneCount++; continue; }
-            if (task.isAi) { try { blob = await decodeAiToBlob(task.file); outName = outName.replace(/\.ai$/i, '.jpg'); } catch(e) { await showCustomDialog({ title: 'AIエラー', message: `失敗`, okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' }); doneCount++; continue; } await processSingleFile(new File([blob], outName, { type: 'image/jpeg' })); doneCount++; continue; }
-            blob = task.zipKey ? await task.zipObj.file(task.zipKey).async("blob") : task.file;
-            if (/\.(heic|heif)$/i.test(outName)) { blob = await decodeHeicToBlob(new File([blob], outName)); outName = outName.replace(/\.(heic|heif)$/i, '.jpg'); } else if (/\.(tif|tiff)$/i.test(outName)) { blob = await decodeTiffToBlob(new File([blob], outName)); outName = outName.replace(/\.(tif|tiff)$/i, '.jpg'); } else if (/\.psd$/i.test(outName)) { blob = await decodePsdToBlob(new File([blob], outName)); outName = outName.replace(/\.psd$/i, '.jpg'); } else if (/\.ai$/i.test(outName)) { blob = await decodeAiToBlob(new File([blob], outName)); outName = outName.replace(/\.ai$/i, '.jpg'); }
-            await processSingleFile(new File([blob], outName));
         } catch(e) { console.error(e); }
         doneCount++;
     }
@@ -2488,60 +2864,150 @@ async function addFiles(files) {
         showToast('処理をキャンセルし、追加中のデータを削除しました');
         const addedImages = processedImages.slice(backupProcessedCount);
         addedImages.forEach(img => { URL.revokeObjectURL(img.blobUrl); URL.revokeObjectURL(img.thumbUrl); });
-        processedImages.length = backupProcessedCount; // 追加前に巻き戻し
+        processedImages.length = backupProcessedCount;
         smallImages = backupSmall;
         japaneseImages = backupJapanese;
     }
     
     byId('progress').style.display = 'none'; 
+
+    if (readMode === 'layer' && layerCapableFile && !isLoadingCanceled) {
+        const ext = layerCapableFile.name.split('.').pop().toLowerCase();
+        if (ext === 'psd') await parsePsdForLayers(layerCapableFile);
+        else await parsePdfForLayers(layerCapableFile);
+    }
+
     if (!isLoadingCanceled && (smallImages.length || japaneseImages.length)) { renderAlertList(); alertModal.style.display = 'flex'; } 
     renderAllThumbs(); 
     await saveAppState(); 
 }
 
 async function handleFiles(files) {
-    if (!files || !files.length) return; showProgressPanel('読み込み中...'); processedImages = []; smallImages = []; japaneseImages = []; previewArea.innerHTML = ''; let allTasks = [];
+    if (!files || !files.length) return;
+    
+    // PDF/PSD/AIが含まれているかチェック
+    let specialFiles = [];
+    for (let i = 0; i < files.length; i++) {
+        const ext = files[i].name.split('.').pop().toLowerCase();
+        if (ext === 'pdf' || ext === 'psd' || ext === 'ai') specialFiles.push(files[i]);
+    }
+
+    let readMode = 'image';
+    let layerCapableFile = null;
+
+    if (specialFiles.length > 0) {
+        // ダイアログで読み込み方法を確認
+        const modeChoice = await showCustomDialog({
+            title: '読み込み方法の選択',
+            message: `${specialFiles[0].name} などの特殊ファイルが含まれています。どのように読み込みますか？<br><span style="font-size:0.75rem;color:var(--muted);text-align:left;display:inline-block;background:var(--bg);padding:10px;border-radius:6px;"><b>・レイヤー抽出：</b>各パーツを個別に透過素材として抽出します。<br><b>・画像として読み込む：</b>PDFは全ページが個別の画像になります。</span>`,
+            okText: 'レイヤー抽出',
+            okClass: 'btn btn-success',
+            cancelText: 'キャンセル',
+            extraText: '画像として読み込む',
+            extraClass: 'btn btn-secondary',
+            type: 'confirm'
+        });
+
+        if (!modeChoice) return; // キャンセル
+
+        if (modeChoice === true) {
+            readMode = 'layer';
+            layerCapableFile = specialFiles[0]; // レイヤー抽出は最初の1ファイルのみ
+        } else if (modeChoice === 'extra') {
+            readMode = 'image';
+        }
+    }
+
+    showProgressPanel('読み込み中...');
+    processedImages = []; smallImages = []; japaneseImages = [];
+    previewArea.innerHTML = '';
+    
+    let allTasks = [];
+
     for (let i = 0; i < files.length; i++) {
         if (isLoadingCanceled) break;
         const file = files[i], name = file.name.toLowerCase();
-        if (name.endsWith('.zip')) { try { const zip = await new JSZip().loadAsync(file); Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff|psd|ai)$/i.test(k)).forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip })); } catch(e) { console.error(e); } }
-        else if (name.endsWith('.pdf')) { allTasks.push({ file, name: file.name, isPdf: true }); } else if (name.endsWith('.psd')) { allTasks.push({ file, name: file.name, isPsd: true }); } else if (name.endsWith('.ai')) { allTasks.push({ file, name: file.name, isAi: true }); } else if (/\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(name)) { allTasks.push({ file, name: file.name }); }
+        const ext = name.split('.').pop();
+
+        if (name.endsWith('.zip')) {
+            try {
+                const zip = await new JSZip().loadAsync(file);
+                Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff|psd|ai)$/i.test(k)).forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip }));
+            } catch (e) { console.error(e); }
+        } else if (ext === 'pdf' || ext === 'psd' || ext === 'ai') {
+            if (readMode === 'layer' && file === layerCapableFile) {
+                // レイヤー解析に回すため通常のタスクリストには入れない
+            } else {
+                allTasks.push({ file, name: file.name, isSpecial: true, ext });
+            }
+        } else if (/\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(name)) {
+            allTasks.push({ file, name: file.name });
+        }
     }
+
     allTasks.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+    
     let doneCount = 0;
     for (const task of allTasks) {
         if (isLoadingCanceled) break;
-        updateFileProgress(doneCount, allTasks.length || 1, task.name); await new Promise(r => setTimeout(r, 10)); 
+        updateFileProgress(doneCount, allTasks.length || 1, task.name);
+        await new Promise(r => setTimeout(r, 10));
         try {
             let blob, outName = task.name;
-            if (task.isPdf) {
-                const pdf = await pdfjsLib.getDocument({ data: await task.file.arrayBuffer() }).promise;
-                for (let j = 1; j <= pdf.numPages; j++) { 
-                    if (isLoadingCanceled) break;
-                    const page = await pdf.getPage(j), viewport = page.getViewport({ scale: 2.0 }); const canvasTmp = document.createElement('canvas'); canvasTmp.width = viewport.width; canvasTmp.height = viewport.height; await page.render({ canvasContext: canvasTmp.getContext('2d'), viewport }).promise; await processSingleFile(new File([await new Promise(r => canvasTmp.toBlob(r, 'image/jpeg', 0.95))], `${task.file.name.replace(/\.pdf$/i, '')}_p${j}.jpg`, { type: 'image/jpeg' })); 
+            if (task.isSpecial) {
+                // 画像として読み込む場合のPDF全ページ画像化処理
+                if (task.ext === 'pdf') {
+                    const pdf = await pdfjsLib.getDocument({ 
+                        data: await task.file.arrayBuffer(),
+                        cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+                        cMapPacked: true
+                    }).promise;
+                    for (let j = 1; j <= pdf.numPages; j++) { 
+                        if (isLoadingCanceled) break;
+                        const page = await pdf.getPage(j), viewport = page.getViewport({ scale: 2.0 }); 
+                        const canvasTmp = document.createElement('canvas'); canvasTmp.width = viewport.width; canvasTmp.height = viewport.height; 
+                        await page.render({ canvasContext: canvasTmp.getContext('2d'), viewport }).promise; 
+                        const blobTmp = await new Promise(r => canvasTmp.toBlob(r, 'image/jpeg', 0.95));
+                        await processSingleFile(new File([blobTmp], `${task.file.name.replace(/\.pdf$/i, '')}_p${j}.jpg`, { type: 'image/jpeg' })); 
+                    }
+                    doneCount++; continue;
+                } else if (task.ext === 'ai') {
+                    blob = await decodeAiToBlob(task.file);
+                    outName = outName.replace(/\.ai$/i, '.jpg');
+                } else {
+                    blob = await decodePsdToBlob(task.file);
+                    outName = outName.replace(/\.psd$/i, '.jpg');
                 }
-                doneCount++; continue;
+                await processSingleFile(new File([blob], outName));
+            } else {
+                blob = task.zipKey ? await task.zipObj.file(task.zipKey).async("blob") : task.file;
+                if (/\.(heic|heif)$/i.test(outName)) { blob = await decodeHeicToBlob(new File([blob], outName)); outName = outName.replace(/\.(heic|heif)$/i, '.jpg'); }
+                else if (/\.(tif|tiff)$/i.test(outName)) { blob = await decodeTiffToBlob(new File([blob], outName)); outName = outName.replace(/\.(tif|tiff)$/i, '.jpg'); }
+                await processSingleFile(new File([blob], outName));
             }
-            if (task.isPsd) { try { blob = await decodePsdToBlob(task.file); outName = outName.replace(/\.psd$/i, '.jpg'); } catch(e) { await showCustomDialog({ title: 'PSDエラー', message: `失敗`, okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' }); doneCount++; continue; } await processSingleFile(new File([blob], outName, { type: 'image/jpeg' })); doneCount++; continue; }
-            if (task.isAi) { try { blob = await decodeAiToBlob(task.file); outName = outName.replace(/\.ai$/i, '.jpg'); } catch(e) { await showCustomDialog({ title: 'AIエラー', message: `失敗`, okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' }); doneCount++; continue; } await processSingleFile(new File([blob], outName, { type: 'image/jpeg' })); doneCount++; continue; }
-            blob = task.zipKey ? await task.zipObj.file(task.zipKey).async("blob") : task.file;
-            if (/\.(heic|heif)$/i.test(outName)) { blob = await decodeHeicToBlob(new File([blob], outName)); outName = outName.replace(/\.(heic|heif)$/i, '.jpg'); } else if (/\.(tif|tiff)$/i.test(outName)) { blob = await decodeTiffToBlob(new File([blob], outName)); outName = outName.replace(/\.(tif|tiff)$/i, '.jpg'); } else if (/\.psd$/i.test(outName)) { blob = await decodePsdToBlob(new File([blob], outName)); outName = outName.replace(/\.psd$/i, '.jpg'); } else if (/\.ai$/i.test(outName)) { blob = await decodeAiToBlob(new File([blob], outName)); outName = outName.replace(/\.ai$/i, '.jpg'); }
-            await processSingleFile(new File([blob], outName));
-        } catch(e) { console.error(e); }
+        } catch (e) { console.error(e); }
         doneCount++;
     }
 
     if (isLoadingCanceled) {
-        showToast('処理をキャンセルし、読み込み中のデータを削除しました');
+        showToast('読み込みをキャンセルしました');
         processedImages.forEach(img => { URL.revokeObjectURL(img.blobUrl); URL.revokeObjectURL(img.thumbUrl); });
         processedImages = []; smallImages = []; japaneseImages = [];
     }
 
-    byId('progress').style.display = 'none'; 
-    if (processedImages.length) { byId('actionArea').style.display = 'flex'; dropZone.style.display = 'none'; } else { byId('actionArea').style.display = 'none'; dropZone.style.display = 'block'; }
-    if (!isLoadingCanceled && (smallImages.length || japaneseImages.length)) { renderAlertList(); alertModal.style.display = 'flex'; } 
-    renderAllThumbs(); 
-    await saveAppState(); 
+    byId('progress').style.display = 'none';
+    
+    // レイヤー抽出が選ばれていた場合は解析画面を開く
+    if (readMode === 'layer' && layerCapableFile && !isLoadingCanceled) {
+        const ext = layerCapableFile.name.split('.').pop().toLowerCase();
+        if (ext === 'psd') await parsePsdForLayers(layerCapableFile);
+        else await parsePdfForLayers(layerCapableFile);
+    }
+
+    if (processedImages.length) { byId('actionArea').style.display = 'flex'; dropZone.style.display = 'none'; }
+    if (!isLoadingCanceled && (smallImages.length || japaneseImages.length)) { renderAlertList(); alertModal.style.display = 'flex'; }
+    renderAllThumbs();
+    await saveAppState();
 }
 async function processSingleFile(file) {
     return new Promise((resolve) => {
@@ -2602,9 +3068,13 @@ function renderAllThumbs() {
                 splitSelectedImages.push(data);
                 if (splitSelectedImages.length < splitTargetCount) { showSplitMessage(); renderAllThumbs(); }
                 else {
-                    isSelectingForSplit = false; hideSplitMessage(); initSplitStates(); showSplitPreview();
-                    renderAllThumbs();
-                }
+    isSelectingForSplit = false; 
+    hideSplitMessage(); 
+    toggleSelectionUIBlock(false); // ★追加
+    initSplitStates(); 
+    showSplitPreview();
+    renderAllThumbs();
+}
                 return;
             }
             disableSplitPreview(); let key = data._lastAspectKey || 'free'; 
@@ -2864,16 +3334,33 @@ function renderAllPresetCanvases() { ['thumb','og','special','save1','save2','sa
 
 function openInPreset(preset) {
     let data = assignedSlots[preset];
-    if (!data) { showCustomDialog({ title: '画像が未設定です', message: 'このスロットを使用するにはプレビューモードで設定してください。', okText: '確認', okClass: 'btn btn-secondary', type: 'alert' }); return; }
-    if (data.isSplitData) { const isFixed = ['thumb', 'og', 'special'].includes(preset); if (isFixed) data._lastAspectKey = preset; restoreSplitPreview(data, data._lastAspectKey || 'free'); }
-    else showImagePreview(data, preset);
+    if (!data) { 
+        showCustomDialog({ title: '画像が未設定です', message: 'このスロットを使用するにはプレビューモードで設定してください。', okText: '確認', okClass: 'btn btn-secondary', type: 'alert' }); 
+        return; 
+    }
+    
+    if (data.isSplitData) { 
+        // ★修正：分割画像であっても、開いたスロットのIDを正確にセットして復元する
+        data._lastAspectKey = preset; 
+        restoreSplitPreview(data, preset); 
+    }
+    else {
+        showImagePreview(data, preset);
+    }
 }
-
 function showImagePreview(dataOrIndex, forcePreset) {
+    let data, index; if (typeof dataOrIndex === 'number') { index = dataOrIndex; data = processedImages[index]; } else { data = dataOrIndex; index = processedImages.indexOf(data); }
+    if (!data) return; 
+
+    // ★追加：もし分割画像が送られてきた場合は、正しい分割プレビュー画面へリダイレクトする
+    if (data.isSplitData) {
+        restoreSplitPreview(data, forcePreset || data._lastAspectKey || 'free');
+        return;
+    }
+
     isPreviewLoading = true;
     disableSplitPreview(); cancelAnimation('zoom'); cancelAnimation('filter');
-    let data, index; if (typeof dataOrIndex === 'number') { index = dataOrIndex; data = processedImages[index]; } else { data = dataOrIndex; index = processedImages.indexOf(data); }
-    if (!data) return; if (currentPreviewData && imagePreviewModal.style.display === 'flex') saveImageState();
+    if (currentPreviewData && imagePreviewModal.style.display === 'flex') saveImageState();
     currentPreviewIndex = index; currentPreviewData = data; const aspKey = forcePreset || data._lastAspectKey || 'free'; const ms = data._modeStates?.[aspKey];
     document.querySelectorAll('.asp-btn').forEach(b => b.classList.remove('active')); const activeBtn = document.querySelector(`.asp-btn[data-key="${aspKey}"]`); if (activeBtn) activeBtn.classList.add('active');
     currentAspectKey = aspKey; updateAspectBarVisibility(aspKey);
@@ -2906,11 +3393,50 @@ function showImagePreview(dataOrIndex, forcePreset) {
 }
 
 async function changePreviewImage(dir) {
-    if (!processedImages.length) return; 
     if (hasUnsavedChanges) {
         const confirmChange = await showCustomDialog({ title: '確認', message: '保存されていませんが、変更を破棄して次の画像へ移動しますか？', okText: '移動する', okClass: 'btn btn-danger', cancelText: 'キャンセル', type: 'confirm' });
         if (!confirmChange) return;
     }
+
+    // グループ定義
+    const thumbGroup = ['thumb', 'og', 'special'];
+    const saveGroup = ['save1', 'save2', 'save3'];
+    let currentGroup = null;
+
+    if (thumbGroup.includes(currentAspectKey)) currentGroup = thumbGroup;
+    else if (saveGroup.includes(currentAspectKey)) currentGroup = saveGroup;
+
+    // スロットグループ（thumb系 または save系）の中での遷移
+    if (currentGroup) {
+        forceClearUnsaved();
+        let currentIndex = currentGroup.indexOf(currentAspectKey);
+        let nextIndex = currentIndex;
+        
+        // データが入っている次のスロットを探す
+        for (let i = 0; i < currentGroup.length; i++) {
+            nextIndex = (nextIndex + dir + currentGroup.length) % currentGroup.length;
+            if (assignedSlots[currentGroup[nextIndex]]) break;
+        }
+        
+        if (nextIndex === currentIndex || !assignedSlots[currentGroup[nextIndex]]) {
+            showToast('他のスロットに画像が設定されていません');
+            return;
+        }
+        
+        disableSplitPreview();
+        const nextPreset = currentGroup[nextIndex];
+        const nextData = assignedSlots[nextPreset];
+        if (nextData.isSplitData) {
+            nextData._lastAspectKey = nextPreset;
+            restoreSplitPreview(nextData, nextPreset);
+        } else {
+            showImagePreview(nextData, nextPreset);
+        }
+        return;
+    }
+
+    // 通常の画像一覧のループ遷移（スロット以外の時）
+    if (!processedImages.length) return; 
     forceClearUnsaved();
     let nextIndex = currentPreviewIndex === -1 ? 0 : currentPreviewIndex + dir; 
     if (nextIndex >= processedImages.length) nextIndex = 0; 
@@ -2922,11 +3448,9 @@ async function changePreviewImage(dir) {
         restoreSplitPreview(nextData, nextData._lastAspectKey || 'free'); 
     } else { 
         disableSplitPreview(); 
-        // ★ 修正部分: 現在の比率(currentAspectKey)を引き継がず、画像ごとの保存データを読み込ませる
         showImagePreview(nextIndex); 
     }
 }
-
 function applyPreviewFilters() {
     const sat = parseInt(byId('satSlider').value), bri = parseInt(byId('conSlider').value), sharp = parseInt(byId('sharpSlider').value) || 0;
     const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
@@ -3268,9 +3792,31 @@ exportZipBtn.addEventListener('click', async (e) => {
                 if (dropped._logos) newSlotData._logos = JSON.parse(JSON.stringify(dropped._logos));
                 newSlotData._lastAspectKey = preset;
                 
-                assignedSlots[preset] = newSlotData; 
+                // ★追加：save1, save2, save3 の場合、元画像の比率（または直前の編集状態）を引き継ぐ
+                if (preset.startsWith('save')) {
+                    const srcKey = dropped._lastAspectKey || 'free';
+                    if (newSlotData._modeStates[srcKey]) {
+                        newSlotData._modeStates[preset] = JSON.parse(JSON.stringify(newSlotData._modeStates[srcKey]));
+                    } else {
+                        newSlotData._modeStates[preset] = {
+                            sat: 100, bri: 100, sharp: 0, rot: 0,
+                            cw: dropped.originalWidth, ch: dropped.originalHeight,
+                            imgW: dropped.originalWidth, imgH: dropped.originalHeight,
+                            imgX: 0, imgY: 0
+                        };
+                    }
+                }
+                
+assignedSlots[preset] = newSlotData; 
                 renderPresetCanvas(preset); 
-                showImagePreview(newSlotData, preset); 
+                
+                // ★修正：データが分割画像か単体画像かによって開く画面を切り替える
+                if (newSlotData.isSplitData) {
+                    restoreSplitPreview(newSlotData, preset);
+                } else {
+                    showImagePreview(newSlotData, preset);
+                }
+                
                 await saveAppState();
             }
         }
@@ -3289,29 +3835,7 @@ byId('pngAddFileInput').addEventListener('change', (e) => {
     handlePngAddFiles(e.target.files); e.target.value = '';
 });
 
-async function handlePngAddFiles(files) {
-    if (!files || !files.length) return;
-    closePngAddDialog();
-    const file = files[0];
-    const ext  = file.name.split('.').pop().toLowerCase();
-    if (ext === 'png') {
-        const reader = new FileReader();
-        reader.onload = ev => {
-            savedLogos.push(ev.target.result);
-            if (savedLogos.length > 16) savedLogos.shift();
-            localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos));
-            renderLogoLibrary();
-            showToast('透明画像をライブラリに追加しました');
-        };
-        reader.readAsDataURL(file);
-    } else if (ext === 'psd') {
-        await parsePsdForLayers(file);
-    } else if (ext === 'ai') {
-        await parseAiForLayers(file);
-    } else {
-        await showCustomDialog({ title: '非対応形式', message: '透明画像・PSD・AI ファイルを選択してください。', okText: '閉じる', type: 'alert' });
-    }
-}
+
 
 function detectLogoThumbBg(imgEl, src) {
     const probe = new Image();
@@ -3343,7 +3867,51 @@ function detectLogoThumbBg(imgEl, src) {
     };
     probe.src = src;
 }
+async function handlePngAddFiles(files) {
+    if (!files || !files.length) return;
+    closePngAddDialog();
+    
+    let addedPngCount = 0;
+    let psdOrAiFile = null;
 
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split('.').pop().toLowerCase();
+        
+        if (ext === 'png') {
+            await new Promise(resolve => {
+                const reader = new FileReader();
+                reader.onload = ev => {
+                    savedLogos.push(ev.target.result);
+                    if (savedLogos.length > 16) savedLogos.shift();
+                    addedPngCount++;
+                    resolve();
+                };
+                reader.readAsDataURL(file);
+            });
+        } else if ((ext === 'psd' || ext === 'ai' || ext === 'pdf') && !psdOrAiFile) {
+            psdOrAiFile = file;
+        }
+    }
+
+    if (addedPngCount > 0) {
+        localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos));
+        renderLogoLibrary();
+        showToast(`${addedPngCount}枚の透明画像をライブラリに追加しました`);
+    }
+
+    if (psdOrAiFile) {
+        const ext = psdOrAiFile.name.split('.').pop().toLowerCase();
+        if (ext === 'psd') {
+            await parsePsdForLayers(psdOrAiFile);
+        } else if (ext === 'pdf' || ext === 'ai') {
+            // 新しく追加するPDF解析関数を呼び出す
+            await parsePdfForLayers(psdOrAiFile);
+        }
+    } else if (addedPngCount === 0) {
+        await showCustomDialog({ title: '非対応形式', message: '透明画像(PNG)・PSD・AI・PDF ファイルを選択してください。', okText: '閉じる', type: 'alert' });
+    }
+}
 function renderLogoLibrary() {
     const strip = byId('logoLibStrip'); if (!strip) return; strip.innerHTML = '';
     if (savedLogos.length === 0) { strip.innerHTML = '<span style="font-size:0.65rem; color:var(--muted); margin:auto; pointer-events:none;">透明画像を追加してください</span>'; return; }
@@ -3411,7 +3979,14 @@ function clampAllLogos() { if (currentLogos && currentLogos.length) { currentLog
 
 function updateLogoSelection() {
     document.querySelectorAll('.logo-container').forEach(el => { el.classList.toggle('selected', el.dataset.id === activeLogoId); });
-    const logo = currentLogos.find(l => l.id === activeLogoId); if (logo) document.getElementById('logoColorPicker').value = logo.color;
+    const logo = currentLogos.find(l => l.id === activeLogoId); 
+    if (logo) {
+        const picker = document.getElementById('logoColorPicker');
+        if (picker) picker.value = logo.color;
+    }
+    // 切り抜きボタンの表示制御
+    const cropBtn = document.getElementById('logoCropBtn');
+    if (cropBtn) cropBtn.style.display = activeLogoId ? 'inline-block' : 'none';
 }
 
 function removeSelectedLogo() {
@@ -3460,6 +4035,29 @@ function applyLogoStyles() {
         const img = document.createElement('img'); img.src = logo.colorizedSrc || logo.src; container.appendChild(img);
         ['tl','tr','bl','br'].forEach(n => { const rh = document.createElement('div'); rh.className = `logo-rot-handle ${n}`; container.appendChild(rh); });
         ['tl','tr','bl','br'].forEach(n => { const handle = document.createElement('div'); handle.className = `logo-handle ${n}`; container.appendChild(handle); });
+        
+        // ★ 削除ボタンの追加
+        const delBtn = document.createElement('div');
+        delBtn.className = 'logo-delete-btn';
+        delBtn.innerHTML = '&times;';
+        delBtn.title = '削除';
+        
+        // クリックやドラッグイベントが親に誤爆しないよう保護
+        delBtn.onmousedown = (e) => { e.stopPropagation(); e.preventDefault(); };
+        delBtn.onclick = (e) => { 
+            e.stopPropagation(); 
+            activeLogoId = logo.id; 
+            removeSelectedLogo(); 
+        };
+        // スマートフォン/タブレットのタップ対応
+        delBtn.ontouchstart = (e) => { 
+            e.stopPropagation(); 
+            e.preventDefault(); 
+            activeLogoId = logo.id; 
+            removeSelectedLogo(); 
+        };
+        
+        container.appendChild(delBtn);
         layer.appendChild(container);
     });
     updateLogoSelection();
@@ -3489,119 +4087,127 @@ byId('psdLayerFileInput').addEventListener('change', async (e) => {
 byId('aiLayerFileInput').addEventListener('change', async (e) => {
     const file = e.target.files[0]; e.target.value = '';
     if (!file) return;
-    await parseAiForLayers(file);
+    await parsePdfForLayers(file);
 });
 
-
-async function parseAiForLayers(file) {
-    showProgressPanel('AIレイヤーを解析中...');
+async function parsePdfForLayers(file) {
+    showProgressPanel('InDesign レイヤー構造を解析中...');
+    console.log("PDF解析開始:", file.name); // デバッグログ
     byId('cancelLoadBtn').style.display = 'none';
+
     try {
         const ab = await file.arrayBuffer();
-        const pdfDoc = await pdfjsLib.getDocument({ data: ab }).promise;
-        const page   = await pdfDoc.getPage(1);
-        const vp     = page.getViewport({ scale: 2.0 });
-        const docW   = Math.round(vp.width), docH = Math.round(vp.height);
+        const pdfDoc = await pdfjsLib.getDocument({ 
+            data: ab,
+            cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+            cMapPacked: true
+        }).promise;
+        const page = await pdfDoc.getPage(1);
+        
+        const RENDER_SCALE = 4.0;
+        const vp = page.getViewport({ scale: RENDER_SCALE });
+        const docW = Math.round(vp.width), docH = Math.round(vp.height);
 
-        // Try OCG (= Illustrator layers)
-        let ocConfig = null, groups = {}, groupIds = [];
+        // PDFのレイヤー設定（OCG）を取得
+        let ocConfig = null;
         try {
             ocConfig = await pdfDoc.getOptionalContentConfig();
-            groups   = ocConfig.getGroups() || {};
-            groupIds = Object.keys(groups);
-        } catch(e) {}
+            console.log("OCG設定を取得しました", ocConfig);
+        } catch (e) {
+            console.error("OCG取得エラー:", e);
+            throw new Error("レイヤー情報が見つかりません。PDF 1.5以上かつ「レイヤーを作成」にチェックして保存してください。");
+        }
 
-        // ---- fillRect intercept: skip pdf.js's initial white fill ----
-        // pdf.js calls ctx.fillRect(0,0,W,H) with white before drawing any PDF content.
-        // We intercept that single call to keep the canvas transparent.
-        const renderTransparent = async (cfg) => {
+        const groups = ocConfig.getGroups() || {};
+        const groupIds = Object.keys(groups);
+        console.log("検出されたレイヤーID一覧:", groupIds);
+
+        const renderLayerToCanvas = async (config) => {
             const cvs = document.createElement('canvas');
             cvs.width = docW; cvs.height = docH;
             const ctx = cvs.getContext('2d');
             ctx.clearRect(0, 0, docW, docH);
 
-            const _orig = ctx.fillRect.bind(ctx);
-            let _skipped = false;
+            const _origFillRect = ctx.fillRect.bind(ctx);
+            let skippedFirst = false;
             ctx.fillRect = function(x, y, w, h) {
-                // Skip only the very first full-canvas white fill that pdf.js injects
-                if (!_skipped && x === 0 && y === 0 && w === docW && h === docH) {
-                    _skipped = true;
+                if (!skippedFirst && x === 0 && y === 0 && w === docW && h === docH) {
+                    skippedFirst = true;
                     return;
                 }
-                _orig(x, y, w, h);
+                _origFillRect(x, y, w, h);
             };
 
             await page.render({
-                canvasContext: ctx, viewport: vp,
-                optionalContentConfigPromise: cfg ? Promise.resolve(cfg) : undefined
+                canvasContext: ctx,
+                viewport: vp,
+                optionalContentConfigPromise: Promise.resolve(config)
             }).promise;
 
-            ctx.fillRect = _orig; // restore
+            ctx.fillRect = _origFillRect;
             return cvs;
         };
 
-        const aiHasContent = (cvs) => {
-            try {
-                const d    = cvs.getContext('2d').getImageData(0, 0, cvs.width, cvs.height).data;
-                const step = Math.max(4, Math.floor(Math.min(cvs.width, cvs.height) / 30)) * 4;
-                for (let i = 3; i < d.length; i += step) { if (d[i] > 8) return true; }
-                return false;
-            } catch(e) { return true; }
+        const flatLayers = [];
+
+        // キャンバスが透明かどうか判定
+        const isCanvasEmpty = (cvs) => {
+            const ctx = cvs.getContext('2d');
+            const data = ctx.getImageData(0, 0, cvs.width, cvs.height).data;
+            for (let i = 3; i < data.length; i += 16) {
+                if (data[i] > 10) return false; 
+            }
+            return true;
         };
 
         if (groupIds.length === 0) {
-            const cvs = await renderTransparent(null);
-            psdLayerStore = { filename: file.name, width: docW, height: docH,
-                flatLayers: [{ isGroup:false, name:'全体（レイヤー非分離）', canvas:cvs,
-                    visible:true, opacity:255, left:0, top:0, right:docW, bottom:docH, depth:0 }] };
-            byId('progress').style.display = 'none';
-            renderPsdLayerModal();
-            return;
-        }
-
-        const origVis = {};
-        for (const id of groupIds) origVis[id] = groups[id].visible !== false;
-
-        const flatLayers = [];
-        for (let i = 0; i < groupIds.length; i++) {
-            const id = groupIds[i];
-            byId('progressFileName').textContent = groups[id].name || `レイヤー ${i+1}`;
-            byId('progressBar').style.width = Math.round((i / groupIds.length) * 100) + '%';
-            await new Promise(r => setTimeout(r, 8));
-
-            for (const gid of groupIds) ocConfig.setVisibility(gid, false);
-            ocConfig.setVisibility(id, true);
-
-            let cvs = null;
-            try {
-                cvs = await renderTransparent(ocConfig);
-                if (!aiHasContent(cvs)) cvs = null;
-            } catch(e) {}
-
-            flatLayers.push({
-                isGroup: false,
-                name: groups[id].name || `レイヤー ${i+1}`,
-                canvas: cvs,
-                visible: origVis[id],
-                opacity: 255,
-                left: 0, top: 0, right: docW, bottom: docH, depth: 0
+            console.warn("レイヤーグループが0件です。単一画像として処理します。");
+            const cvs = await renderLayerToCanvas(null);
+            flatLayers.push({ 
+                isGroup: false, name: '全体 (透過表示)', canvas: cvs, 
+                visible: true, opacity: 255, left: 0, top: 0, right: docW, bottom: docH, depth: 0 
             });
+        } else {
+            for (let i = 0; i < groupIds.length; i++) {
+                const id = groupIds[i];
+                const layerName = groups[id].name || `Layer ${i+1}`;
+                console.log(`処理中レイヤー: ${layerName} (ID: ${id})`);
+                
+                byId('progressFileName').textContent = layerName;
+                byId('progressBar').style.width = Math.round((i / groupIds.length) * 100) + '%';
+                await new Promise(r => setTimeout(r, 10));
+
+                for (const gid of groupIds) ocConfig.setVisibility(gid, false);
+                ocConfig.setVisibility(id, true);
+
+                const cvs = await renderLayerToCanvas(ocConfig);
+
+                if (isCanvasEmpty(cvs)) {
+                    console.log(`レイヤー "${layerName}" は空のためスキップしました`);
+                    continue;
+                }
+
+                flatLayers.push({
+                    isGroup: false, name: layerName, canvas: cvs,
+                    visible: true, opacity: 255, left: 0, top: 0, right: docW, bottom: docH, depth: 0
+                });
+            }
         }
 
-        for (const id of groupIds) ocConfig.setVisibility(id, origVis[id]);
+        if (flatLayers.length === 0) {
+            throw new Error("有効なレイヤーが見つかりませんでした。");
+        }
 
         psdLayerStore = { filename: file.name, width: docW, height: docH, flatLayers };
         byId('progress').style.display = 'none';
         renderPsdLayerModal();
-    } catch(err) {
+
+    } catch (err) {
+        console.error("PDF解析中の致命的エラー:", err);
         byId('progress').style.display = 'none';
-        await showCustomDialog({ title: 'AI解析エラー',
-            message: 'レイヤーの解析に失敗しました。PDF互換形式で保存されているか確認してください。<br><small style="color:var(--muted)">' + err.message + '</small>',
-            okText: '閉じる', type: 'alert' });
+        await showCustomDialog({ title: 'PDF解析エラー', message: err.message, okText: '閉じる', type: 'alert' });
     }
 }
-
-
 async function parsePsdForLayers(file) {
     showProgressPanel('PSDレイヤーを解析中...');
     byId('cancelLoadBtn').style.display = 'none';
@@ -3916,36 +4522,145 @@ const psdCrop = {
     dragging: false, dragMode: null,
     dragOrigin: null, rectOrigin: null,
     aspectLock: null,
+    bgColor: 'white', // 追加
     _moveHandler: null, _upHandler: null
 };
 
+// 既存のレイヤー解析からのクロップ呼び出し（UI切り替えを追加）
 function openLayerCropEditor(layer) {
     if (!layer || !layer.canvas) {
         showCustomDialog({ title: 'データなし', message: 'このレイヤーには画像データがありません。', okText: '閉じる', type: 'alert' });
         return;
     }
     psdCrop.layer = layer;
+    psdCrop.layer.isLogo = false; // ロゴ編集ではない
     psdCrop.aspectLock = null;
+    
+    // UIの切り替え
+    const normalBtns = document.getElementById('psdCropNormalBtns');
+    const logoBtns = document.getElementById('psdCropLogoBtns');
+    if (normalBtns) normalBtns.style.display = 'flex';
+    if (logoBtns) logoBtns.style.display = 'none';
+
+    // ★追加：背景色の設定をリセット
+    setPsdCropBg('white');
+
     document.querySelectorAll('.psd-crop-asp-btn').forEach(b => b.classList.toggle('active', !b.dataset.ratio));
     byId('psdCropModal').style.display = 'flex';
     requestAnimationFrame(() => { initPsdCropCanvas(); setupPsdCropEvents(); });
 }
+function setPsdCropBg(color) {
+    psdCrop.bgColor = color;
+    document.querySelectorAll('.psd-crop-bg-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.bg === color);
+    });
+    drawPsdCrop();
+}
+// ▼ 新追加：キャンバス上の透明画像のクロップ呼び出し
+async function openLogoCropEditor() {
+    if (!activeLogoId) return;
+    const logo = currentLogos.find(l => l.id === activeLogoId);
+    if (!logo) return;
+
+    showProgressPanel('画像を準備中...');
+    const img = new Image();
+    await new Promise(r => { img.onload = r; img.onerror = r; img.src = logo.src; });
+    byId('progress').style.display = 'none';
+    if (!img.naturalWidth) return;
+
+    const cvs = document.createElement('canvas');
+    cvs.width = img.naturalWidth; cvs.height = img.naturalHeight;
+    cvs.getContext('2d').drawImage(img, 0, 0);
+
+    psdCrop.layer = { canvas: cvs, isLogo: true, logoId: logo.id };
+    psdCrop.aspectLock = null;
+
+    const normalBtns = document.getElementById('psdCropNormalBtns');
+    const logoBtns = document.getElementById('psdCropLogoBtns');
+    if (normalBtns) normalBtns.style.display = 'none';
+    if (logoBtns) logoBtns.style.display = 'flex';
+
+    // ★追加：背景色の設定をリセット
+    setPsdCropBg('white');
+
+    document.querySelectorAll('.psd-crop-asp-btn').forEach(b => b.classList.toggle('active', !b.dataset.ratio));
+    byId('psdCropModal').style.display = 'flex';
+    requestAnimationFrame(() => { initPsdCropCanvas(); setupPsdCropEvents(); });
+}
+// ▼ 新追加：キャンバス上の透明画像にクロップを適用する処理
+// ▼ キャンバス上の透明画像にクロップを適用し、ライブラリも上書きする処理
+async function confirmLogoCrop() {
+    const { layer, rect, scale } = psdCrop;
+    if (!rect || !layer?.canvas || !layer.isLogo) return;
+
+    const ox = Math.max(0, Math.round(rect.x / scale));
+    const oy = Math.max(0, Math.round(rect.y / scale));
+    const ow = Math.max(1, Math.round(rect.w / scale));
+    const oh = Math.max(1, Math.round(rect.h / scale));
+
+    const cropped = document.createElement('canvas'); 
+    cropped.width = ow; 
+    cropped.height = oh;
+    cropped.getContext('2d').drawImage(layer.canvas, ox, oy, ow, oh, 0, 0, ow, oh);
+
+    const logo = currentLogos.find(l => l.id === layer.logoId);
+    if (logo) {
+        const oldSrc = logo.src; // 上書き対象を特定するために元のパスを保持
+        const newSrc = cropped.toDataURL('image/png');
+
+        // 1. キャンバス上の表示を更新
+        logo.src = newSrc;
+        if (logo.color !== '#ffffff') {
+            colorizeLogo(logo, logo.color);
+        } else {
+            logo.colorizedSrc = null;
+        }
+        logo.baseW = ow;
+        logo.baseH = oh;
+
+        // 2. 透明画像ライブラリ（savedLogos）の中身を検索して上書き
+        const libIndex = savedLogos.indexOf(oldSrc);
+        if (libIndex !== -1) {
+            savedLogos[libIndex] = newSrc;
+            try {
+                localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos));
+                renderLogoLibrary(); // ライブラリの表示を更新
+            } catch (e) {
+                console.warn("Library sync failed:", e);
+            }
+        }
+        
+        applyLogoStyles();
+        markUnsaved();
+    }
+
+    closePsdCropModal();
+    showToast(`✦ クップ内容を適用し、ライブラリの元画像を上書きしました`);
+}
 
 function initPsdCropCanvas() {
     const canvas = byId('psdCropCanvas');
-    const container = canvas.parentElement;
     const layer = psdCrop.layer;
     const lw = layer.canvas.width, lh = layer.canvas.height;
-    // コンテナの実際の幅（padding 32px 分を引く）を上限にすることで
-    // CSS による縮小を防ぎ、マウス座標が 1:1 になるようにする
-    const containerW = container ? Math.max(100, container.clientWidth - 32) : 760;
-    const maxW = Math.min(containerW, window.innerWidth * 0.84, 800);
-    const maxH = Math.min(window.innerHeight * 0.52, 520);
+
+    // 画面サイズから、ヘッダー・フッター・パディング等の余白を引いて「最大表示サイズ」を計算
+    const maxW = window.innerWidth * 0.94 - 32; 
+    const maxH = window.innerHeight * 0.94 - 160; 
+
+    // 画像が最大サイズに収まるようにスケールを計算
     const scale = Math.min(maxW / lw, maxH / lh, 1);
-    const dw = Math.max(1, Math.round(lw * scale)), dh = Math.max(1, Math.round(lh * scale));
-    canvas.width = dw; canvas.height = dh;
-    canvas.style.width = dw + 'px'; canvas.style.height = dh + 'px';
-    psdCrop.scale = scale; psdCrop.imgW = dw; psdCrop.imgH = dh;
+    const dw = Math.max(1, Math.round(lw * scale));
+    const dh = Math.max(1, Math.round(lh * scale));
+    
+    canvas.width = dw; 
+    canvas.height = dh;
+    canvas.style.width = dw + 'px'; 
+    canvas.style.height = dh + 'px';
+    
+    psdCrop.scale = scale; 
+    psdCrop.imgW = dw; 
+    psdCrop.imgH = dh;
+    
     resetCropRect();
 }
 
@@ -3961,12 +4676,20 @@ function drawPsdCrop() {
     const { layer, imgW, imgH, rect } = psdCrop;
     const cw = canvas.width, ch = canvas.height;
 
-    // Checkerboard for transparency
+    // Checkerboard or Solid Background
     ctx.clearRect(0, 0, cw, ch);
-    const sz = 10;
-    for (let y = 0; y < ch; y += sz) for (let x = 0; x < cw; x += sz) {
-        ctx.fillStyle = ((Math.floor(x/sz) + Math.floor(y/sz)) % 2 === 0) ? '#555' : '#333';
-        ctx.fillRect(x, y, sz, sz);
+    if (psdCrop.bgColor === 'white') {
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, cw, ch);
+    } else if (psdCrop.bgColor === 'black') {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, cw, ch);
+    } else {
+        const sz = 10;
+        for (let y = 0; y < ch; y += sz) for (let x = 0; x < cw; x += sz) {
+            ctx.fillStyle = ((Math.floor(x/sz) + Math.floor(y/sz)) % 2 === 0) ? '#555' : '#333';
+            ctx.fillRect(x, y, sz, sz);
+        }
     }
     ctx.drawImage(layer.canvas, 0, 0, imgW, imgH);
 
@@ -4131,8 +4854,78 @@ function setupPsdCropEvents() {
     window.addEventListener('mouseup', onUp);
     window.addEventListener('touchend', onUp);
 }
+// クロップ画面を閉じる処理（これが抜けていたためフリーズしていました）
+function closePsdCropModal() {
+    const modal = document.getElementById('psdCropModal');
+    if (modal) modal.style.display = 'none';
+    
+    // イベントリスナーの解除（裏側でドラッグ判定が暴走するのを防ぐ）
+    if (psdCrop._moveHandler) {
+        window.removeEventListener('mousemove', psdCrop._moveHandler);
+        window.removeEventListener('touchmove', psdCrop._moveHandler);
+    }
+    if (psdCrop._upHandler) {
+        window.removeEventListener('mouseup', psdCrop._upHandler);
+        window.removeEventListener('touchend', psdCrop._upHandler);
+    }
+}
+// ----------------------------------------------------
+// 【ボタン1】切り抜きをサムネイル一覧（メイン画像）に追加する処理
+// ----------------------------------------------------
+async function confirmPsdCropToList() {
+    try {
+        const { layer, rect, scale } = psdCrop;
+        if (!rect || !layer?.canvas) return;
+        const ox = Math.max(0, Math.round(rect.x / scale));
+        const oy = Math.max(0, Math.round(rect.y / scale));
+        const ow = Math.max(1, Math.round(rect.w / scale));
+        const oh = Math.max(1, Math.round(rect.h / scale));
 
-async function confirmPsdCrop() {
+        const cropped = document.createElement('canvas'); 
+        cropped.width = ow; 
+        cropped.height = oh;
+        cropped.getContext('2d').drawImage(layer.canvas, ox, oy, ow, oh, 0, 0, ow, oh);
+
+        showProgressPanel('リストに追加中...');
+
+        // 切り抜いたCanvasをPNG形式のファイルデータ(Blob)に変換
+        const blob = await new Promise(res => cropped.toBlob(res, 'image/png'));
+        const safeName = (layer.name || 'layer').replace(/[/\\:*?"<>|]/g, '_').replace(/\s+/g, '_') + "_crop.png";
+        const file = new File([blob], safeName, { type: 'image/png' });
+
+        // 通常の画像読み込み処理を通す
+        await processSingleFile(file);
+
+        // UIの更新と保存
+        renderAllThumbs();
+        if (processedImages.length > 0) { 
+            byId('actionArea').style.display = 'flex'; 
+            byId('dropZone').style.display = 'none'; 
+            const searchBar = byId('searchBarContainer');
+            if (searchBar) searchBar.style.display = 'flex';
+        }
+        await saveAppState();
+
+        byId('progress').style.display = 'none';
+        closePsdCropModal();
+        showToast(`✦ 切り抜き画像をサムネイル一覧に追加しました`);
+    } catch (err) {
+        // エラー時は確実に画面を復帰させる
+        console.error(err);
+        byId('progress').style.display = 'none';
+        await showCustomDialog({ 
+            title: 'エラー', 
+            message: '一覧への追加中にエラーが発生しました。<br>もう一度お試しください。', 
+            okText: '確認', 
+            type: 'alert' 
+        });
+    }
+}
+
+// ----------------------------------------------------
+// 【ボタン2】切り抜きを透明画像ライブラリ（ロゴ等）に追加する処理
+// ----------------------------------------------------
+async function confirmPsdCropToLogo() {
     const { layer, rect, scale } = psdCrop;
     if (!rect || !layer?.canvas) return;
     const ox = Math.max(0, Math.round(rect.x / scale));
@@ -4140,40 +4933,116 @@ async function confirmPsdCrop() {
     const ow = Math.max(1, Math.round(rect.w / scale));
     const oh = Math.max(1, Math.round(rect.h / scale));
 
-    const cropped = document.createElement('canvas'); cropped.width = ow; cropped.height = oh;
+    const cropped = document.createElement('canvas'); 
+    cropped.width = ow; 
+    cropped.height = oh;
     cropped.getContext('2d').drawImage(layer.canvas, ox, oy, ow, oh, 0, 0, ow, oh);
 
     let src = cropped;
-    const MAX = 2000;
+    
+    // 【重要】容量節約のため、透明画像は最大360pxに縮小して5MBパンクを防ぐ
+    const MAX = 360; 
     if (src.width > MAX || src.height > MAX) {
         const sc = Math.min(MAX/src.width, MAX/src.height);
         const tmp = document.createElement('canvas');
-        tmp.width = Math.round(src.width*sc); tmp.height = Math.round(src.height*sc);
-        tmp.getContext('2d').drawImage(src, 0, 0, tmp.width, tmp.height); src = tmp;
+        tmp.width = Math.max(1, Math.round(src.width*sc));
+        tmp.height = Math.max(1, Math.round(src.height*sc));
+        const tCtx = tmp.getContext('2d');
+        tCtx.imageSmoothingEnabled = true;
+        tCtx.imageSmoothingQuality = 'high';
+        tCtx.drawImage(src, 0, 0, tmp.width, tmp.height); 
+        src = tmp;
     }
 
-    savedLogos.push(src.toDataURL('image/png'));
-    if (savedLogos.length > 16) savedLogos.shift();
-    localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos));
-    renderLogoLibrary();
-    closePsdCropModal();
-    closePsdLayerModal();
-    showToast(`✦ 切り抜き画像を透明画像ライブラリに登録しました（${ow}×${oh}px）`);
-}
+    const dataUrl = src.toDataURL('image/png');
 
-function closePsdCropModal() {
-    byId('psdCropModal').style.display = 'none';
-    if (psdCrop._moveHandler) {
-        window.removeEventListener('mousemove', psdCrop._moveHandler);
-        window.removeEventListener('touchmove', psdCrop._moveHandler);
-        window.removeEventListener('mouseup', psdCrop._upHandler);
-        window.removeEventListener('touchend', psdCrop._upHandler);
-        psdCrop._moveHandler = psdCrop._upHandler = null;
+    // 保存成功時のみメモリを更新する安全な配列操作
+    const newLogos = [...savedLogos];
+    newLogos.push(dataUrl);
+    if (newLogos.length > 16) newLogos.shift();
+
+    try {
+        localStorage.setItem('webLeonLogos', JSON.stringify(newLogos));
+        
+        // 保存成功
+        savedLogos = newLogos;
+        renderLogoLibrary();
+        closePsdCropModal();
+        showToast(`✦ 切り抜き画像を透明画像ライブラリに登録しました`);
+    } catch (e) {
+        // 容量オーバー時はクロップ画面を閉じて、削除操作ができるようにする
+        closePsdCropModal();
+        await showCustomDialog({ 
+            title: '保存データ量オーバー', 
+            message: 'ブラウザのデータ保存限界（約5MB）に達しました。<br>画面下部のライブラリから不要な透明画像を「×」ボタンで削除し、容量を空けてください。', 
+            okText: '確認', 
+            type: 'alert' 
+        });
     }
 }
 
 function closePsdLayerModal() { byId('psdLayerModal').style.display = 'none'; }
+/**
+ * 選択されたPDF/PSDレイヤーをメインのサムネイル一覧（画像リスト）に追加する
+ */
+async function registerLayersToThumbnailList() {
+    const selected = getSelectedPsdLayers();
+    if (selected.length === 0) {
+        await showCustomDialog({ title: '未選択', message: '一覧に追加するレイヤーを選択してください。', okText: '閉じる', type: 'alert' });
+        return;
+    }
 
+    const confirmed = await showCustomDialog({
+        title: 'サムネイル一覧に追加',
+        message: `${selected.length} 件のレイヤーをメインの画像リストに追加しますか？`,
+        okText: '追加する',
+        cancelText: 'キャンセル',
+        type: 'confirm'
+    });
+    if (!confirmed) return;
+
+    showProgressPanel('リストに追加中...');
+    let added = 0;
+
+    for (const layer of selected) {
+        if (!layer.canvas || layer.canvas.width === 0 || layer.canvas.height === 0) continue;
+
+        try {
+            // レイヤーのCanvasをBlob(File)に変換
+            const blob = await new Promise(res => layer.canvas.toBlob(res, 'image/png'));
+            const safeName = (layer.name || 'layer').replace(/[/\\:*?"<>|]/g, '_').replace(/\s+/g, '_') + ".png";
+            const file = new File([blob], safeName, { type: 'image/png' });
+
+            // メインの画像処理プロセスに渡す（自動リサイズやサムネイル生成が行われる）
+            await processSingleFile(file);
+            added++;
+        } catch (e) {
+            console.error("レイヤー追加エラー:", e);
+        }
+    }
+
+    if (added > 0) {
+        // UI更新と保存
+        renderAllThumbs();
+        if (processedImages.length > 0) { 
+            byId('actionArea').style.display = 'flex'; 
+            byId('dropZone').style.display = 'none'; 
+            const searchBar = byId('searchBarContainer');
+            if (searchBar) searchBar.style.display = 'flex';
+        }
+        await saveAppState();
+        
+        byId('progress').style.display = 'none';
+        closePsdLayerModal();
+        showToast(`✦ ${added}件のレイヤーを一覧に追加しました`);
+    } else {
+        byId('progress').style.display = 'none';
+        await showCustomDialog({ title: 'エラー', message: '追加できる有効なデータがありませんでした。', okText: '閉じる', type: 'alert' });
+    }
+}
+// ----------------------------------------------------
+// レイヤー一覧から複数まとめて透明画像に登録する処理
+// ----------------------------------------------------
 async function registerLayersToPngLibrary() {
     const selected = getSelectedPsdLayers();
     if (selected.length === 0) {
@@ -4181,15 +5050,12 @@ async function registerLayersToPngLibrary() {
         return;
     }
 
-    // 確認ダイアログにサムネイル一覧を表示
     const thumbsHtml = selected.map(layer => {
         const thumb = createLayerThumb(layer.canvas);
         const lw = (layer.right - layer.left) || 0, lh = (layer.bottom - layer.top) || 0;
         const checkered = 'repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/8px 8px';
         return `<div style="display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--bg);border-radius:6px;border:1px solid var(--border);margin-bottom:6px;">
-            ${thumb
-                ? `<img src="${thumb}" style="width:52px;height:38px;object-fit:contain;border-radius:4px;border:1px solid var(--border);background:${checkered};flex-shrink:0;">`
-                : `<div style="width:52px;height:38px;background:var(--border);border-radius:4px;flex-shrink:0;"></div>`}
+            ${thumb ? `<img src="${thumb}" style="width:52px;height:38px;object-fit:contain;border-radius:4px;border:1px solid var(--border);background:${checkered};flex-shrink:0;">` : `<div style="width:52px;height:38px;background:var(--border);border-radius:4px;flex-shrink:0;"></div>`}
             <div style="min-width:0;flex:1;">
                 <div style="font-size:0.82rem;font-weight:500;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${layer.name}</div>
                 <div style="font-size:0.68rem;color:var(--muted);">${lw > 0 ? lw + ' × ' + lh + ' px' : '空レイヤー'}</div>
@@ -4206,37 +5072,56 @@ async function registerLayersToPngLibrary() {
     });
     if (!confirmed) return;
 
+    showProgressPanel('登録中...');
     let added = 0;
+    const newLogos = [...savedLogos];
+
     for (const layer of selected) {
         if (!layer.canvas || layer.canvas.width === 0 || layer.canvas.height === 0) continue;
 
-        // 巨大レイヤーは 2000px 以内に縮小して保存
         let src = layer.canvas;
-        const MAX = 2000;
+        const MAX = 360; // ここも360pxに制限
         if (src.width > MAX || src.height > MAX) {
             const sc = Math.min(MAX / src.width, MAX / src.height);
             const tmp = document.createElement('canvas');
-            tmp.width = Math.round(src.width * sc); tmp.height = Math.round(src.height * sc);
-            tmp.getContext('2d').drawImage(src, 0, 0, tmp.width, tmp.height);
+            tmp.width = Math.max(1, Math.round(src.width * sc));
+            tmp.height = Math.max(1, Math.round(src.height * sc));
+            const tCtx = tmp.getContext('2d');
+            tCtx.imageSmoothingEnabled = true;
+            tCtx.imageSmoothingQuality = 'high';
+            tCtx.drawImage(src, 0, 0, tmp.width, tmp.height);
             src = tmp;
         }
 
         const dataUrl = src.toDataURL('image/png');
-        savedLogos.push(dataUrl);
-        if (savedLogos.length > 16) savedLogos.shift(); // 上限16枚
+        newLogos.push(dataUrl);
+        if (newLogos.length > 16) newLogos.shift();
         added++;
     }
 
     if (added > 0) {
-        localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos));
-        renderLogoLibrary();
-        closePsdLayerModal();
-        showToast(`✦ ${added}件のレイヤーを透明画像ライブラリに登録しました`);
+        try {
+            localStorage.setItem('webLeonLogos', JSON.stringify(newLogos));
+            savedLogos = newLogos;
+            renderLogoLibrary();
+            byId('progress').style.display = 'none';
+            closePsdLayerModal();
+            showToast(`✦ ${added}件のレイヤーを透明画像ライブラリに登録しました`);
+        } catch (e) {
+            byId('progress').style.display = 'none';
+            closePsdLayerModal(); // エラー時はモーダルを閉じて削除操作を促す
+            await showCustomDialog({
+                title: '保存データ量オーバー',
+                message: 'ブラウザのデータ保存限界（約5MB）に達したため、登録できませんでした。<br>画面下部のライブラリから不要な透明画像を削除してから再度お試しください。',
+                okText: '確認',
+                type: 'alert'
+            });
+        }
     } else {
+        byId('progress').style.display = 'none';
         await showCustomDialog({ title: '登録できませんでした', message: '有効なレイヤーデータがありませんでした。', okText: '閉じる', type: 'alert' });
     }
 }
-
 
 async function exportPsdLayersMerged() {
     const selected = getSelectedPsdLayers();
@@ -4316,9 +5201,10 @@ async function exportPsdLayersIndividual() {
           <span style="font-size:0.7rem; background:#e0e7ff; color:#4338ca; padding:3px 8px; border-radius:4px; font-weight:500;">PNG</span>
           <span style="font-size:0.7rem; background:#fce7f3; color:#9d174d; padding:3px 8px; border-radius:4px; font-weight:500;">PSD</span>
           <span style="font-size:0.7rem; background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:4px; font-weight:500;">AI</span>
+          <span style="font-size:0.7rem; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:4px; font-weight:500;">PDF</span>
         </div>
       </div>
-      <p style="margin:10px 0 0; font-size:0.72rem; color:var(--muted); text-align:center; line-height:1.5;">ファイル形式は自動判別。PSD・AIはレイヤー選択画面へ移行します。</p>
+      <p style="margin:10px 0 0; font-size:0.72rem; color:var(--muted); text-align:center; line-height:1.5;">ファイル形式は自動判別。PSD・AI・PDFはレイヤー抽出画面へ移行します。<br>（※AIはPDF互換のみ）</p>
     </div>
   </div>
 </div>
@@ -4333,7 +5219,7 @@ async function exportPsdLayersIndividual() {
       </div>
       <button onclick="closePsdCropModal()" style="background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1;">&times;</button>
     </div>
-    <div style="padding:8px 14px; border-bottom:1px solid var(--border); display:flex; gap:6px; align-items:center; flex-shrink:0; background:var(--bg); flex-wrap:wrap;">
+   <div style="padding:8px 14px; border-bottom:1px solid var(--border); display:flex; gap:6px; align-items:center; flex-shrink:0; background:var(--bg); flex-wrap:wrap;">
       <span style="font-size:0.7rem;color:var(--muted);font-weight:500;white-space:nowrap;">比率</span>
       <button class="asp-btn psd-crop-asp-btn active" onclick="setCropAspect(null)">自由</button>
       <button class="asp-btn psd-crop-asp-btn" data-ratio="1" onclick="setCropAspect(1)">1:1</button>
@@ -4342,13 +5228,28 @@ async function exportPsdLayersIndividual() {
       <button class="asp-btn psd-crop-asp-btn" data-ratio="1.778" onclick="setCropAspect(16/9)">16:9</button>
       <div style="width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0;"></div>
       <button class="asp-btn" onclick="resetCropRect()" title="全体を選択">全体</button>
-    </div>
+
+      <div style="margin-left:auto; display:flex; gap:6px; align-items:center;">
+        <span style="font-size:0.7rem;color:var(--muted);font-weight:500;white-space:nowrap;">背景</span>
+        <button class="asp-btn psd-crop-bg-btn" data-bg="transparent" onclick="setPsdCropBg('transparent')">透明</button>
+        <button class="asp-btn psd-crop-bg-btn active" data-bg="white" onclick="setPsdCropBg('white')">白</button>
+        <button class="asp-btn psd-crop-bg-btn" data-bg="black" onclick="setPsdCropBg('black')">黒</button>
+      </div>
+      </div>
     <div style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px;background:#111;min-height:200px;">
       <canvas id="psdCropCanvas" style="display:block;cursor:crosshair;touch-action:none;"></canvas>
     </div>
     <div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; flex-wrap:wrap;">
       <button class="btn btn-secondary" onclick="closePsdCropModal()">キャンセル</button>
-      <button class="btn" style="background:#8b5cf6;color:#fff;" onclick="confirmPsdCrop()">この範囲を透明画像に登録</button>
+      
+      <div id="psdCropNormalBtns" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn" style="background:#10b981;color:#fff;" onclick="confirmPsdCropToLogo()">透明画像に追加</button>
+        <button class="btn" style="background:#8b5cf6;color:#fff;" onclick="confirmPsdCropToList()">この範囲を一覧に追加</button>
+      </div>
+
+      <div id="psdCropLogoBtns" style="display:none; gap:10px; flex-wrap:wrap;">
+        <button class="btn" style="background:#6366f1;color:#fff;" onclick="confirmLogoCrop()">この画像に適用</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4370,9 +5271,10 @@ async function exportPsdLayersIndividual() {
       <span class="psd-sel-count" id="psdSelCount">0 / 0 レイヤー選択中</span>
     </div>
     <div class="psd-modal-body" id="psdLayerList"></div>
-    <div class="psd-modal-foot">
+<div class="psd-modal-foot">
       <button class="btn btn-secondary" onclick="closePsdLayerModal()">キャンセル</button>
-      <button class="btn" style="background:#8b5cf6;color:#fff;" onclick="registerLayersToPngLibrary()" title="選択したレイヤーを透明画像ライブラリに追加">📌 透明画像に登録</button>
+      <button class="btn" style="background:#6366f1;color:#fff;" onclick="registerLayersToThumbnailList()" title="選択したレイヤーをメインの画像リストに追加">📋 一覧に追加</button>
+      <button class="btn" style="background:#10b981;color:#fff;" onclick="registerLayersToPngLibrary()" title="選択したレイヤーを透明画像ライブラリに追加">📌 透明画像に登録</button>
     </div>
   </div>
 </div>
