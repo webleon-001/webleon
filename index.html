@@ -1426,9 +1426,18 @@ byId('renameSlotBtn').addEventListener('click', async () => {
 byId('clearSlotBtn').addEventListener('click', async () => {
     const confirmed = await showCustomDialog({ title: 'スロットのクリア', message: `現在のスロット (${slotNames[currentSlotId] || 'スロット ' + currentSlotId}) の全データを削除して初期化しますか？\nこの操作は元に戻せません。`, okText: 'クリアする', okClass: 'btn btn-danger', cancelText: 'キャンセル', type: 'confirm' });
     if (!confirmed) return;
+    
     processedImages = []; smallImages = []; japaneseImages = [];
     assignedSlots = { thumb: null, og: null, special: null, save1: null, save2: null, save3: null };
-    await saveAppState(); await loadAppState(currentSlotId); showToast("スロットをクリアしました"); updateSlotActionBtns();
+    
+    // ▼ ここを追加：スロット名の登録を削除する
+    delete slotNames[currentSlotId]; 
+    
+    isStartupEmpty = false; 
+    await saveAppState(); 
+    await loadAppState(currentSlotId); 
+    showToast("スロットを完全に初期化しました"); 
+    updateSlotActionBtns();
 });
 
 window.addEventListener('DOMContentLoaded', async () => {
