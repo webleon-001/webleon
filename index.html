@@ -3167,8 +3167,9 @@ function renderAllThumbs() {
             const ms = data._modeStates?.[data._lastAspectKey || 'free'];
             if (ms) hasBgWarning = isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot || 0, ms.cw, ms.ch);
         }
-        if (data.isSmall || data.hasJapanese || hasBgWarning) {
+if (data.isSmall || data.hasJapanese || hasBgWarning || data.isSplitData) {
             statusBadges += `<div style="position:absolute; top:4px; left:4px; display:flex; flex-direction:column; gap:4px; z-index:15; pointer-events:none; align-items:flex-start;">`;
+            if (data.isSplitData) statusBadges += `<span style="background:var(--accent); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2;">分割</span>`;
             if (data.isSmall) statusBadges += `<span style="background:var(--danger); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2;">1200px未満</span>`;
             if (data.hasJapanese) statusBadges += `<span style="background:var(--warn); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2;">日本語</span>`;
             if (hasBgWarning) statusBadges += `<span style="background:#8b5cf6; color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2;">余白</span>`;
