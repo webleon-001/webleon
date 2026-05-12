@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ショップリスト＆ソートツール</title>
+<title>連絡先リンク生成＆ソートツール</title>
 <style>
   body {
     font-family: sans-serif;
@@ -12,13 +12,18 @@
     margin: 0 auto;
   }
   textarea {
+    display: block; /* 入力欄の横にボタンが回り込むのを防ぐ */
     width: 100%;
+    max-width: 100%; /* 出力枠（親要素）より横に広がらないようにする */
     padding: 10px;
     box-sizing: border-box;
     font-family: monospace;
     margin-bottom: 10px;
+    resize: vertical; /* 横方向のサイズ変更を禁止し、縦方向のみ許可する */
   }
   .btn {
+    display: inline-block;
+    white-space: nowrap;
     padding: 10px 20px;
     font-size: 16px;
     cursor: pointer;
