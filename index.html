@@ -616,30 +616,43 @@ await loadAppState(currentSlotId);
 showToast("スロットを完全に初期化しました");
 updateSlotActionBtns();
 });
-window.addEventListener('DOMContentLoaded', async () => {const splitBar = byId('splitToolbarArea'); const logoBar = byId('logoToolbarArea');
-if (splitBar && logoBar && splitBar.parentNode) splitBar.parentNode.insertBefore(splitBar, logoBar.nextSibling);
-await initDB();
-const emptySlot = await findEmptySlot();
-const selector = byId('slotSelector');
-if (emptySlot) {const opt = Array.from(selector.options).find(o => o.value === emptySlot);
-if (opt && selector.options[0] !== opt) {selector.insertBefore(opt, selector.options[0]);
-}
-selector.value = emptySlot;
-await loadAppState(emptySlot);
-} else {selector.value = "1";
-await loadAppState("1");
-await showCustomDialog({title: 'SLOTに空きがありません',message: '全てのSLOT（1〜10）にデータが保存されています。\nいずれかのSLOTを選択して「スロットをクリア」してから、再度お試しください。',okText: '閉じる',type: 'alert'
-});
-}
-processedImages = []; smallImages = []; japaneseImages = [];
-assignedSlots = { thumb: null, og: null, special: null };
-previewArea.innerHTML = '<div class="preview-drop-hint">ここにドロップして追加</div>';
-globalLastUpdated = "-"; globalUpdateType = "edit";
-updateTimestampDisplay();
-renderAllPresetCanvases();
-updateActionAreaState();
-isStartupEmpty = true;
-renderLogoLibrary();
+window.addEventListener('DOMContentLoaded', async () => {
+    const splitBar = byId('splitToolbarArea'); 
+    const logoBar = byId('logoToolbarArea');
+    if (splitBar && logoBar && splitBar.parentNode) {
+        splitBar.parentNode.insertBefore(splitBar, logoBar.nextSibling);
+    }
+    
+    await initDB();
+    
+    // データベース保護のため、ロード中は「初期状態」フラグを立てる
+    isStartupEmpty = true; 
+
+    const emptySlot = await findEmptySlot();
+    const selector = byId('slotSelector');
+    
+    if (emptySlot) {
+        const opt = Array.from(selector.options).find(o => o.value === emptySlot);
+        if (opt && selector.options[0] !== opt) {
+            selector.insertBefore(opt, selector.options[0]);
+        }
+        selector.value = emptySlot;
+        await loadAppState(emptySlot);
+    } else {
+        selector.value = "1";
+        await loadAppState("1");
+        await showCustomDialog({
+            title: 'SLOTに空きがありません',
+            message: '全てのSLOT（1〜10）にデータが保存されています。\nいずれかのSLOTを選択して「スロットをクリア」してから、再度お試しください。',
+            okText: '閉じる',
+            type: 'alert'
+        });
+    }
+
+    // 読み込みが完了したので、保存ブロックのガードを外す
+    isStartupEmpty = false;
+    
+    renderLogoLibrary();
 });
 byId('searchInput').addEventListener('input', (e) => applySearchFilter(e.target.value));
 function applySearchFilter(query) {query = (query || '').toLowerCase();
