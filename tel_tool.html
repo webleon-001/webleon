@@ -49,6 +49,10 @@
     color: #007BFF;
     text-decoration: underline;
   }
+  .warning-text {
+    color: #d9534f;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
@@ -66,7 +70,8 @@ F.E.N.　03-3498-1640
   <button class="btn" onclick="processData()">変換して並び替え</button>
 
   <h2>2. 出力結果（CMS貼り付け用）</h2>
-  <p>以下の枠内のテキストをそのままCMSに貼り付けてください。</p>
+  <p>以下の枠内のテキストをそのままCMSに貼り付けてください。<br>
+  <small class="warning-text">※URLはCMS側で必ず新規ウインドウをONにしてください。</small></p>
   <div id="preview" class="preview-box">ここに結果が表示されます。</div>
   
   <button class="btn btn-copy" onclick="copyResult()">結果をコピーする</button>
