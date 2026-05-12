@@ -65,12 +65,12 @@
   <h2>1. 入力</h2>
   <p>ブランド名と連絡先（電話番号・URL・メールアドレス）のリストを貼り付けてください。<br>
   <small>※アルファベットは日本語読み（A→エー、B→ビー…）として50音順に並び替えます。<br>
-  ※URLはハイパーリンク化し、メールアドレスはテキストのまま出力します。<br>
+  ※URLはハイパーリンク化し、メールアドレスはテキストのまま出力します。（wwwから始まる場合は自動でhttps://が付加されます）<br>
   ※間のスペースの有無や数に関わらず、自動で全角空き1つに整えます。</small></p>
   <textarea id="inputText" rows="8" placeholder="例:
 F.E.N.　03-3498-1640
 カルティエ カスタマー サービスセンター　0120-1847-00
-ブリーズ　https://ceive.jp"></textarea>
+ブリーズ　www.ceive.jp"></textarea>
   
   <button class="btn" onclick="processData()">変換して並び替え</button>
 
@@ -117,7 +117,8 @@ F.E.N.　03-3498-1640
       const lines = input.split('\n').filter(line => line.trim() !== '');
       
       const phoneRegex = /[0-9０-９][0-9０-９\-\−\－\―\ー]{8,}/;
-      const urlRegex = /https?:\/\/[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=%]+/;
+      // www. から始まる文字列もURLとして判定できるように正規表現を修正
+      const urlRegex = /(?:https?:\/\/|www\.)[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=%]+/;
       const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/;
       
       const regex = new RegExp(`^(.*?)[\\s　]*(${phoneRegex.source}|${urlRegex.source}|${emailRegex.source})$`, 'i');
@@ -132,8 +133,12 @@ F.E.N.　03-3498-1640
           let type = '';
           let processedValue = contactInfo;
           
-          if (/^https?:\/\//i.test(contactInfo)) {
+          if (/^(https?:\/\/|www\.)/i.test(contactInfo)) {
             type = 'url';
+            // wwwから始まる場合は https:// を付加する
+            if (/^www\./i.test(contactInfo)) {
+              processedValue = 'https://' + contactInfo;
+            }
           } else if (/@/.test(contactInfo)) {
             type = 'email';
           } else {
