@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>電話番号リンク生成＆ソートツール</title>
+<style>
+  body {
+    font-family: sans-serif;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  textarea {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    font-family: monospace;
+    margin-bottom: 10px;
+  }
+  .btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  .btn:hover {
+    background-color: #0056b3;
+  }
+  .btn-copy {
+    background-color: #28a745;
+  }
+  .btn-copy:hover {
+    background-color: #218838;
+  }
+  .preview-box {
+    border: 1px solid #ccc;
+    padding: 15px;
+    background-color: #fff;
+    min-height: 100px;
+    margin-bottom: 10px;
+    line-height: 1.6;
+  }
+  a {
+    color: #007BFF;
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+  <h2>1. 入力</h2>
+  <p>ブランド名と電話番号のリストを貼り付けてください。<br>
+  <small>※間のスペースの有無や数（全角・半角問わず）に関わらず、自動で全角空き1つに整えます。<br>
+  ※電話番号が全角でも自動的に半角に変換されます。</small></p>
+  <textarea id="inputText" rows="8" placeholder="例: カルティエ カスタマー サービスセンター　0120-1847-00"></textarea>
+  
+  <button class="btn" onclick="processData()">変換して並び替え</button>
+
+  <h2>2. 出力結果（CMS貼り付け用）</h2>
+  <p>以下の枠内のテキストをそのままCMSに貼り付けてください。</p>
+  <div id="preview" class="preview-box">ここに結果が表示されます。</div>
+  
+  <button class="btn btn-copy" onclick="copyResult()">結果をコピーする</button>
+
+  <script>
+    // 全角数字・ハイフンを半角に変換する関数
+    function convertToHalfWidth(str) {
+      let halfStr = str.replace(/[０-９]/g, function(s) {
+        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+      });
+      halfStr = halfStr.replace(/[−－―ー]/g, '-');
+      return halfStr;
+    }
+
+    function processData() {
+      const input = document.getElementById('inputText').value;
+      const lines = input.split('\n').filter(line => line.trim() !== '');
+      
+      const data = lines.map(line => {
+        // [\\s　]* で間にある複数スペース（全角・半角）を全て吸収して無視する
+        const match = line.match(/^(.*?)[\s　]*([0-9０-９][0-9０-９\-\−\－\―\ー]{8,})$/);
+        
+        if (match) {
+          // trim() で念のためブランド名前後の不要な空白を削除
+          const brandName = match[1].trim();
+          const phoneNumber = convertToHalfWidth(match[2].trim());
+          return { name: brandName, phone: phoneNumber };
+        } else {
+          return { name: line.trim(), phone: '' }; 
+        }
+      });
+
+      // 50音順ソート
+      data.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+
+      let htmlOutput = '';
+      data.forEach(item => {
+        if (item.phone) {
+          // ここで必ず「全角スペース1個（　）」になるよう固定して結合
+          htmlOutput += `${item.name}　<a href="tel:${item.phone}">${item.phone}</a><br>\n`;
+        } else {
+          htmlOutput += `${item.name}<br>\n`;
+        }
+      });
+
+      document.getElementById('preview').innerHTML = htmlOutput;
+    }
+
+    // CMS貼り付け用にリッチテキストとしてコピーする関数
+    function copyResult() {
+      const previewBox = document.getElementById('preview');
+      const html = previewBox.innerHTML;
+      const text = previewBox.innerText;
+
+      if (text === 'ここに結果が表示されます。' || text.trim() === '') {
+        alert('コピーするデータがありません。先に「変換して並び替え」を実行してください。');
+        return;
+      }
+
+      if (navigator.clipboard && window.ClipboardItem) {
+        const typeText = new Blob([text], { type: 'text/plain' });
+        const typeHtml = new Blob([html], { type: 'text/html' });
+        const data = [new ClipboardItem({ 'text/plain': typeText, 'text/html': typeHtml })];
+
+        navigator.clipboard.write(data).then(function() {
+          alert('コピーしました！CMSの記事編集画面にそのまま貼り付けてください。');
+        }).catch(function(err) {
+          fallbackCopyText(previewBox);
+        });
+      } else {
+        fallbackCopyText(previewBox);
+      }
+    }
+
+    // 古いブラウザ用のフォールバック
+    function fallbackCopyText(element) {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      try {
+        document.execCommand('copy');
+        alert('コピーしました！CMSの記事編集画面にそのまま貼り付けてください。');
+      } catch (err) {
+        alert('コピーに失敗しました。お手数ですが、枠内のテキストを手動で選択してコピーしてください。');
+      }
+      selection.removeAllRanges();
+    }
+  </script>
+
+</body>
+</html>
