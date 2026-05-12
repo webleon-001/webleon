@@ -65,10 +65,6 @@ const hh = String(now.getHours()).padStart(2, '0');
 const mm = String(now.getMinutes()).padStart(2, '0');
 return `${y}/${m}/${d} ${hh}:${mm}`;
 }
-function refreshGlobalTimestamp() {globalLastUpdated = getFormattedDate();
-const el = byId('globalLastUpdatedText');
-if (el) el.textContent = globalLastUpdated;
-}
 async function processSingleFile(file) {return new Promise((resolve) => {const img = new Image(), url = URL.createObjectURL(file);
 img.onload = async () => {if (isLoadingCanceled) { URL.revokeObjectURL(url); resolve(); return; }
 const isSmall = img.width < 1200, hasJapanese = /[^\x01-\x7E]/.test(file.name);
@@ -158,60 +154,121 @@ updateSavedState();
 renderAllThumbs();
 showToast('編集内容を保存しました。');
 }
-async function saveSplitToNormalImage() {if (!isSplitPreviewActive || splitSelectedImages.length < splitTargetCount) return false;
-let hasBg = false;
-for(let i=0; i<splitTargetCount; i++) {const st = splitStates[i], d = splitSelectedImages[i];
-const cw = targetCw / splitTargetCount, ch = targetCh;
-const iw = d.originalWidth * st.baseScale * st.scale, ih = d.originalHeight * st.baseScale * st.scale;
-if(isBgVisible(st.dx, st.dy, iw, ih, st.rot||0, cw, ch)) { hasBg = true; break; }
-}
-if (hasBg) {const confirmBg = await showCustomDialog({ title: '確認', message: '下地（余白）が見えた状態ですが、このまま保存しますか？', okText: '保存する', cancelText: 'キャンセル', type: 'confirm' });
-if (!confirmBg) return false;
-}
-showProgressPanel('分割画像を保存中...');
-ensureSplitBaseScales();
-const effectiveAspect = splitModePreservedAspect || currentAspectKey || 'free';
-const expSize = EXPORT_SIZE[effectiveAspect] || { w: 1200, h: Math.round(1200 * targetCh / (targetCw || 1200)) };
-const outW = expSize.w || 1200, outH = expSize.h || Math.round(outW * (targetCh / (targetCw || outW)));
-const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH;
-const ctx = canvas.getContext('2d'), segWidth = outW / splitTargetCount, exportRatio = outW / targetCw;
-await Promise.all(splitSelectedImages.map(async (imgData, i) => {const img = new Image(); img.src = imgData.blobUrl; await new Promise(r => { img.onload = r; if (img.complete) r(); });
-const st = splitStates[i], finalScale = st.baseScale * st.scale;
-const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = outH;
-const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0,0,segWidth,outH);
-const drawW = imgData.originalWidth * finalScale * exportRatio, drawH = imgData.originalHeight * finalScale * exportRatio, drawX = st.dx * exportRatio, drawY = st.dy * exportRatio;
-tCtx.filter = st.sat !== 100 ? `saturate(${st.sat}%)` : 'none';
-tCtx.save(); tCtx.translate(drawX + drawW/2, drawY + drawH/2); if(st.rot) tCtx.rotate(st.rot * Math.PI/180);
-tCtx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH); tCtx.restore(); tCtx.filter = 'none';
-applyImageAdjustments(tCtx, segWidth, outH, st.bri, st.sharp); ctx.drawImage(tempCanvas, i * segWidth, 0);
-}));
-if (logoModeActive && currentLogos.length > 0) {for (const lp of currentLogos) {if (lp.hidden) continue;
-const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete) r(); });
-const eR = outW / targetCw, dw = lp.baseW * lp.scale * eR, dh = lp.baseH * lp.scale * eR;
-ctx.save(); ctx.translate(lp.x * eR, lp.y * eR); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore();
-}
-}
-const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.85));
-const thumbBlob = await new Promise(res => { const cvs = document.createElement('canvas'); cvs.width = 150; cvs.height = Math.round(outH * (150/outW)); cvs.getContext('2d').drawImage(canvas, 0, 0, 150, cvs.height); cvs.toBlob(res, 'image/jpeg', 0.8); });
-const _now = new Date();
-const _dateStr = _now.getFullYear().toString()
-+ String(_now.getMonth() + 1).padStart(2, '0')
-+ String(_now.getDate()).padStart(2, '0');
-const _prefix = `${_dateStr}_split`;
-const _existingCount = processedImages.filter(img =>img.isSplitData && img.exportName && img.exportName.startsWith(_prefix)
-).length;
-const _seq = String(_existingCount + 1).padStart(2, '0');
-const safeName = `${_prefix}${_seq}.jpg`;
-const originalName = safeName;
-const newData = {isSplitData: true,originalName: originalName,exportName: safeName,splitTargetCount,splitSelectedImages: [...splitSelectedImages],splitStates: JSON.parse(JSON.stringify(splitStates)),splitSelectedImagesData: splitSelectedImages.map(si => ({ previewBlob: si.previewBlob, originalWidth: si.originalWidth, originalHeight: si.originalHeight, originalName: si.originalName, exportName: si.exportName, isSmall: si.isSmall, hasJapanese: si.hasJapanese })),_lastAspectKey: effectiveAspect,_modeStates: { [effectiveAspect]: { cw: targetCw, ch: targetCh, logos: JSON.parse(JSON.stringify(currentLogos)) } },_viewCw: targetCw,_viewCh: targetCh,blobUrl: URL.createObjectURL(blob),thumbUrl: URL.createObjectURL(thumbBlob),blob: blob,previewBlob: blob,thumbBlob: thumbBlob,originalWidth: outW,originalHeight: outH,isSmall: false,hasJapanese: false,sizeStr: '-'
-};
-processedImages.push(newData);
-currentPreviewIndex = processedImages.length - 1;
-currentPreviewData = newData;
-await saveAppState();
-renderAllThumbs();
-byId('progress').style.display = 'none';
-return true;
+async function saveSplitToNormalImage() {
+    if (!isSplitPreviewActive || splitSelectedImages.length < splitTargetCount) return false;
+    
+    let hasBg = false;
+    for(let i=0; i<splitTargetCount; i++) {
+        const st = splitStates[i], d = splitSelectedImages[i];
+        const cw = targetCw / splitTargetCount, ch = targetCh;
+        const iw = d.originalWidth * st.baseScale * st.scale, ih = d.originalHeight * st.baseScale * st.scale;
+        if(isBgVisible(st.dx, st.dy, iw, ih, st.rot||0, cw, ch)) { hasBg = true; break; }
+    }
+    
+    if (hasBg) {
+        const confirmBg = await showCustomDialog({ title: '確認', message: '下地（余白）が見えた状態ですが、このまま保存しますか？', okText: '保存する', cancelText: 'キャンセル', type: 'confirm' });
+        if (!confirmBg) return false;
+    }
+    
+    showProgressPanel('分割画像を保存中...');
+    ensureSplitBaseScales();
+    
+    const effectiveAspect = splitModePreservedAspect || currentAspectKey || 'free';
+    const expSize = EXPORT_SIZE[effectiveAspect] || { w: 1200, h: Math.round(1200 * targetCh / (targetCw || 1200)) };
+    const outW = expSize.w || 1200, outH = expSize.h || Math.round(outW * (targetCh / (targetCw || outW)));
+    
+    const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH;
+    const ctx = canvas.getContext('2d'), segWidth = outW / splitTargetCount, exportRatio = outW / targetCw;
+    
+    await Promise.all(splitSelectedImages.map(async (imgData, i) => {
+        const img = new Image(); img.src = imgData.blobUrl; 
+        await new Promise(r => { img.onload = r; if (img.complete) r(); });
+        const st = splitStates[i], finalScale = st.baseScale * st.scale;
+        const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = outH;
+        const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0,0,segWidth,outH);
+        const drawW = imgData.originalWidth * finalScale * exportRatio, drawH = imgData.originalHeight * finalScale * exportRatio, drawX = st.dx * exportRatio, drawY = st.dy * exportRatio;
+        tCtx.filter = st.sat !== 100 ? `saturate(${st.sat}%)` : 'none';
+        tCtx.save(); tCtx.translate(drawX + drawW/2, drawY + drawH/2); if(st.rot) tCtx.rotate(st.rot * Math.PI/180);
+        tCtx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH); tCtx.restore(); tCtx.filter = 'none';
+        applyImageAdjustments(tCtx, segWidth, outH, st.bri, st.sharp); ctx.drawImage(tempCanvas, i * segWidth, 0);
+    }));
+    
+    if (logoModeActive && currentLogos.length > 0) {
+        for (const lp of currentLogos) {
+            if (lp.hidden) continue;
+            const lI = new Image(); 
+            await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete) r(); });
+            const eR = outW / targetCw, dw = lp.baseW * lp.scale * eR, dh = lp.baseH * lp.scale * eR;
+            ctx.save(); ctx.translate(lp.x * eR, lp.y * eR); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore();
+        }
+    }
+    
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.85));
+    const thumbBlob = await new Promise(res => { 
+        const cvs = document.createElement('canvas'); cvs.width = 150; cvs.height = Math.round(outH * (150/outW)); 
+        cvs.getContext('2d').drawImage(canvas, 0, 0, 150, cvs.height); 
+        cvs.toBlob(res, 'image/jpeg', 0.8); 
+    });
+
+    let finalOriginalName, finalExportName;
+
+    // 現在開いているのが「既に存在する分割画像」であれば、ファイル名を引き継ぐ
+    if (currentPreviewIndex !== -1 && processedImages[currentPreviewIndex] && processedImages[currentPreviewIndex].isSplitData) {
+        finalOriginalName = processedImages[currentPreviewIndex].originalName;
+        finalExportName = processedImages[currentPreviewIndex].exportName;
+    } else {
+        // 新規作成の場合は、連番で新しいファイル名を生成する
+        const _now = new Date();
+        const _dateStr = _now.getFullYear().toString()
+            + String(_now.getMonth() + 1).padStart(2, '0')
+            + String(_now.getDate()).padStart(2, '0');
+        const _prefix = `${_dateStr}_split`;
+        const _existingCount = processedImages.filter(img => img.isSplitData && img.exportName && img.exportName.startsWith(_prefix)).length;
+        const _seq = String(_existingCount + 1).padStart(2, '0');
+        finalExportName = `${_prefix}${_seq}.jpg`;
+        finalOriginalName = finalExportName;
+    }
+
+    const newData = {
+        isSplitData: true,
+        originalName: finalOriginalName,
+        exportName: finalExportName,
+        splitTargetCount,
+        splitSelectedImages: [...splitSelectedImages],
+        splitStates: JSON.parse(JSON.stringify(splitStates)),
+        splitSelectedImagesData: splitSelectedImages.map(si => ({ previewBlob: si.previewBlob, originalWidth: si.originalWidth, originalHeight: si.originalHeight, originalName: si.originalName, exportName: si.exportName, isSmall: si.isSmall, hasJapanese: si.hasJapanese })),
+        _lastAspectKey: effectiveAspect,
+        _modeStates: { [effectiveAspect]: { cw: targetCw, ch: targetCh, logos: JSON.parse(JSON.stringify(currentLogos)) } },
+        _viewCw: targetCw,
+        _viewCh: targetCh,
+        blobUrl: URL.createObjectURL(blob),
+        thumbUrl: URL.createObjectURL(thumbBlob),
+        blob: blob,
+        previewBlob: blob,
+        thumbBlob: thumbBlob,
+        originalWidth: outW,
+        originalHeight: outH,
+        isSmall: false,
+        hasJapanese: false,
+        sizeStr: '-'
+    };
+
+    if (currentPreviewIndex !== -1 && processedImages[currentPreviewIndex] && processedImages[currentPreviewIndex].isSplitData) {
+        // 既存の分割画像を上書き
+        processedImages[currentPreviewIndex] = newData;
+    } else {
+        // 全く新しい分割画像として追加
+        processedImages.push(newData);
+        currentPreviewIndex = processedImages.length - 1;
+    }
+    
+    // プレビューの参照も新しいデータに更新する
+    currentPreviewData = newData;
+
+    await saveAppState();
+    renderAllThumbs();
+    byId('progress').style.display = 'none';
+    return true;
 }
 function toggleGrid() {isGridVisible = !isGridVisible;
 const overallGrid = byId('overallGridOverlay');
@@ -309,30 +366,57 @@ db.close(); db = null;}
 localStorage.clear();
 location.reload();
 }
-async function saveAppState() {if (!db) return;
-if (isStartupEmpty) return;
-const assignedSlotsIndices = {};
-const assignedSlotsData = {};
-['thumb', 'og', 'special'].forEach(key => {const slotImg = assignedSlots[key];
-if (!slotImg) {assignedSlotsIndices[key] = -1;
-} else {const idx = processedImages.indexOf(slotImg);
-if (idx !== -1) {assignedSlotsIndices[key] = idx;
-} else {assignedSlotsIndices[key] = -1;
-if (slotImg.isSplitData) {assignedSlotsData[key] = { ...slotImg, blobUrl: null, thumbUrl: null, splitSelectedImages: null };
-} else {assignedSlotsData[key] = { ...slotImg, blobUrl: null, thumbUrl: null, splitSelectedImages: null, splitSelectedImagesIndices: null };
-}
-}
-}
-});
-const state = {slotName: slotNames[currentSlotId] || `スロット ${currentSlotId}`,lastUpdated: globalLastUpdated,processedImages: processedImages.map(img => {if (img.isSplitData) {return { ...img, blobUrl: null, thumbUrl: null, splitSelectedImages: null };
-} else {return { ...img, blobUrl: null, thumbUrl: null, splitSelectedImages: null, splitSelectedImagesIndices: null };
-}
-}),assignedSlotsIndices,assignedSlotsData
-};
-const tx = db.transaction(STORE_NAME, 'readwrite');
-tx.objectStore(STORE_NAME).put(state, 'state_' + currentSlotId);
-tx.objectStore(STORE_NAME).put(slotNames, 'slotNames');
-updateSlotLabels();
+async function saveAppState() {
+    if (!db) return;
+    // 初期起動時の読み込み完了前であれば保存をスキップする（誤上書き防止）
+    if (isStartupEmpty) return;
+
+    const assignedSlotsIndices = {};
+    const assignedSlotsData = {};
+
+    ['thumb', 'og', 'special'].forEach(key => {
+        const slotImg = assignedSlots[key];
+        if (!slotImg) {
+            assignedSlotsIndices[key] = -1;
+        } else {
+            const idx = processedImages.indexOf(slotImg);
+            if (idx !== -1) {
+                assignedSlotsIndices[key] = idx;
+            } else {
+                assignedSlotsIndices[key] = -1;
+                if (slotImg.isSplitData) {
+                    assignedSlotsData[key] = { ...slotImg, blobUrl: null, thumbUrl: null, splitSelectedImages: null };
+                } else {
+                    assignedSlotsData[key] = { ...slotImg, blobUrl: null, thumbUrl: null, splitSelectedImages: null, splitSelectedImagesIndices: null };
+                }
+            }
+        }
+    });
+
+    const state = {
+        slotName: slotNames[currentSlotId] || `スロット ${currentSlotId}`,
+        lastUpdated: globalLastUpdated,
+        processedImages: processedImages.map(img => {
+            if (img.isSplitData) {
+                return { ...img, blobUrl: null, thumbUrl: null, splitSelectedImages: null };
+            } else {
+                return { ...img, blobUrl: null, thumbUrl: null, splitSelectedImages: null, splitSelectedImagesIndices: null };
+            }
+        }),
+        assignedSlotsIndices,
+        assignedSlotsData
+    };
+
+    const tx = db.transaction(STORE_NAME, 'readwrite');
+    // 現在のスロットの状態を保存
+    tx.objectStore(STORE_NAME).put(state, 'state_' + currentSlotId);
+    // 全スロットの名前リストを保存
+    tx.objectStore(STORE_NAME).put(slotNames, 'slotNames');
+
+    tx.oncomplete = () => {
+        updateSlotLabels();
+        updateSlotActionBtns();
+    };
 }
 async function loadAppState(slotId) {if (!db) return;
 currentSlotId = slotId;
@@ -392,47 +476,92 @@ updateSlotLabels();
 updateSlotActionBtns();
 }
 let isAppBooting = true;
-async function updateSlotLabels() {const selector = byId('slotSelector');
-const slotsInfo = [];
-let emptyCount = 0;
-for (let i = 1; i <= 10; i++) {const id = i.toString();
-const tx = db.transaction(STORE_NAME, 'readonly');
-const data = await new Promise(res => {const req = tx.objectStore(STORE_NAME).get('state_' + id);
-req.onsuccess = () => res(req.result);
-});
-const name = slotNames[id] || `スロット ${id}`;
-const count = data && data.processedImages ? data.processedImages.length : 0;
-const hasSpecial = data && data.assignedSlotsData && Object.keys(data.assignedSlotsData).length > 0;
-const isEmpty = (count === 0 && !hasSpecial);
-if (isEmpty) emptyCount++;
-const lastUsed = parseInt(localStorage.getItem(`slot_last_used_${id}`) || 0);
-slotsInfo.push({id, name, isEmpty, lastUsed,label: isEmpty ? `${name} (空)` : `${name} (${count}枚${hasSpecial ? ' + 特殊' : ''})`
-});
-}
-const emptySlots = slotsInfo.filter(s => s.isEmpty).sort((a, b) => parseInt(a.id) - parseInt(b.id));
-const usedSlots = slotsInfo.filter(s => !s.isEmpty).sort((a, b) => b.lastUsed - a.lastUsed);
-let finalOrder = [];
-if (emptySlots.length > 0) {const firstEmpty = emptySlots.shift();
-finalOrder = [firstEmpty, ...usedSlots, ...emptySlots];
-} else {finalOrder = usedSlots;
-}
-const currentValue = selector.value;
-selector.innerHTML = '';
-finalOrder.forEach(slot => {const option = document.createElement('option');
-option.value = slot.id;
-option.textContent = slot.label;
-selector.appendChild(option);
-});
-selector.value = currentValue;
-if (emptyCount > 0) {const alertDiv = document.getElementById('slot-full-alert');
-if (alertDiv) {alertDiv.remove();
-}
-}
-if (isAppBooting) {if (emptyCount === 0) {showSlotFullWarning();
-}
-isAppBooting = false;
-}
-updateSlotActionBtns();
+async function updateSlotLabels() {
+    const selector = byId('slotSelector');
+    const slotsInfo = [];
+    let emptyCount = 0;
+    
+    for (let i = 1; i <= 10; i++) {
+        const id = i.toString();
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const data = await new Promise(res => {
+            const req = tx.objectStore(STORE_NAME).get('state_' + id);
+            req.onsuccess = () => res(req.result);
+            req.onerror = () => res(null);
+        });
+        
+        const name = slotNames[id] || `スロット ${id}`;
+        let totalCount = 0;
+        
+        // 1. サムネイル一覧（プレビュー一覧）の画像をカウント
+        // （分割画像も1つの要素として扱うため、保存されれば+1、削除されれば-1になります）
+        if (data && data.processedImages) {
+            totalCount += data.processedImages.length;
+        }
+        
+        // 2. 特殊枠（Thumb/OG/Special）にのみ保存されている独立した画像をカウント
+        if (data && data.assignedSlotsData) {
+            Object.values(data.assignedSlotsData).forEach(v => {
+                if (v !== null && v !== undefined) {
+                    totalCount += 1;
+                }
+            });
+        }
+        
+        const isEmpty = (totalCount === 0);
+        if (isEmpty) emptyCount++;
+        const lastUsed = parseInt(localStorage.getItem(`slot_last_used_${id}`) || 0);
+        
+        slotsInfo.push({
+            id, 
+            name, 
+            isEmpty, 
+            lastUsed,
+            label: isEmpty ? `${name} (空)` : `${name} (${totalCount}枚)`
+        });
+    }
+    
+    const emptySlots = slotsInfo.filter(s => s.isEmpty).sort((a, b) => parseInt(a.id) - parseInt(b.id));
+    const usedSlots = slotsInfo.filter(s => !s.isEmpty).sort((a, b) => b.lastUsed - a.lastUsed);
+    let finalOrder = [];
+    
+    if (emptySlots.length > 0) {
+        const firstEmpty = emptySlots.shift();
+        finalOrder = [firstEmpty, ...usedSlots, ...emptySlots];
+    } else {
+        finalOrder = usedSlots;
+    }
+    
+    const currentValue = selector.value;
+    selector.innerHTML = '';
+    finalOrder.forEach(slot => {
+        const option = document.createElement('option');
+        option.value = slot.id;
+        option.textContent = slot.label;
+        selector.appendChild(option);
+    });
+    
+    // 現在選択されていたスロットの復元
+    if (Array.from(selector.options).some(o => o.value === currentValue)) {
+        selector.value = currentValue;
+    } else if (selector.options.length > 0) {
+        selector.value = selector.options[0].value;
+    }
+    
+    if (emptyCount > 0) {
+        const alertDiv = document.getElementById('slot-full-alert');
+        if (alertDiv) {
+            alertDiv.remove();
+        }
+    }
+    
+    if (isAppBooting) {
+        if (emptyCount === 0) {
+            showSlotFullWarning();
+        }
+        isAppBooting = false;
+    }
+    updateSlotActionBtns();
 }
 function updateSlotActionBtns() {const isEmpty = processedImages.length === 0 && Object.values(assignedSlots).every(v => v === null);
 const renameBtn = byId('renameSlotBtn');
@@ -480,12 +609,23 @@ await loadAppState(slotId);
 byId('progress').style.display = 'none';
 showToast(`スロット ${slotId} を読み込みました`);
 });
-byId('renameSlotBtn').addEventListener('click', async () => {const newName = await showCustomDialog({title: 'スロット名の変更',message: 'スロットの名前を入力してください',type: 'prompt',defaultValue: slotNames[currentSlotId] || `スロット ${currentSlotId}`,okText: '変更',cancelText: 'キャンセル'
-});
-if (newName !== null) {slotNames[currentSlotId] = newName;
-await saveAppState();
-showToast("スロット名を変更しました");
-}
+byId('renameSlotBtn').addEventListener('click', async () => {
+    const newName = await showCustomDialog({
+        title: 'スロット名の変更',
+        message: 'スロットの名前を入力してください',
+        type: 'prompt',
+        defaultValue: slotNames[currentSlotId] || `スロット ${currentSlotId}`,
+        okText: '変更',
+        cancelText: 'キャンセル'
+    });
+    
+    if (newName !== null) {
+        // 名前を変更した時点で「初期状態」ではないとみなし、保存を許可する
+        isStartupEmpty = false; 
+        slotNames[currentSlotId] = newName;
+        await saveAppState();
+        showToast("スロット名を変更しました");
+    }
 });
 byId('clearSlotBtn').addEventListener('click', async () => {const confirmed = await showCustomDialog({ title: 'スロットのクリア', message: `現在のスロット (${slotNames[currentSlotId] || 'スロット ' + currentSlotId}) の全データを削除して初期化しますか？\nこの操作は元に戻せません。`, okText: 'クリアする', okClass: 'btn btn-danger', cancelText: 'キャンセル', type: 'confirm' });
 if (!confirmed) return;
@@ -542,9 +682,12 @@ if (p < 1) { _animations[key] = requestAnimationFrame(step); } else { delete _an
 _animations[key] = requestAnimationFrame(step);
 }
 function cancelAnimation(key) { if (_animations[key]) { cancelAnimationFrame(_animations[key]); delete _animations[key]; } }
+
+
 function showCustomDialog(options) {
   return new Promise((resolve) => {
     const modal = byId('customDialogModal'), titleEl = byId('customDialogTitle'), msgEl = byId('customDialogMessage');
+    const card = modal.querySelector('.custom-dialog-card');
     const okBtn = byId('customDialogOkBtn'), cancelBtn = byId('customDialogCancelBtn'), closeBtn = byId('customDialogCloseBtn');
     let extraBtn = byId('customDialogExtraBtn');
     if (!extraBtn) {
@@ -558,9 +701,6 @@ function showCustomDialog(options) {
       inputEl.type = 'text';
       inputEl.id = 'customDialogInput';
       inputEl.style.cssText = 'display:none; width: 100%; padding: 10px 12px; margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; outline: none; box-sizing: border-box; background: var(--bg); color: var(--text);';
-      inputEl.onfocus = function() { this.style.borderColor = 'var(--accent)'; };
-      inputEl.onblur = function() { this.style.borderColor = 'var(--border)'; };
-      msgEl.parentNode.insertBefore(inputEl, modal.querySelector('.custom-dialog-actions'));
     }
     
     let selectEl = byId('customDialogSelect');
@@ -568,22 +708,30 @@ function showCustomDialog(options) {
       selectEl = document.createElement('select');
       selectEl.id = 'customDialogSelect';
       selectEl.style.cssText = 'display:none; width: 100%; padding: 10px 12px; margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; outline: none; box-sizing: border-box; background: var(--bg); color: var(--text); cursor: pointer;';
-      selectEl.onfocus = function() { this.style.borderColor = 'var(--accent)'; };
-      selectEl.onblur = function() { this.style.borderColor = 'var(--border)'; };
-      msgEl.parentNode.insertBefore(selectEl, modal.querySelector('.custom-dialog-actions'));
+    }
+
+    let multiSelectContainer = byId('customDialogMultiSelect');
+    if (!multiSelectContainer) {
+      multiSelectContainer = document.createElement('div');
+      multiSelectContainer.id = 'customDialogMultiSelect';
+      msgEl.parentNode.insertBefore(multiSelectContainer, modal.querySelector('.custom-dialog-actions'));
     }
 
     titleEl.textContent = options.title || '確認'; msgEl.innerHTML = options.message || '';
     okBtn.textContent = options.okText || 'OK'; okBtn.className = options.okClass || 'btn btn-success';
     
+    // スタイルリセット
+    card.style.cssText = ''; 
+    multiSelectContainer.style.cssText = 'display:none; overflow-y: auto; text-align: left; margin-bottom: 20px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); padding: 12px;';
+    multiSelectContainer.style.maxHeight = '250px';
+
     if (options.type === 'alert') {
-      cancelBtn.style.display = 'none'; extraBtn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'none';
+      cancelBtn.style.display = 'none'; extraBtn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'none';
     } else if (options.type === 'prompt') {
-      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; inputEl.style.display = 'block'; selectEl.style.display = 'none';
+      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; inputEl.style.display = 'block'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'none';
       inputEl.value = options.defaultValue || '';
-      inputEl.onkeydown = (e) => { if (e.key === 'Enter') okBtn.click(); };
     } else if (options.type === 'select') {
-      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'block';
+      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'block'; multiSelectContainer.style.display = 'none';
       selectEl.innerHTML = '';
       if (options.selectOptions) {
         options.selectOptions.forEach(opt => {
@@ -592,24 +740,83 @@ function showCustomDialog(options) {
           selectEl.appendChild(option);
         });
       }
+    } else if (options.type === 'multi-select') {
+      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'grid';
+      
+      // グリッドレイアウトの設定：幅に応じて自動で並べる
+      multiSelectContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
+      multiSelectContainer.style.gap = '12px';
+      multiSelectContainer.style.maxHeight = 'none';
+      
+      // ダイアログ全体のリサイズ設定
+      card.style.display = 'flex';
+      card.style.flexDirection = 'column';
+      card.style.resize = 'both';
+      card.style.overflow = 'hidden';
+      card.style.maxWidth = '94vw';
+      card.style.maxHeight = '90vh';
+      card.style.minWidth = '420px';
+      card.style.minHeight = '400px';
+      card.style.width = '750px'; // デフォルト幅
+      
+      multiSelectContainer.style.flex = '1';
+      multiSelectContainer.style.minHeight = '0';
+
+      multiSelectContainer.innerHTML = '';
+      if (options.items) {
+          options.items.forEach(item => {
+              const div = document.createElement('div');
+              // 各アイテムをカード形式にする
+              div.style.cssText = 'display:flex; align-items:center; gap:12px; padding:10px; border:1px solid var(--border); border-radius:8px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.04);';
+              
+              let optionsHtml = `<option value="original">オリジナル(${item.w}px)</option>`;
+              if (item.w < 400) optionsHtml += `<option value="400">400pxに拡大</option>`;
+              if (item.w < 800) optionsHtml += `<option value="800">800pxに拡大</option>`;
+              optionsHtml += `<option value="1200" selected>1200pxに拡大</option>`;
+              
+              div.innerHTML = `
+                  <img src="${item.thumb}" style="width: clamp(72px, 25%, 140px); aspect-ratio: 1/1; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); flex-shrink: 0;">
+                  <div style="flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;">
+                      <div style="font-size:0.8rem; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--text);">${item.name}</div>
+                      <select class="multi-select-dropdown" data-idx="${item.idx}" style="padding:5px; border-radius:4px; border:1px solid var(--border); font-size:0.75rem; outline:none; cursor:pointer; background:var(--bg); width: 100%;">
+                          ${optionsHtml}
+                      </select>
+                  </div>
+              `;
+              multiSelectContainer.appendChild(div);
+          });
+      }
     } else {
-      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; inputEl.style.display = 'none'; selectEl.style.display = 'none';
+      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; inputEl.style.display = 'none'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'none';
       if (options.extraText) { extraBtn.style.display = 'inline-block'; extraBtn.textContent = options.extraText; extraBtn.className = options.extraClass || 'btn btn-success'; } else { extraBtn.style.display = 'none'; }
     }
     
     modal.style.display = 'flex';
     if (options.type === 'prompt') { setTimeout(() => { inputEl.focus(); inputEl.select(); }, 100); }
     
-    const cleanup = () => { modal.style.display = 'none'; inputEl.onkeydown = null; msgEl.removeEventListener('click', navClickHandler); };
-    const navClickHandler = (e) => { const navEl = e.target.closest('[data-nav]'); if (navEl) { cleanup(); resolve({ navigate: navEl.dataset.nav }); } };
-    msgEl.addEventListener('click', navClickHandler);
-    okBtn.onclick = () => { cleanup(); if (options.type === 'prompt') resolve(inputEl.value); else if (options.type === 'select') resolve(selectEl.value); else resolve(true); };
-    cancelBtn.onclick = () => { cleanup(); resolve(options.type === 'prompt' || options.type === 'select' ? null : false); };
-    closeBtn.onclick = () => { cleanup(); resolve(options.type === 'prompt' || options.type === 'select' ? null : null); };
+    const cleanup = () => { 
+        modal.style.display = 'none'; 
+        inputEl.onkeydown = null; 
+        card.style.width = ''; card.style.height = ''; 
+    };
+    
+    okBtn.onclick = () => { 
+        if (options.type === 'multi-select') {
+            const results = {};
+            multiSelectContainer.querySelectorAll('select').forEach(sel => {
+                results[sel.dataset.idx] = sel.value;
+            });
+            cleanup(); resolve(results);
+        } else {
+            const val = options.type === 'prompt' ? inputEl.value : (options.type === 'select' ? selectEl.value : true);
+            cleanup(); resolve(val);
+        }
+    };
+    cancelBtn.onclick = () => { cleanup(); resolve(null); };
+    closeBtn.onclick = () => { cleanup(); resolve(null); };
     extraBtn.onclick = () => { cleanup(); resolve('extra'); };
   });
 }
-
 function showToast(msg) {let toast = byId('app-toast');
 if (!toast) {toast = document.createElement('div');
 toast.id = 'app-toast';
@@ -638,22 +845,48 @@ let isSelectingForSplit = false, splitTargetCount = 0, splitSelectedImages = [],
 let splitStates = [], activeSplitIndex = 0, reselectingSplitIndex = -1, splitModePreservedAspect = null, initialSplitState = null;
 let pendingSplitLogos = null;
 let isGridVisible = false;
-function updateActionAreaState() {const actionArea = byId('actionArea');
-const dropZone = byId('dropZone');
-const searchBar = byId('searchBarContainer');
-if (actionArea) {if (isSelectingForSplit) {actionArea.style.pointerEvents = 'none';
-actionArea.style.opacity = '0.4';
-} else {actionArea.style.pointerEvents = 'auto';
-actionArea.style.opacity = '1';
-}
-}
-const hasAnyImage = processedImages.length > 0 || Object.values(assignedSlots).some(v => v !== null);
-if (searchBar) {searchBar.style.display = hasAnyImage ? 'flex' : 'none';
-}
-if (actionArea) {actionArea.style.display = hasAnyImage ? 'flex' : 'none';
-}
-if (dropZone) {dropZone.style.display = hasAnyImage ? 'none' : 'block';
-}
+function updateActionAreaState() {
+    const actionArea = byId('actionArea');
+    const dropZone = byId('dropZone');
+    const searchBar = byId('searchBarContainer');
+    
+    const sbcPresets = byId('sbc-presets');
+    const slotWrapper = document.querySelector('.slot-modern-wrapper');
+    const slotSelector = byId('slotSelector');
+    const renameBtn = byId('renameSlotBtn');
+    const clearSlotBtn = byId('clearSlotBtn');
+
+    if (isSelectingForSplit) {
+        if (actionArea) { actionArea.style.pointerEvents = 'none'; actionArea.style.opacity = '0.4'; }
+        if (sbcPresets) { 
+            sbcPresets.style.pointerEvents = 'none'; 
+            sbcPresets.style.opacity = '0.4'; 
+            // プリセット画像のドラッグ操作を無効化
+            sbcPresets.querySelectorAll('.preset-box').forEach(box => box.setAttribute('draggable', 'false'));
+        }
+        if (slotWrapper) { slotWrapper.style.pointerEvents = 'none'; slotWrapper.style.opacity = '0.4'; }
+        if (slotSelector) slotSelector.disabled = true;
+        if (renameBtn) renameBtn.disabled = true;
+        if (clearSlotBtn) clearSlotBtn.disabled = true;
+    } else {
+        if (actionArea) { actionArea.style.pointerEvents = 'auto'; actionArea.style.opacity = '1'; }
+        if (sbcPresets) { 
+            sbcPresets.style.pointerEvents = 'auto'; 
+            sbcPresets.style.opacity = '1'; 
+            // プリセット画像のドラッグ操作を再有効化
+            sbcPresets.querySelectorAll('.preset-box').forEach(box => box.setAttribute('draggable', 'true'));
+        }
+        if (slotWrapper) { slotWrapper.style.pointerEvents = 'auto'; slotWrapper.style.opacity = '1'; }
+        if (slotSelector) slotSelector.disabled = false;
+        
+        // SLOT内のボタン状態を通常ロジックに戻す
+        updateSlotActionBtns();
+    }
+
+    const hasAnyImage = processedImages.length > 0 || Object.values(assignedSlots).some(v => v !== null);
+    if (searchBar) {searchBar.style.display = hasAnyImage ? 'flex' : 'none';}
+    if (actionArea) {actionArea.style.display = hasAnyImage ? 'flex' : 'none';}
+    if (dropZone) {dropZone.style.display = hasAnyImage ? 'none' : 'block';}
 }
 function setupSplitFilters(count) {let svg = byId('split-filters-svg');
 if (!svg) { svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.id = 'split-filters-svg'; svg.style.display = 'none'; document.body.appendChild(svg); }
@@ -828,97 +1061,108 @@ updateSplitSlotDOM(i);
 }
 });
 }
-function removeSplitImage(index) {splitSelectedImages.splice(index, 1);
-splitStates.splice(index, 1);
-splitTargetCount--;
-if (splitTargetCount <= 1) {const remainData = splitSelectedImages[0];
-const preservedAspect = splitModePreservedAspect;
-const logoItems = (currentLogos && currentLogos.length > 0)
-? JSON.parse(JSON.stringify(currentLogos))
-: (currentPreviewData?._logos?.items?.length > 0
-? JSON.parse(JSON.stringify(currentPreviewData._logos.items))
-: null);
-if (logoItems) {remainData._logos = {cw: targetCw || zoomContainer.clientWidth,ch: targetCh || zoomContainer.clientHeight,items: logoItems
-};
+function removeSplitImage(index) {
+    // 2分割の状態で削除しようとした場合はブロックする
+    if (splitTargetCount <= 2) {
+        showCustomDialog({
+            title: '削除できません',
+            message: '分割画像は最低2枚必要です。\n別の画像に変更したい場合は「差し替え」ボタンをご利用ください。',
+            okText: '確認',
+            type: 'alert'
+        });
+        return;
+    }
+
+    // 削除処理の実行
+    splitSelectedImages.splice(index, 1);
+    splitStates.splice(index, 1);
+    splitTargetCount--;
+
+    // 削除後の画面更新
+    if (activeSplitIndex >= splitTargetCount) activeSplitIndex = splitTargetCount - 1;
+    setupSplitFilters(splitTargetCount);
+    byId('previewMetaName').innerHTML = `分割モード (${splitTargetCount}分割)`;
+    renderSplitContainer();
+    recalcSplitBaseScales();
+    updateActiveSplitSlotDOM();
+    updateSlidersToSplitState();
+    updateAspectBarVisibility(currentAspectKey);
+    markUnsaved();
 }
-disableSplitPreview();
-if (['thumb', 'og', 'special'].includes(preservedAspect)) {showImagePreview(remainData, preservedAspect);
-setTimeout(() => {hasUnsavedChanges = true;
-document.querySelectorAll('.btn-manual-save').forEach(btn => {btn.classList.add('unsaved');
-btn.disabled = false;
-});
-updateAspectBarVisibility(preservedAspect);
-}, 200);
-} else {showImagePreview(remainData, remainData._lastAspectKey || 'free');
-setTimeout(() => {hasUnsavedChanges = true;
-document.querySelectorAll('.btn-manual-save').forEach(btn => {btn.classList.add('unsaved');
-btn.disabled = false;
-});
-}, 200);
-}
-renderAllThumbs();
-} else {if (activeSplitIndex >= splitTargetCount) activeSplitIndex = splitTargetCount - 1;
-setupSplitFilters(splitTargetCount);
-byId('previewMetaName').innerHTML = `分割モード (${splitTargetCount}分割)`;
-renderSplitContainer();
-recalcSplitBaseScales();
-updateActiveSplitSlotDOM();
-updateSlidersToSplitState();
-updateAspectBarVisibility(currentAspectKey);
-markUnsaved();
-}
-}
-function renderSplitContainer() {const container = byId('splitContainer'); container.style.display = 'flex'; container.innerHTML = '';
-const tArea = byId('splitToolbarArea'); tArea.style.display = 'flex'; tArea.innerHTML = '';
-splitSelectedImages.forEach((data, index) => {const state = splitStates[index];
-const tSlot = document.createElement('div'); tSlot.style.width = `calc(100% / ${splitTargetCount})`; tSlot.style.flex = 'none'; tSlot.style.display = 'flex'; tSlot.style.justifyContent = 'space-between'; tSlot.style.alignItems = 'center'; tSlot.style.padding = '0 6px 6px 6px'; tSlot.style.boxSizing = 'border-box';
-const leftControls = document.createElement('div');
-leftControls.style.display = 'flex'; leftControls.style.gap = '8px'; leftControls.style.alignItems = 'center';
-const deleteBtn = document.createElement('div'); deleteBtn.className = 'split-toolbar-btn'; deleteBtn.innerHTML = '<div class="custom-tooltip">画像を削除</div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'; deleteBtn.style.background = 'rgba(0,0,0,0.65)'; deleteBtn.style.borderRadius = '50%'; deleteBtn.style.width = '20px'; deleteBtn.style.height = '20px'; deleteBtn.style.display = 'flex'; deleteBtn.style.alignItems = 'center'; deleteBtn.style.justifyContent = 'center'; deleteBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'; deleteBtn.style.cursor = 'pointer';
-deleteBtn.onclick = (e) => { e.stopPropagation(); removeSplitImage(index); };
-leftControls.appendChild(deleteBtn);
-const rightControls = document.createElement('div');
-rightControls.style.display = 'flex'; rightControls.style.gap = '8px'; rightControls.style.alignItems = 'center';
-const closeBtn = document.createElement('div'); closeBtn.className = 'split-toolbar-btn'; closeBtn.innerHTML = '<div class="custom-tooltip">画像を差し替え</div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'; closeBtn.style.background = 'rgba(0,0,0,0.65)'; closeBtn.style.color = '#fff'; closeBtn.style.borderRadius = '50%'; closeBtn.style.width = '20px'; closeBtn.style.height = '20px'; closeBtn.style.fontSize = '12px'; closeBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'; closeBtn.style.display = 'flex'; closeBtn.style.alignItems = 'center'; closeBtn.style.justifyContent = 'center'; closeBtn.style.cursor = 'pointer';
-closeBtn.onclick = async (e) => {e.stopPropagation();
-const confirm = await showCustomDialog({ title: '画像の差し替え', message: 'この画像を差し替えますか？', okText: 'はい', cancelText: 'いいえ', type: 'confirm' });
-if (!confirm) return;
-backupSplitState = {images: [...splitSelectedImages],states: JSON.parse(JSON.stringify(splitStates)),count: splitTargetCount
-};
-reselectingSplitIndex = index;
-closeImagePreview(true);
-isSelectingForSplit = true;
-showSplitMessage();
-renderAllThumbs();
-};
-const handle = document.createElement('div'); handle.className = 'split-toolbar-btn'; handle.innerHTML = '<div class="custom-tooltip">ドラッグで入れ替え</div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>'; handle.style.background = 'var(--bg)'; handle.style.color = 'var(--text)'; handle.style.border = '1px solid var(--border)'; handle.style.borderRadius = '4px'; handle.style.padding = '4px'; handle.draggable = true;
-rightControls.appendChild(closeBtn);
-rightControls.appendChild(handle);
-tSlot.appendChild(leftControls);
-tSlot.appendChild(rightControls);
-tArea.appendChild(tSlot);
-const slot = document.createElement('div'); slot.style.width = `calc(100% / ${splitTargetCount})`; slot.style.flex = 'none'; slot.style.marginRight = index < splitTargetCount - 1 ? '-0.5px' : '0'; slot.style.height = '100%'; slot.style.position = 'relative'; slot.style.overflow = 'hidden'; slot.style.boxSizing = 'border-box';
-if (index === activeSplitIndex) { slot.style.outline = '3px solid var(--accent)'; slot.style.outlineOffset = '-3px'; slot.style.zIndex = '2'; } else { slot.style.outline = 'none'; slot.style.zIndex = '1'; }
-const img = document.createElement('img'); img.id = `split-img-${index}`;
-img.style.position = 'absolute'; img.style.transformOrigin = '50% 50%';
-const onLoadFn = () => {img.onload = null;
-if (!state.baseScale) centerSplitImage(index);
-else updateSplitSlotDOM(index);
-};
-img.onload = onLoadFn;
-handle.ondragstart = (e) => { e.dataTransfer.setData('text/plain', index); slot.style.opacity = '0.5'; tSlot.style.opacity = '0.5'; };
-handle.ondragend = () => { slot.style.opacity = '1'; tSlot.style.opacity = '1'; };
-slot.ondragover = (e) => e.preventDefault(); slot.ondragenter = (e) => { e.preventDefault(); slot.style.filter = 'brightness(0.8)'; }; slot.ondragleave = () => { slot.style.filter = 'none'; };
-slot.ondrop = (e) => { e.preventDefault(); slot.style.filter = 'none'; const fromIdx = parseInt(e.dataTransfer.getData('text/plain')); if (!isNaN(fromIdx) && fromIdx !== index) { [splitSelectedImages[fromIdx], splitSelectedImages[index]] = [splitSelectedImages[index], splitSelectedImages[fromIdx]]; [splitStates[fromIdx], splitStates[index]] = [splitStates[index], splitStates[fromIdx]]; activeSplitIndex = index; renderSplitContainer(); updateSlidersToSplitState(); } };
-tSlot.ondragover = (e) => e.preventDefault(); tSlot.ondrop = slot.ondrop;
-const activateSlot = () => { if (activeSplitIndex !== index) { activeSplitIndex = index; updateActiveSplitSlotDOM(); updateSlidersToSplitState(); } };
-slot.onmousedown = (e) => { if (!e.target.closest('div[draggable="true"]')) activateSlot(); };
-tSlot.onmousedown = (e) => { if (e.target !== closeBtn && e.target !== deleteBtn && !e.target.closest('div[draggable="true"]')) activateSlot(); };
-slot.appendChild(img);
-container.appendChild(slot);
-img.src = data.blobUrl;
-if (img.complete) onLoadFn();
-});
+function renderSplitContainer() {
+    const container = byId('splitContainer'); container.style.display = 'flex'; container.innerHTML = '';
+    const tArea = byId('splitToolbarArea'); tArea.style.display = 'flex'; tArea.innerHTML = '';
+    splitSelectedImages.forEach((data, index) => {
+        const state = splitStates[index];
+        const tSlot = document.createElement('div'); tSlot.style.width = `calc(100% / ${splitTargetCount})`; tSlot.style.flex = 'none'; tSlot.style.display = 'flex'; tSlot.style.justifyContent = 'space-between'; tSlot.style.alignItems = 'center'; tSlot.style.padding = '0 6px 6px 6px'; tSlot.style.boxSizing = 'border-box';
+        const leftControls = document.createElement('div');
+        leftControls.style.display = 'flex'; leftControls.style.gap = '8px'; leftControls.style.alignItems = 'center';
+        
+        // ▼ 削除ボタンの生成 ▼
+        const deleteBtn = document.createElement('div'); 
+        deleteBtn.className = 'split-toolbar-btn'; 
+        deleteBtn.innerHTML = '<div class="custom-tooltip">画像を削除</div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'; 
+        deleteBtn.style.background = 'rgba(0,0,0,0.65)'; 
+        deleteBtn.style.borderRadius = '50%'; 
+        deleteBtn.style.width = '20px'; 
+        deleteBtn.style.height = '20px'; 
+        deleteBtn.style.display = 'flex'; 
+        deleteBtn.style.alignItems = 'center'; 
+        deleteBtn.style.justifyContent = 'center'; 
+        deleteBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'; 
+        
+        // 2分割の場合は無効化、3分割以上の場合は有効化
+        if (splitTargetCount <= 2) {
+            deleteBtn.style.opacity = '0.3';
+            deleteBtn.style.cursor = 'not-allowed';
+            deleteBtn.querySelector('.custom-tooltip').textContent = '最低2枚必要です';
+        } else {
+            deleteBtn.style.cursor = 'pointer';
+            deleteBtn.onclick = (e) => { e.stopPropagation(); removeSplitImage(index); };
+        }
+        
+        leftControls.appendChild(deleteBtn);
+        // ▲ 削除ボタンの生成 終わり ▲
+        
+        const rightControls = document.createElement('div');
+        rightControls.style.display = 'flex'; rightControls.style.gap = '8px'; rightControls.style.alignItems = 'center';
+        const closeBtn = document.createElement('div'); closeBtn.className = 'split-toolbar-btn'; closeBtn.innerHTML = '<div class="custom-tooltip">画像を差し替え</div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'; closeBtn.style.background = 'rgba(0,0,0,0.65)'; closeBtn.style.color = '#fff'; closeBtn.style.borderRadius = '50%'; closeBtn.style.width = '20px'; closeBtn.style.height = '20px'; closeBtn.style.fontSize = '12px'; closeBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'; closeBtn.style.display = 'flex'; closeBtn.style.alignItems = 'center'; closeBtn.style.justifyContent = 'center'; closeBtn.style.cursor = 'pointer';
+        closeBtn.onclick = async (e) => {
+            e.stopPropagation();
+            const confirm = await showCustomDialog({ title: '画像の差し替え', message: 'この画像を差し替えますか？', okText: 'はい', cancelText: 'いいえ', type: 'confirm' });
+            if (!confirm) return;
+            backupSplitState = {images: [...splitSelectedImages],states: JSON.parse(JSON.stringify(splitStates)),count: splitTargetCount};
+            reselectingSplitIndex = index;
+            closeImagePreview(true);
+            isSelectingForSplit = true;
+            showSplitMessage();
+            renderAllThumbs();
+        };
+        const handle = document.createElement('div'); handle.className = 'split-toolbar-btn'; handle.innerHTML = '<div class="custom-tooltip">ドラッグで入れ替え</div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>'; handle.style.background = 'var(--bg)'; handle.style.color = 'var(--text)'; handle.style.border = '1px solid var(--border)'; handle.style.borderRadius = '4px'; handle.style.padding = '4px'; handle.draggable = true;
+        rightControls.appendChild(closeBtn);
+        rightControls.appendChild(handle);
+        tSlot.appendChild(leftControls);
+        tSlot.appendChild(rightControls);
+        tArea.appendChild(tSlot);
+        const slot = document.createElement('div'); slot.style.width = `calc(100% / ${splitTargetCount})`; slot.style.flex = 'none'; slot.style.marginRight = index < splitTargetCount - 1 ? '-0.5px' : '0'; slot.style.height = '100%'; slot.style.position = 'relative'; slot.style.overflow = 'hidden'; slot.style.boxSizing = 'border-box';
+        if (index === activeSplitIndex) { slot.style.outline = '3px solid var(--accent)'; slot.style.outlineOffset = '-3px'; slot.style.zIndex = '2'; } else { slot.style.outline = 'none'; slot.style.zIndex = '1'; }
+        const img = document.createElement('img'); img.id = `split-img-${index}`;
+        img.style.position = 'absolute'; img.style.transformOrigin = '50% 50%';
+        const onLoadFn = () => {img.onload = null; if (!state.baseScale) centerSplitImage(index); else updateSplitSlotDOM(index); };
+        img.onload = onLoadFn;
+        handle.ondragstart = (e) => { e.dataTransfer.setData('text/plain', index); slot.style.opacity = '0.5'; tSlot.style.opacity = '0.5'; };
+        handle.ondragend = () => { slot.style.opacity = '1'; tSlot.style.opacity = '1'; };
+        slot.ondragover = (e) => e.preventDefault(); slot.ondragenter = (e) => { e.preventDefault(); slot.style.filter = 'brightness(0.8)'; }; slot.ondragleave = () => { slot.style.filter = 'none'; };
+        slot.ondrop = (e) => { e.preventDefault(); slot.style.filter = 'none'; const fromIdx = parseInt(e.dataTransfer.getData('text/plain')); if (!isNaN(fromIdx) && fromIdx !== index) { [splitSelectedImages[fromIdx], splitSelectedImages[index]] = [splitSelectedImages[index], splitSelectedImages[fromIdx]]; [splitStates[fromIdx], splitStates[index]] = [splitStates[index], splitStates[fromIdx]]; activeSplitIndex = index; renderSplitContainer(); updateSlidersToSplitState(); } };
+        tSlot.ondragover = (e) => e.preventDefault(); tSlot.ondrop = slot.ondrop;
+        const activateSlot = () => { if (activeSplitIndex !== index) { activeSplitIndex = index; updateActiveSplitSlotDOM(); updateSlidersToSplitState(); } };
+        slot.onmousedown = (e) => { if (!e.target.closest('div[draggable="true"]')) activateSlot(); };
+        tSlot.onmousedown = (e) => { if (e.target !== closeBtn && e.target !== deleteBtn && !e.target.closest('div[draggable="true"]')) activateSlot(); };
+        slot.appendChild(img);
+        container.appendChild(slot);
+        img.src = data.blobUrl;
+        if (img.complete) onLoadFn();
+    });
 }
 function updateActiveSplitSlotDOM() {const container = byId('splitContainer'); if (!container) return;
 Array.from(container.children).forEach((slot, index) => {if (slot.id === 'overallGridOverlay') return;
@@ -1438,7 +1682,8 @@ btn.classList.toggle("active", btn.dataset.key === aspKey);
 else { btn.style.display = "none"; }
 });
 const delBtn = byId("previewDeleteBtn");
-if (delBtn) delBtn.style.display = (isPreset || inSplit) ? "none" : "inline-block";
+// 新規作成時（currentPreviewIndex === -1）以外は分割モードでも削除ボタンを表示する
+if (delBtn) delBtn.style.display = (isPreset || (inSplit && currentPreviewIndex === -1)) ? "none" : "inline-block";
 
 const clearSlotBtn = byId("clearSlotBtnPreview");
 if (clearSlotBtn) clearSlotBtn.style.display = isPreset ? "inline-block" : "none";
@@ -1536,12 +1781,13 @@ let displayName = preset.replace('save', '保存');
 if (preset === 'thumb') displayName = 'Thumbnail';
 else if (preset === 'og') displayName = 'OG';
 else if (preset === 'special') displayName = 'Special';
-if (isTransitionTarget) {const wantsToTransit = await showCustomDialog({title: '保存完了',message: `${displayName} スロットに保存しました。<br>続けて「${targetPresets[preset]}」キャンバスに遷移しますか？`,okText: 'はい',cancelText: 'いいえ',type: 'confirm'
-});
-if (wantsToTransit) {const btn = document.querySelector(`.asp-btn[data-key="${preset}"]`);
-if (btn) await setAspect(btn, true, false);
-}
-} else {showToast(`${displayName} スロットに保存しました`);
+if (isTransitionTarget) {
+    // 遷移確認ダイアログを出さずに直接遷移する
+    showToast(`${displayName} スロットに保存して遷移しました`);
+    const btn = document.querySelector(`.asp-btn[data-key="${preset}"]`);
+    if (btn) await setAspect(btn, true, false);
+} else {
+    showToast(`${displayName} スロットに保存しました`);
 }
 }
 async function exportCroppedView(e) {document.activeElement.blur();
@@ -1831,88 +2077,141 @@ if (sbcPresets) sbcPresets.style.setProperty('--thumb-w', fixedItemW + 'px');
 if (count === 0 || count >= 9) { previewArea.style.removeProperty('--thumb-w'); previewArea.style.paddingLeft = '8px'; return; }
 previewArea.style.setProperty('--thumb-w', fixedItemW + 'px'); const totalW = count * fixedItemW + (count - 1) * 12, offset = Math.max(0, (containerW - totalW) / 2); previewArea.style.paddingLeft = (8 + offset) + 'px';
 }
-function renderAllThumbs() {previewArea.innerHTML = '<div class="preview-drop-hint">ここにドロップして追加</div>';
-processedImages.forEach((data, i) => {const box = document.createElement('div');
-box.className = 'thumb-box';
-box.onclick = async () => {if (isSelectingForSplit) {if (data.isSplitData) {await showCustomDialog({ title: '選択できません', message: 'すでに分割されている画像は使用できません。', okText: '確認', type: 'alert' });
-return;
-}
-if (reselectingSplitIndex !== -1) {const isDuplicate = splitSelectedImages.some((img, idx) => img === data && idx !== reselectingSplitIndex);
-if (isDuplicate) {await showCustomDialog({ title: '選択できません', message: 'すでに他のスロットで使用されている画像は選択できません。', okText: '確認', type: 'alert' });
-return;
-}
-splitSelectedImages[reselectingSplitIndex] = data;
-splitStates[reselectingSplitIndex] = { scale: 1, baseScale: 0, dx: 0, dy: 0, sat: 100, bri: 100, sharp: 0, rot: 0 };
-reselectingSplitIndex = -1; isSelectingForSplit = false; backupSplitState = null;
-hideSplitMessage(); renderAllThumbs(); showSplitPreview(); return;
-}
-if (splitSelectedImages.includes(data)) {await showCustomDialog({ title: '選択できません', message: 'すでに選択されている画像は使用できません。', okText: '確認', type: 'alert' });
-return;
-}
-splitSelectedImages.push(data);
-if (splitSelectedImages.length < splitTargetCount) { showSplitMessage(); renderAllThumbs(); }
-else {isSelectingForSplit = false; hideSplitMessage(); initSplitStates(); showSplitPreview();
-renderAllThumbs();
-}
-return;
-}
-disableSplitPreview(); let key = data._lastAspectKey || 'free';
-if (['thumb', 'og', 'special'].includes(key)) key = 'free';
-if (data.isSplitData) restoreSplitPreview(data, key); else showImagePreview(data, key);
-};
-box.draggable = true;
-box.ondragstart = (e) => { isInternalDragging = true; e.dataTransfer.setData('text/plain', i.toString()); };
-let imgStyle = data.isSmall ? `width:${Math.max(8, Math.round((data.originalWidth / 1200) * 100))}%; height:auto; max-height:100%; border-radius:3px;` : `width:100%; height:100%; object-fit:cover;`;
-const hasEdits = data._modeStates && Object.values(data._modeStates).some(ms => ms.sat !== '100' || ms.bri !== '100' || ms.sharp !== '0' || (ms.rot && ms.rot !== '0'));
-const editedDot = hasEdits ? `<span title="調整済み" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:4px;vertical-align:middle"></span>` : '';
-let statusBadges = '';
-let hasBgWarning = false;
-if (data.isSplitData) {if (data.splitStates && data.splitSelectedImages && data.splitTargetCount) {const viewCw = data._viewCw || 1200, viewCh = data._viewCh || 800;
-for (let si = 0; si < data.splitTargetCount; si++) {const st = data.splitStates[si], sd = data.splitSelectedImages[si];
-if (!st || !sd || !st.baseScale) continue;
-const slotW = viewCw / data.splitTargetCount;
-const iw = sd.originalWidth * st.baseScale * st.scale;
-const ih = sd.originalHeight * st.baseScale * st.scale;
-if (isBgVisible(st.dx, st.dy, iw, ih, st.rot || 0, slotW, viewCh)) { hasBgWarning = true; break; }
-}
-}
-} else {const ms = data._modeStates?.[data._lastAspectKey || 'free'];
-if (ms) hasBgWarning = isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot || 0, ms.cw, ms.ch);
-}
-if (data.isSmall || data.hasJapanese || hasBgWarning || data.isSplitData) {statusBadges += `<div style="position:absolute; top:4px; left:4px; display:flex; flex-direction:column; gap:4px; z-index:15; pointer-events:none; align-items:flex-start">`;
-if (data.isSplitData) statusBadges += `<span style="background:var(--accent); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">分割</span>`;
-if (data.isSmall) statusBadges += `<span style="background:var(--danger); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">1200px未満</span>`;
-if (data.hasJapanese) statusBadges += `<span style="background:var(--warn); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">日本語</span>`;
-if (hasBgWarning) statusBadges += `<span style="background:#8b5cf6; color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">余白</span>`;
-statusBadges += `</div>`;
-}
-const splitSelIdx = (isSelectingForSplit || reselectingSplitIndex !== -1) ? splitSelectedImages.indexOf(data) : -1;
-const splitBadge = splitSelIdx !== -1
-? `<div style="position:absolute;bottom:5px;right:5px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:20;box-shadow:0 1px 6px rgba(0,0,0,0.35);pointer-events:none;letter-spacing:-0.02em">${splitSelIdx + 1}</div>`
-: '';
-const splitFrameStyle = splitSelIdx !== -1
-? 'border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);'
-: '';
-box.innerHTML = `
-<div class="custom-tooltip">${data.exportName}</div>
-<button class="thumb-delete-btn" title="削除">✕</button>
-<div class="thumb-frame" style="${splitFrameStyle}">
-${statusBadges}
-<img src="${data.thumbUrl}" class="thumb-inner-img" style="${imgStyle}">
-${splitBadge}
-</div>
-<span class="thumb-name">
-${highlightJapanese(truncateName(data.exportName))}${editedDot}
-</span>
-<span class="thumb-dimensions">${data.isSmall ? `<span class="highlight-red" style="font-weight:bold">${data.originalWidth}</span>` : data.originalWidth}x${data.originalHeight} px</span>`;
-box.querySelector('.thumb-delete-btn').addEventListener('click', (e) => {e.stopPropagation();
-deleteImage(i).then(() => {refreshGlobalTimestamp();
-});
-});
-previewArea.appendChild(box);
-});
-updatePreviewCentering(); updateActionAreaState();
-requestAnimationFrame(() => requestAnimationFrame(syncPresetWidths));
+function renderAllThumbs() {
+    previewArea.innerHTML = '<div class="preview-drop-hint">ここにドロップして追加</div>';
+    processedImages.forEach((data, i) => {
+        const box = document.createElement('div');
+        box.className = 'thumb-box';
+        
+        box.onclick = async () => {
+            // 分割モード（新規選択 or 差し替え）の場合
+            if (isSelectingForSplit) {
+                if (data.isSplitData) {
+                    await showCustomDialog({ title: '選択できません', message: 'すでに分割されている画像は使用できません。', okText: '確認', type: 'alert' });
+                    return;
+                }
+
+                // 重複チェック：すでに分割リストに含まれている画像は選択不可
+                if (splitSelectedImages.includes(data)) {
+                    await showCustomDialog({ 
+                        title: '選択できません', 
+                        message: 'この画像はすでに分割枠の中で使用されています。別の画像を選択してください。', 
+                        okText: '確認', 
+                        type: 'alert' 
+                    });
+                    return;
+                }
+
+                // 【差し替え（リセレクト）処理】
+                if (reselectingSplitIndex !== -1) {
+                    splitSelectedImages[reselectingSplitIndex] = data;
+                    // 差し替え時はその枠の調整値をリセット
+                    splitStates[reselectingSplitIndex] = { scale: 1, baseScale: 0, dx: 0, dy: 0, sat: 100, bri: 100, sharp: 0, rot: 0 };
+                    
+                    reselectingSplitIndex = -1; 
+                    isSelectingForSplit = false; 
+                    backupSplitState = null;
+                    hideSplitMessage(); 
+                    renderAllThumbs(); 
+                    showSplitPreview(); 
+                    return;
+                }
+
+                // 【新規追加処理】
+                splitSelectedImages.push(data);
+                if (splitSelectedImages.length < splitTargetCount) { 
+                    showSplitMessage(); 
+                    renderAllThumbs(); 
+                } else {
+                    isSelectingForSplit = false; 
+                    hideSplitMessage(); 
+                    initSplitStates(); 
+                    showSplitPreview();
+                    renderAllThumbs();
+                }
+                return;
+            }
+
+            // 通常のプレビュー表示
+            disableSplitPreview(); 
+            let key = data._lastAspectKey || 'free';
+            if (['thumb', 'og', 'special'].includes(key)) key = 'free';
+            if (data.isSplitData) restoreSplitPreview(data, key); else showImagePreview(data, key);
+        };
+
+        box.draggable = true;
+        box.ondragstart = (e) => { isInternalDragging = true; e.dataTransfer.setData('text/plain', i.toString()); };
+
+        let imgStyle = data.isSmall ? `width:${Math.max(8, Math.round((data.originalWidth / 1200) * 100))}%; height:auto; max-height:100%; border-radius:3px;` : `width:100%; height:100%; object-fit:cover;`;
+        const hasEdits = data._modeStates && Object.values(data._modeStates).some(ms => ms.sat !== '100' || ms.bri !== '100' || ms.sharp !== '0' || (ms.rot && ms.rot !== '0'));
+        const editedDot = hasEdits ? `<span title="調整済み" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-left:4px;vertical-align:middle"></span>` : '';
+        
+        let statusBadges = '';
+        let hasBgWarning = false;
+        if (data.isSplitData) {
+            if (data.splitStates && data.splitSelectedImages && data.splitTargetCount) {
+                const viewCw = data._viewCw || 1200, viewCh = data._viewCh || 800;
+                for (let si = 0; si < data.splitTargetCount; si++) {
+                    const st = data.splitStates[si], sd = data.splitSelectedImages[si];
+                    if (!st || !sd || !st.baseScale) continue;
+                    const slotW = viewCw / data.splitTargetCount;
+                    const iw = sd.originalWidth * st.baseScale * st.scale;
+                    const ih = sd.originalHeight * st.baseScale * st.scale;
+                    if (isBgVisible(st.dx, st.dy, iw, ih, st.rot || 0, slotW, viewCh)) { hasBgWarning = true; break; }
+                }
+            }
+        } else {
+            const ms = data._modeStates?.[data._lastAspectKey || 'free'];
+            if (ms) hasBgWarning = isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot || 0, ms.cw, ms.ch);
+        }
+
+        if (data.isSmall || data.hasJapanese || hasBgWarning || data.isSplitData) {
+            statusBadges += `<div style="position:absolute; top:4px; left:4px; display:flex; flex-direction:column; gap:4px; z-index:15; pointer-events:none; align-items:flex-start">`;
+            if (data.isSplitData) statusBadges += `<span style="background:var(--accent); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">${data.splitTargetCount}分割</span>`;
+            if (data.isSmall) statusBadges += `<span style="background:var(--danger); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">1200px未満</span>`;
+            if (data.hasJapanese) statusBadges += `<span style="background:var(--warn); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">日本語</span>`;
+            if (hasBgWarning) statusBadges += `<span style="background:#8b5cf6; color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">余白</span>`;
+            statusBadges += `</div>`;
+        }
+
+        const splitSelIdx = (isSelectingForSplit || reselectingSplitIndex !== -1) ? splitSelectedImages.indexOf(data) : -1;
+        const splitBadge = splitSelIdx !== -1
+            ? `<div style="position:absolute;bottom:5px;right:5px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:20;box-shadow:0 1px 6px rgba(0,0,0,0.35);pointer-events:none;letter-spacing:-0.02em">${splitSelIdx + 1}</div>`
+            : '';
+        const splitFrameStyle = splitSelIdx !== -1
+            ? 'border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);'
+            : '';
+
+        // 分割選択中（差し替え含む）は削除ボタンを表示しない
+        const deleteBtnHtml = isSelectingForSplit ? '' : `<button class="thumb-delete-btn" title="削除">✕</button>`;
+
+        box.innerHTML = `
+            <div class="custom-tooltip">${data.exportName}</div>
+            ${deleteBtnHtml}
+            <div class="thumb-frame" style="${splitFrameStyle}">
+                ${statusBadges}
+                <img src="${data.thumbUrl}" class="thumb-inner-img" style="${imgStyle}">
+                ${splitBadge}
+            </div>
+            <span class="thumb-name">
+                ${highlightJapanese(truncateName(data.exportName))}${editedDot}
+            </span>
+            <span class="thumb-dimensions">${data.isSmall ? `<span class="highlight-red" style="font-weight:bold">${data.originalWidth}</span>` : data.originalWidth}x${data.originalHeight} px</span>`;
+
+        const delBtn = box.querySelector('.thumb-delete-btn');
+        if (delBtn) {
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                deleteImage(i).then(() => {
+                    refreshGlobalTimestamp();
+                });
+            });
+        }
+        previewArea.appendChild(box);
+    });
+    updatePreviewCentering(); 
+    updateActionAreaState();
+    requestAnimationFrame(() => requestAnimationFrame(syncPresetWidths));
 }
 function syncPresetWidths() {const thumbBox = document.querySelector('#previewArea .thumb-box');
 if (!thumbBox) return;
@@ -1938,6 +2237,7 @@ if (processedImages.length === 0 && !hasSlotData) { byId('actionArea').style.dis
 if (imagePreviewModal.style.display === 'flex') {if (currentPreviewData === data) { const isSpecialMode = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey); if (!isSpecialMode) { if (processedImages.length > 0) showImagePreview(Math.min(index, processedImages.length - 1), currentAspectKey); else closeImagePreview(); } } else currentPreviewIndex = processedImages.indexOf(currentPreviewData);
 }
 await saveAppState();
+showToast('画像を削除しました。'); // ← この1行を追加
 }
 function ensureSplitBaseScales() {if (!splitSelectedImages.length || !targetCw || !targetCh) return;
 splitSelectedImages.forEach((data, i) => {const st = splitStates[i]; if (!st || st.baseScale) return;
@@ -2052,6 +2352,7 @@ function saveImageState() {if (!currentPreviewData) return;
 const data = currentPreviewData;
 const isSlot = ['thumb','og','special'].includes(currentAspectKey);
 data.lastUpdated = getFormattedDate();
+refreshGlobalTimestamp('edit');
 if (data.isSplitData) {data.splitStates = JSON.parse(JSON.stringify(splitStates));
 data._lastAspectKey = currentAspectKey;
 if (!data._modeStates) data._modeStates = {};
@@ -2274,199 +2575,318 @@ jpList.appendChild(div);
 }
 }
 async function downloadAlertImage() { const a = document.createElement('a'); a.href = await generateAlertImageCanvas(); a.download = 'alert_summary.jpg'; a.click(); }
-exportZipBtn.addEventListener('click', async (e) => {const useFolder = e.shiftKey && window.showDirectoryPicker;
-const exportFormatChoice = await showCustomDialog({ title: '書き出し形式の確認', message: 'ファイル名はどうしますか？\n（※全角文字は自動で連番に変換されます）', okText: '元の名前', cancelText: '連番を付加', type: 'confirm' });
-if (exportFormatChoice === null) return; const renameRequested = !exportFormatChoice; let forceUpscale = false;
-if (smallImages.length > 0) { const sizeChoice = await showCustomDialog({ title: '幅1200px未満の画像', message: '拡大すると画質が粗くなる場合があります。', okText: 'そのまま', cancelText: '1200pxに拡大', type: 'confirm' }); if (sizeChoice === null) return; forceUpscale = !sizeChoice; }
-let dirHandle = null; if (useFolder) { try { dirHandle = await window.showDirectoryPicker({ startIn: 'desktop' }); } catch(e) { return; } }
-const bgImages = [];
-for (let i = 0; i < processedImages.length; i++) {const data = processedImages[i]; if (data.isSplitData) continue;
-if (data.isSmall) continue;
-const ms = data._modeStates?.[data._lastAspectKey || 'free'];
-if (ms && isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot||0, ms.cw, ms.ch)) {bgImages.push({ name: data.exportName, thumbUrl: data.thumbUrl || data.blobUrl, nav: `img:${i}` });
-}
-}
-for (const preset of ['thumb', 'og', 'special']) {const data = assignedSlots[preset]; if (!data) continue;
-if (data.isSplitData) {let hasBg = false;
-for (let i = 0; i < data.splitTargetCount; i++) {const st = data.splitStates[i], d = data.splitSelectedImages[i];
-const cw = (data._viewCw || 1200)/data.splitTargetCount, ch = data._viewCh || 800;
-const iw = d.originalWidth * st.baseScale * st.scale, ih = d.originalHeight * st.baseScale * st.scale;
-if (isBgVisible(st.dx, st.dy, iw, ih, st.rot||0, cw, ch)) { hasBg = true; break; }
-}
-if (hasBg) bgImages.push({ name: data.exportName, thumbUrl: data.thumbUrl || data.blobUrl, nav: `slot:${preset}` });
-} else {
-if (data.isSmall) continue;
-const ms = data._modeStates?.[preset] || data._modeStates?.['free'];
-if (ms && isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot||0, ms.cw, ms.ch)) {bgImages.push({ name: data.exportName, thumbUrl: data.thumbUrl || data.blobUrl, nav: `slot:${preset}` });
-}
-}
-}
-if (bgImages.length > 0) {const previewHtml = bgImages.map(img => `
+
+
+exportZipBtn.addEventListener('click', async (e) => {
+    const useFolder = e.shiftKey && window.showDirectoryPicker;
+    const exportFormatChoice = await showCustomDialog({ title: '書き出し形式の確認', message: 'ファイル名はどうしますか？\n（※全角文字は自動で連番に変換されます）', okText: '元の名前', cancelText: '連番を付加', type: 'confirm' });
+    if (exportFormatChoice === null) return; 
+    const renameRequested = !exportFormatChoice; 
+
+    // 小さい画像リストアップと個別サイズの選択
+    const smallItems = [];
+    for (let i = 0; i < processedImages.length; i++) {
+        const data = processedImages[i]; 
+        if (data.isSplitData) continue;
+        if (data.isSmall) {
+            smallItems.push({ idx: `img_${i}`, name: data.exportName || data.originalName, thumb: data.thumbUrl || data.blobUrl, w: data.originalWidth });
+        }
+    }
+    for (const preset of ['thumb', 'og', 'special']) {
+        const data = assignedSlots[preset]; 
+        if (!data) continue;
+        if (!data.isSplitData && data.isSmall) {
+            smallItems.push({ idx: `slot_${preset}`, name: data.exportName || data.originalName, thumb: data.thumbUrl || data.blobUrl, w: data.originalWidth });
+        }
+    }
+
+    let individualUpscaleSizes = {};
+    if (smallItems.length > 0) {
+        const sizeChoice = await showCustomDialog({
+            title: '幅1200px未満の画像が含まれています',
+            message: 'それぞれの書き出しサイズを選択してください。',
+            okText: '決定',
+            cancelText: 'キャンセル',
+            type: 'multi-select',
+            items: smallItems
+        });
+        if (sizeChoice === null) return;
+        individualUpscaleSizes = sizeChoice; // { img_0: "1200", slot_thumb: "800", ... }
+    }
+
+    let dirHandle = null; 
+    if (useFolder) { 
+        try { dirHandle = await window.showDirectoryPicker({ startIn: 'desktop' }); } catch(e) { return; } 
+    }
+
+    const bgImages = [];
+    for (let i = 0; i < processedImages.length; i++) {
+        const data = processedImages[i]; if (data.isSplitData) continue;
+        if (data.isSmall) continue;
+        const ms = data._modeStates?.[data._lastAspectKey || 'free'];
+        if (ms && isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot||0, ms.cw, ms.ch)) {
+            bgImages.push({ name: data.exportName, thumbUrl: data.thumbUrl || data.blobUrl, nav: `img:${i}` });
+        }
+    }
+    for (const preset of ['thumb', 'og', 'special']) {
+        const data = assignedSlots[preset]; if (!data) continue;
+        if (data.isSplitData) {
+            let hasBg = false;
+            for (let i = 0; i < data.splitTargetCount; i++) {
+                const st = data.splitStates[i], d = data.splitSelectedImages[i];
+                const cw = (data._viewCw || 1200)/data.splitTargetCount, ch = data._viewCh || 800;
+                const iw = d.originalWidth * st.baseScale * st.scale, ih = d.originalHeight * st.baseScale * st.scale;
+                if (isBgVisible(st.dx, st.dy, iw, ih, st.rot||0, cw, ch)) { hasBg = true; break; }
+            }
+            if (hasBg) bgImages.push({ name: data.exportName, thumbUrl: data.thumbUrl || data.blobUrl, nav: `slot:${preset}` });
+        } else {
+            if (data.isSmall) continue;
+            const ms = data._modeStates?.[preset] || data._modeStates?.['free'];
+            if (ms && isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot||0, ms.cw, ms.ch)) {
+                bgImages.push({ name: data.exportName, thumbUrl: data.thumbUrl || data.blobUrl, nav: `slot:${preset}` });
+            }
+        }
+    }
+
+    if (bgImages.length > 0) {
+        const previewHtml = bgImages.map(img => `
 <div data-nav="${img.nav}" style="display:flex;align-items:center;gap:10px;padding:7px 8px;background:var(--card);border-radius:6px;border:1px solid var(--border);margin-bottom:5px;cursor:pointer;transition:border-color 0.15s,background 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.background='var(--accent-soft)'" onmouseout="this.style.borderColor='var(--border)';this.style.background='var(--card)'">
 <img src="${img.thumbUrl}" style="width:56px;height:38px;object-fit:cover;border-radius:4px;flex-shrink:0;border:1px solid var(--border);pointer-events:none">
 <span style="font-size:0.78rem;color:var(--text);word-break:break-all;line-height:1.4;pointer-events:none">${img.name}</span>
 </div>`).join('');
-const bgResult = await showCustomDialog({title: '下地が見えている画像があります',message: `以下 ${bgImages.length} 件の画像に余白が見えています。クリックで画像に移動、このまま書き出す場合は「書き出す」を押してください。<div style="margin-top:10px;max-height:220px;overflow-y:auto;padding-right:2px">${previewHtml}</div>`,okText: '書き出す', cancelText: 'キャンセル', type: 'confirm'
-});
-if (bgResult && typeof bgResult === 'object' && bgResult.navigate) {const [type, ref] = bgResult.navigate.split(':');
-if (type === 'img') showImagePreview(parseInt(ref));
-else if (type === 'slot') openInPreset(ref);
-return;
-}
-if (!bgResult) return;
-}
-showProgressPanel(useFolder ? 'フォルダに書き出し中...' : 'ZIP 作成中...');
-try {const zip = useFolder ? null : new JSZip(); let counter = 1;
-for (let i = 0; i < processedImages.length; i++) {if (isLoadingCanceled) break;
-const data = processedImages[i]; let blobToSave = data.blob; let finalName = data.exportName;
-if (data.isSplitData) {if (data.hasJapanese || renameRequested) { finalName = `${String(counter++).padStart(2, '0')}_${data.originalName.replace(/\.[^/.]+$/, "").replace(/ /g, "_").replace(/[^\x01-\x7E]/g, "")}.jpg`; }
-updateFileProgress(i, processedImages.length, finalName); await new Promise(res => setTimeout(res, 10));
-if (useFolder) { const fh = await dirHandle.getFileHandle(finalName, { create: true }); const w = await fh.createWritable(); await w.write(data.blob); await w.close(); } else { zip.file(finalName, data.blob); }
-continue;
-}
-if (data.hasJapanese || renameRequested) { finalName = `${String(counter++).padStart(2, '0')}_${data.originalName.replace(/\.[^/.]+$/, "").replace(/ /g, "_").replace(/[^\x01-\x7E]/g, "")}.jpg`; }
-updateFileProgress(i, processedImages.length, finalName); await new Promise(res => setTimeout(res, 10));
-const aspKey = data._lastAspectKey || 'free'; const ms = data._modeStates?.[aspKey];
-if (ms || (data.isSmall && targetUpscaleWidth && data.originalWidth < targetUpscaleWidth)) {const img = new Image(); img.src = data.blobUrl; await new Promise(res => { img.onload = res; if (img.complete) res(); });
-const iw = img.naturalWidth, ih = img.naturalHeight;
-let outW = iw, outH = ih;
-if (ms) {let expRatio;
-let finalDrawW, finalDrawH, finalDrawX, finalDrawY;
-if (aspKey === 'free') {
-    if (targetUpscaleWidth && iw < targetUpscaleWidth) {
-        outW = targetUpscaleWidth;
-        outH = Math.round(ih * (targetUpscaleWidth / iw));
-    } else {
-        outW = iw;
-        outH = ih;
-        if (outW > 1200) { outH = Math.round(outH * (1200 / outW)); outW = 1200; }
+        const bgResult = await showCustomDialog({
+            title: '下地が見えている画像があります',
+            message: `以下 ${bgImages.length} 件の画像に余白が見えています。クリックで画像に移動、このまま書き出す場合は「書き出す」を押してください。<div style="margin-top:10px;max-height:220px;overflow-y:auto;padding-right:2px">${previewHtml}</div>`,
+            okText: '書き出す', cancelText: 'キャンセル', type: 'confirm'
+        });
+        if (bgResult && typeof bgResult === 'object' && bgResult.navigate) {
+            const [type, ref] = bgResult.navigate.split(':');
+            if (type === 'img') showImagePreview(parseInt(ref));
+            else if (type === 'slot') openInPreset(ref);
+            return;
+        }
+        if (!bgResult) return;
     }
-    expRatio = outW / iw;
-    finalDrawW = outW; finalDrawH = outH; finalDrawX = 0; finalDrawY = 0;
-} else {
-    const pr = ASPECT_PRESETS[aspKey] || { w: 1, h: 1 };
-    const exp = EXPORT_SIZE[aspKey] || { w: 1200, h: Math.round(1200 / (pr.w / pr.h)) };
-    outW = exp.w; outH = exp.h;
-    if (targetUpscaleWidth) {
-        outW = targetUpscaleWidth;
-        outH = Math.round(targetUpscaleWidth / (pr.w / pr.h));
+
+    showProgressPanel(useFolder ? 'フォルダに書き出し中...' : 'ZIP 作成中...');
+    try {
+        const zip = useFolder ? null : new JSZip(); let counter = 1;
+        
+        for (let i = 0; i < processedImages.length; i++) {
+            if (isLoadingCanceled) break;
+            const data = processedImages[i]; let blobToSave = data.blob; let finalName = data.exportName;
+            
+            if (data.isSplitData) {
+                if (data.hasJapanese || renameRequested) { finalName = `${String(counter++).padStart(2, '0')}_${data.originalName.replace(/\.[^/.]+$/, "").replace(/ /g, "_").replace(/[^\x01-\x7E]/g, "")}.jpg`; }
+                updateFileProgress(i, processedImages.length, finalName); await new Promise(res => setTimeout(res, 10));
+                if (useFolder) { const fh = await dirHandle.getFileHandle(finalName, { create: true }); const w = await fh.createWritable(); await w.write(data.blob); await w.close(); } else { zip.file(finalName, data.blob); }
+                continue;
+            }
+            if (data.hasJapanese || renameRequested) { finalName = `${String(counter++).padStart(2, '0')}_${data.originalName.replace(/\.[^/.]+$/, "").replace(/ /g, "_").replace(/[^\x01-\x7E]/g, "")}.jpg`; }
+            updateFileProgress(i, processedImages.length, finalName); await new Promise(res => setTimeout(res, 10));
+            
+            let targetUpscaleWidth = null;
+            if (data.isSmall && individualUpscaleSizes[`img_${i}`] && individualUpscaleSizes[`img_${i}`] !== 'original') {
+                targetUpscaleWidth = parseInt(individualUpscaleSizes[`img_${i}`]);
+            }
+
+            const aspKey = data._lastAspectKey || 'free'; const ms = data._modeStates?.[aspKey];
+            if (ms || (data.isSmall && targetUpscaleWidth && data.originalWidth < targetUpscaleWidth)) {
+                const img = new Image(); img.src = data.blobUrl; await new Promise(res => { img.onload = res; if (img.complete) res(); });
+                const iw = img.naturalWidth, ih = img.naturalHeight;
+                let outW = iw, outH = ih;
+                
+                if (ms) {
+                    let expRatio;
+                    let finalDrawW, finalDrawH, finalDrawX, finalDrawY;
+                    if (aspKey === 'free') {
+                        if (targetUpscaleWidth && iw < targetUpscaleWidth) {
+                            outW = targetUpscaleWidth;
+                            outH = Math.round(ih * (targetUpscaleWidth / iw));
+                        } else {
+                            outW = iw;
+                            outH = ih;
+                            if (outW > 1200) { outH = Math.round(outH * (1200 / outW)); outW = 1200; }
+                        }
+                        expRatio = outW / iw;
+                        finalDrawW = outW; finalDrawH = outH; finalDrawX = 0; finalDrawY = 0;
+                    } else {
+                        const pr = ASPECT_PRESETS[aspKey] || { w: 1, h: 1 };
+                        const exp = EXPORT_SIZE[aspKey] || { w: 1200, h: Math.round(1200 / (pr.w / pr.h)) };
+                        outW = exp.w; outH = exp.h;
+                        if (targetUpscaleWidth) {
+                            outW = targetUpscaleWidth;
+                            outH = Math.round(targetUpscaleWidth / (pr.w / pr.h));
+                        }
+                        expRatio = outW / ms.cw;
+                        finalDrawW = ms.imgW * expRatio; finalDrawH = ms.imgH * expRatio; finalDrawX = ms.imgX * expRatio; finalDrawY = ms.imgY * expRatio;
+                    }
+                    const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH);
+                    ctx.filter = ms.sat && parseInt(ms.sat) !== 100 ? `saturate(${ms.sat}%)` : 'none';
+                    ctx.save(); ctx.translate(finalDrawX + finalDrawW/2, finalDrawY + finalDrawH/2); if(ms.rot) ctx.rotate(ms.rot * Math.PI/180);
+                    ctx.drawImage(img, -finalDrawW/2, -finalDrawH/2, finalDrawW, finalDrawH); ctx.restore(); ctx.filter = 'none';
+                    const zipLogos = data._logos || (data._modeStates?.[aspKey]?.logos ? { cw: data._modeStates[aspKey].cw, items: data._modeStates[aspKey].logos } : null);
+                    if (zipLogos && zipLogos.items && zipLogos.items.length > 0) {
+                        const refCw = zipLogos.cw || outW;
+                        for (const lp of zipLogos.items) { if (lp.hidden) continue; const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete && lI.naturalWidth) r(); }); if (!lI.naturalWidth) continue; const eR = outW / refCw, dw = lp.baseW * lp.scale * eR, dh = lp.baseH * lp.scale * eR; ctx.save(); ctx.translate(lp.x * eR, lp.y * eR); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore(); }
+                    }
+                    applyImageAdjustments(ctx, outW, outH, ms.bri ? parseInt(ms.bri) : 100, ms.sharp ? parseInt(ms.sharp) : 0); blobToSave = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
+                } else if (data.isSmall && targetUpscaleWidth && iw < targetUpscaleWidth) {
+                    outW = targetUpscaleWidth; outH = Math.round(ih * (targetUpscaleWidth / iw));
+                    const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH);
+                    ctx.drawImage(img, 0, 0, outW, outH);
+                    blobToSave = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
+                }
+            }
+            if (useFolder) { const fh = await dirHandle.getFileHandle(finalName, { create: true }); const w = await fh.createWritable(); await w.write(blobToSave); await w.close(); } else { zip.file(finalName, blobToSave); }
+        }
+
+        for (const preset of ['thumb', 'og', 'special']) {
+            if (isLoadingCanceled) break;
+            const data = assignedSlots[preset]; if (!data) continue; let blobToSave = null;
+            await new Promise(res => setTimeout(res, 10));
+            if (data.isSplitData) {
+                const fixedExp = ['thumb','og','special'].includes(preset) ? EXPORT_SIZE[preset] : null; const outW = fixedExp ? fixedExp.w : data.originalWidth; const outH = fixedExp ? fixedExp.h : data.originalHeight; const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d'); const segWidth = outW / data.splitTargetCount; const exportRatio = outW / (data._viewCw || outW);
+                await Promise.all(data.splitSelectedImages.map(async (imgData, i) => {
+                    const img = new Image(); img.src = imgData.blobUrl;
+                    await new Promise(res => { img.onload = res; if (img.complete) res(); });
+                    const st = data.splitStates[i], finalScale = st.baseScale * st.scale;
+                    const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = outH;
+                    const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0, 0, segWidth, outH);
+                    let drawW = imgData.originalWidth * finalScale * exportRatio; let drawH = imgData.originalHeight * finalScale * exportRatio; let drawX = st.dx * exportRatio; let drawY = st.dy * exportRatio;
+                    if (st.rot) {const θ = Math.abs(st.rot * Math.PI / 180); const cosT = Math.abs(Math.cos(θ)), sinT = Math.abs(Math.sin(θ)); const scaleForW = (segWidth * cosT + outH * sinT) / drawW; const scaleForH = (segWidth * sinT + outH * cosT) / drawH; const coverScale = Math.max(scaleForW, scaleForH, 1);
+                    if (coverScale > 1) {const extraW = drawW * (coverScale - 1); const extraH = drawH * (coverScale - 1); drawX -= extraW / 2; drawY -= extraH / 2; drawW *= coverScale; drawH *= coverScale; } }
+                    if (drawW >= segWidth) drawX = Math.min(0, Math.max(segWidth - drawW, drawX)); if (drawH >= outH) drawY = Math.min(0, Math.max(outH - drawH, drawY));
+                    tCtx.filter = st.sat !== 100 ? `saturate(${st.sat}%)` : 'none'; tCtx.save(); tCtx.translate(drawX + drawW / 2, drawY + drawH / 2); if (st.rot) tCtx.rotate(st.rot * Math.PI / 180);
+                    tCtx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH); tCtx.restore(); tCtx.filter = 'none';
+                    applyImageAdjustments(tCtx, segWidth, outH, st.bri, st.sharp); ctx.drawImage(tempCanvas, i * segWidth, 0);
+                }));
+                const asp = data._lastAspectKey || 'free'; const zipSplitLogos = data._logos || (data._modeStates?.[asp]?.logos ? { cw: data._modeStates[asp].cw, items: data._modeStates[asp].logos } : null);
+                if (zipSplitLogos && zipSplitLogos.items && zipSplitLogos.items.length > 0) { const refCw = zipSplitLogos.cw || outW; for (const lp of zipSplitLogos.items) { if (lp.hidden) continue; const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete && lI.naturalWidth) r(); }); if (!lI.naturalWidth) continue; const eR = outW / refCw, dw = lp.baseW * lp.scale * eR, dh = lp.baseH * lp.scale * eR; ctx.save(); ctx.translate(lp.x * eR, lp.y * eR); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore(); } }
+                blobToSave = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
+            } else if (ASPECT_PRESETS[preset]) {
+                let targetUpscaleWidth = null;
+                if (data.isSmall && individualUpscaleSizes[`slot_${preset}`] && individualUpscaleSizes[`slot_${preset}`] !== 'original') {
+                    targetUpscaleWidth = parseInt(individualUpscaleSizes[`slot_${preset}`]);
+                }
+
+                const ms = data._modeStates?.[preset] || data._modeStates?.['free']; const img = new Image(); img.src = data.blobUrl; await new Promise(res => { img.onload = res; if (img.complete) res(); });
+                let outW, outH;
+                const pr = ASPECT_PRESETS[preset], exp = EXPORT_SIZE[preset]; outW = exp.w; outH = exp.h;
+                
+                if (targetUpscaleWidth) {
+                    outW = targetUpscaleWidth;
+                    outH = Math.round(targetUpscaleWidth / (pr.w / pr.h));
+                }
+
+                const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH);
+                if (ms && ms.imgW) {
+                    const expRatio = outW / ms.cw;
+                    const drawW = ms.imgW * expRatio, drawH = ms.imgH * expRatio, drawX = ms.imgX * expRatio, drawY = ms.imgY * expRatio;
+                    const sat = ms.sat ? parseInt(ms.sat) : 100, bri = ms.bri ? parseInt(ms.bri) : 100, sharp = ms.sharp ? parseInt(ms.sharp) : 0;
+                    ctx.filter = sat !== 100 ? `saturate(${sat}%)` : 'none';
+                    ctx.save(); ctx.translate(drawX + drawW/2, drawY + drawH/2); if(ms.rot) ctx.rotate(ms.rot * Math.PI/180);
+                    ctx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH); ctx.restore(); ctx.filter = 'none';
+                    const zipPresetLogos = data._logos || (ms.logos ? { cw: ms.cw, items: ms.logos } : null);
+                    if (zipPresetLogos && zipPresetLogos.items && zipPresetLogos.items.length > 0) {
+                        const refCw = zipPresetLogos.cw || outW; const scaleX = outW / refCw;
+                        for (const lp of zipPresetLogos.items) { if (lp.hidden) continue; const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete && lI.naturalWidth) r(); }); if (!lI.naturalWidth) continue; const dw = lp.baseW * lp.scale * scaleX, dh = lp.baseH * lp.scale * scaleX; ctx.save(); ctx.translate(lp.x * scaleX, lp.y * scaleX); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore(); }
+                    }
+                    applyImageAdjustments(ctx, outW, outH, bri, sharp); blobToSave = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
+                } else {
+                    ctx.drawImage(img, 0, 0, outW, outH); blobToSave = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
+                }
+            }
+            if (blobToSave) { const filename = FIXED_FILENAME[preset]; if (useFolder) { const fh = await dirHandle.getFileHandle(filename, { create: true }), w = await fh.createWritable(); await w.write(blobToSave); await w.close(); } else zip.file(filename, blobToSave); }
+        }
+
+        if (isLoadingCanceled) {showToast('書き出しをキャンセルしました'); byId('progress').style.display = 'none'; return;}
+        if (smallImages.length || japaneseImages.length) { const alertUrl = await generateAlertImageCanvas(); if (useFolder) { const fh = await dirHandle.getFileHandle("00_alert_summary.jpg", { create: true }), w = await fh.createWritable(); await w.write(await (await fetch(alertUrl)).blob()); await w.close(); } else zip.file("00_alert_summary.jpg", alertUrl.split(',')[1], {base64: true}); }
+        if (!useFolder) { const a = document.createElement('a'); a.href = URL.createObjectURL(await zip.generateAsync({ type: "blob" })); a.download = "webleon_images.zip"; a.click(); }
+    } catch (err) { 
+        console.error(err); 
+        await showCustomDialog({ title: 'エラー', message: '書き出し中にエラーが発生しました。', okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' }); 
+    } finally { 
+        byId('progress').style.display = 'none'; 
     }
-    expRatio = outW / ms.cw;
-    finalDrawW = ms.imgW * expRatio; finalDrawH = ms.imgH * expRatio; finalDrawX = ms.imgX * expRatio; finalDrawY = ms.imgY * expRatio;
-}
-const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH);
-ctx.filter = ms.sat && parseInt(ms.sat) !== 100 ? `saturate(${ms.sat}%)` : 'none';
-ctx.save(); ctx.translate(finalDrawX + finalDrawW/2, finalDrawY + finalDrawH/2); if(ms.rot) ctx.rotate(ms.rot * Math.PI/180);
-ctx.drawImage(img, -finalDrawW/2, -finalDrawH/2, finalDrawW, finalDrawH); ctx.restore(); ctx.filter = 'none';
-const zipLogos = data._logos || (data._modeStates?.[aspKey]?.logos ? { cw: data._modeStates[aspKey].cw, items: data._modeStates[aspKey].logos } : null);
-if (zipLogos && zipLogos.items && zipLogos.items.length > 0) {const refCw = zipLogos.cw || outW;
-for (const lp of zipLogos.items) { if (lp.hidden) continue; const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete && lI.naturalWidth) r(); }); if (!lI.naturalWidth) continue; const eR = outW / refCw, dw = lp.baseW * lp.scale * eR, dh = lp.baseH * lp.scale * eR; ctx.save(); ctx.translate(lp.x * eR, lp.y * eR); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore(); }
-}
-applyImageAdjustments(ctx, outW, outH, ms.bri ? parseInt(ms.bri) : 100, ms.sharp ? parseInt(ms.sharp) : 0); blobToSave = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
-} else if (data.isSmall && targetUpscaleWidth && iw < targetUpscaleWidth) {
-outW = targetUpscaleWidth; outH = Math.round(ih * (targetUpscaleWidth / iw));
-const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH);
-ctx.drawImage(img, 0, 0, outW, outH);
-blobToSave = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
-}
-}
-if (useFolder) { const fh = await dirHandle.getFileHandle(finalName, { create: true }); const w = await fh.createWritable(); await w.write(blobToSave); await w.close(); } else { zip.file(finalName, blobToSave); }
-}
-for (const preset of ['thumb', 'og', 'special']) {if (isLoadingCanceled) break;
-const data = assignedSlots[preset]; if (!data) continue; let blobToSave = null;
-await new Promise(res => setTimeout(res, 10));
-if (data.isSplitData) {const fixedExp = ['thumb','og','special'].includes(preset) ? EXPORT_SIZE[preset] : null; const outW = fixedExp ? fixedExp.w : data.originalWidth; const outH = fixedExp ? fixedExp.h : data.originalHeight; const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d'); const segWidth = outW / data.splitTargetCount; const exportRatio = outW / (data._viewCw || outW);
-await Promise.all(data.splitSelectedImages.map(async (imgData, i) => {const img = new Image(); img.src = imgData.blobUrl;
-await new Promise(res => { img.onload = res; if (img.complete) res(); });
-const st = data.splitStates[i], finalScale = st.baseScale * st.scale;
-const tempCanvas = document.createElement('canvas');
-tempCanvas.width = segWidth; tempCanvas.height = outH;
-const tCtx = tempCanvas.getContext('2d');
-tCtx.fillStyle = '#fff'; tCtx.fillRect(0, 0, segWidth, outH);
-let drawW = imgData.originalWidth * finalScale * exportRatio;
-let drawH = imgData.originalHeight * finalScale * exportRatio;
-let drawX = st.dx * exportRatio;
-let drawY = st.dy * exportRatio;
-if (st.rot) {const θ = Math.abs(st.rot * Math.PI / 180);
-const cosT = Math.abs(Math.cos(θ)), sinT = Math.abs(Math.sin(θ));
-const scaleForW = (segWidth * cosT + outH * sinT) / drawW;
-const scaleForH = (segWidth * sinT + outH * cosT) / drawH;
-const coverScale = Math.max(scaleForW, scaleForH, 1);
-if (coverScale > 1) {const extraW = drawW * (coverScale - 1);
-const extraH = drawH * (coverScale - 1);
-drawX -= extraW / 2;
-drawY -= extraH / 2;
-drawW *= coverScale;
-drawH *= coverScale;
-}
-}
-if (drawW >= segWidth) drawX = Math.min(0, Math.max(segWidth - drawW, drawX));
-if (drawH >= outH)    drawY = Math.min(0, Math.max(outH - drawH, drawY));
-tCtx.filter = st.sat !== 100 ? `saturate(${st.sat}%)` : 'none';
-tCtx.save();
-tCtx.translate(drawX + drawW / 2, drawY + drawH / 2);
-if (st.rot) tCtx.rotate(st.rot * Math.PI / 180);
-tCtx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH);
-tCtx.restore();
-tCtx.filter = 'none';
-applyImageAdjustments(tCtx, segWidth, outH, st.bri, st.sharp);
-ctx.drawImage(tempCanvas, i * segWidth, 0);
-}));
-const asp = data._lastAspectKey || 'free'; const zipSplitLogos = data._logos || (data._modeStates?.[asp]?.logos ? { cw: data._modeStates[asp].cw, items: data._modeStates[asp].logos } : null);
-if (zipSplitLogos && zipSplitLogos.items && zipSplitLogos.items.length > 0) { const refCw = zipSplitLogos.cw || outW; for (const lp of zipSplitLogos.items) { if (lp.hidden) continue; const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete && lI.naturalWidth) r(); }); if (!lI.naturalWidth) continue; const eR = outW / refCw, dw = lp.baseW * lp.scale * eR, dh = lp.baseH * lp.scale * eR; ctx.save(); ctx.translate(lp.x * eR, lp.y * eR); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore(); } }
-blobToSave = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
-} else if (ASPECT_PRESETS[preset]) {const ms = data._modeStates?.[preset] || data._modeStates?.['free']; const img = new Image(); img.src = data.blobUrl; await new Promise(res => { img.onload = res; if (img.complete) res(); });
-let outW, outH;
-const pr = ASPECT_PRESETS[preset], exp = EXPORT_SIZE[preset]; outW = exp.w; outH = exp.h;
-const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, outW, outH);
-if (ms && ms.imgW) {const expRatio = outW / ms.cw;
-const drawW = ms.imgW * expRatio, drawH = ms.imgH * expRatio, drawX = ms.imgX * expRatio, drawY = ms.imgY * expRatio;
-const sat = ms.sat ? parseInt(ms.sat) : 100, bri = ms.bri ? parseInt(ms.bri) : 100, sharp = ms.sharp ? parseInt(ms.sharp) : 0;
-ctx.filter = sat !== 100 ? `saturate(${sat}%)` : 'none';
-ctx.save(); ctx.translate(drawX + drawW/2, drawY + drawH/2); if(ms.rot) ctx.rotate(ms.rot * Math.PI/180);
-ctx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH); ctx.restore(); ctx.filter = 'none';
-const zipPresetLogos = data._logos || (ms.logos ? { cw: ms.cw, items: ms.logos } : null);
-if (zipPresetLogos && zipPresetLogos.items && zipPresetLogos.items.length > 0) {const refCw = zipPresetLogos.cw || outW; const scaleX = outW / refCw;
-for (const lp of zipPresetLogos.items) { if (lp.hidden) continue; const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete && lI.naturalWidth) r(); }); if (!lI.naturalWidth) continue; const dw = lp.baseW * lp.scale * scaleX, dh = lp.baseH * lp.scale * scaleX; ctx.save(); ctx.translate(lp.x * scaleX, lp.y * scaleX); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore(); }
-}
-applyImageAdjustments(ctx, outW, outH, bri, sharp); blobToSave = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
-} else {ctx.drawImage(img, 0, 0, outW, outH); blobToSave = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
-}
-}
-if (blobToSave) { const filename = FIXED_FILENAME[preset]; if (useFolder) { const fh = await dirHandle.getFileHandle(filename, { create: true }), w = await fh.createWritable(); await w.write(blobToSave); await w.close(); } else zip.file(filename, blobToSave); }
-}
-if (isLoadingCanceled) {showToast('書き出しをキャンセルしました');
-byId('progress').style.display = 'none';
-return;
-}
-if (smallImages.length || japaneseImages.length) { const alertUrl = await generateAlertImageCanvas(); if (useFolder) { const fh = await dirHandle.getFileHandle("00_alert_summary.jpg", { create: true }), w = await fh.createWritable(); await w.write(await (await fetch(alertUrl)).blob()); await w.close(); } else zip.file("00_alert_summary.jpg", alertUrl.split(',')[1], {base64: true}); }
-if (!useFolder) { const a = document.createElement('a'); a.href = URL.createObjectURL(await zip.generateAsync({ type: "blob" })); a.download = "webleon_images.zip"; a.click(); }
-} catch (err) { console.error(err); await showCustomDialog({ title: 'エラー', message: '書き出し中にエラーが発生しました。', okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' }); } finally { byId('progress').style.display = 'none'; }
 });
-['thumb', 'og', 'special', 'save1', 'save2', 'save3'].forEach(preset => {const pBox = byId('presetBox-' + preset); if (!pBox) return;
-pBox.addEventListener('dragstart', e => { if (!assignedSlots[preset]) { e.preventDefault(); return; } e.dataTransfer.setData('text/plain', 'slot:' + preset); e.dataTransfer.effectAllowed = 'copy'; setTimeout(() => { pBox.style.opacity = '0.4'; }, 0); });
-pBox.addEventListener('dragend', () => { pBox.style.opacity = '1'; }); pBox.addEventListener('dragover', e => { e.preventDefault(); pBox.style.opacity = '0.6'; }); pBox.addEventListener('dragleave', () => { pBox.style.opacity = '1'; });
-pBox.addEventListener('drop', async e => {e.preventDefault(); e.stopPropagation(); pBox.style.opacity = '1'; const raw = e.dataTransfer.getData('text/plain'); if (!raw) return;
-if (raw.startsWith('slot:')) {const fromPreset = raw.replace('slot:', ''); if (fromPreset === preset) return; const fromData = assignedSlots[fromPreset]; if (!fromData) return;
-let newData;
-if (fromData.isSplitData) {newData = { ...fromData }; newData.splitSelectedImages = [...fromData.splitSelectedImages]; newData.splitStates = JSON.parse(JSON.stringify(fromData.splitStates)); newData._lastAspectKey = ['thumb', 'og', 'special'].includes(preset) ? preset : 'free'; newData.exportName = preset + '.jpg';
-} else {newData = { ...fromData, _modeStates: JSON.parse(JSON.stringify(fromData._modeStates || {})) };
-if (fromData._logos) newData._logos = JSON.parse(JSON.stringify(fromData._logos));
-newData._lastAspectKey = preset;
-}
-if (!await confirmSlotOverwrite(preset, newData)) return; assignedSlots[preset] = newData; renderPresetCanvas(preset); await saveAppState();
-} else {const idx = parseInt(raw, 10);
-if (!isNaN(idx) && idx >= 0 && idx < processedImages.length) {const dropped = processedImages[idx]; if (!await confirmSlotOverwrite(preset, dropped)) return;
-const newSlotData = { ...dropped, _modeStates: JSON.parse(JSON.stringify(dropped._modeStates || {})) };
-if (dropped._logos) newSlotData._logos = JSON.parse(JSON.stringify(dropped._logos));
-newSlotData._lastAspectKey = preset;
-assignedSlots[preset] = newSlotData;
-renderPresetCanvas(preset);
-showImagePreview(newSlotData, preset);
-await saveAppState();
-}
-}
-});
+
+['thumb', 'og', 'special', 'save1', 'save2', 'save3'].forEach(preset => {
+    const pBox = byId('presetBox-' + preset); if (!pBox) return;
+    
+    pBox.addEventListener('dragstart', e => { 
+        if (!assignedSlots[preset]) { e.preventDefault(); return; } 
+        e.dataTransfer.setData('text/plain', 'slot:' + preset); 
+        e.dataTransfer.effectAllowed = 'copy'; 
+        setTimeout(() => { pBox.style.opacity = '0.4'; }, 0); 
+    });
+    
+    pBox.addEventListener('dragend', () => { pBox.style.opacity = '1'; }); 
+    pBox.addEventListener('dragover', e => { e.preventDefault(); pBox.style.opacity = '0.6'; }); 
+    pBox.addEventListener('dragleave', () => { pBox.style.opacity = '1'; });
+    
+    pBox.addEventListener('drop', async e => {
+        e.preventDefault(); e.stopPropagation(); pBox.style.opacity = '1'; 
+        const raw = e.dataTransfer.getData('text/plain'); if (!raw) return;
+        
+        // スロットからスロットへのドロップ
+        if (raw.startsWith('slot:')) {
+            const fromPreset = raw.replace('slot:', ''); if (fromPreset === preset) return; 
+            const fromData = assignedSlots[fromPreset]; if (!fromData) return;
+            
+            let newData;
+            if (fromData.isSplitData) {
+                newData = { ...fromData }; 
+                newData.splitSelectedImages = [...fromData.splitSelectedImages]; 
+                newData.splitStates = JSON.parse(JSON.stringify(fromData.splitStates)); 
+                newData._lastAspectKey = ['thumb', 'og', 'special'].includes(preset) ? preset : 'free'; 
+                newData.exportName = preset + '.jpg';
+            } else {
+                newData = { ...fromData, _modeStates: JSON.parse(JSON.stringify(fromData._modeStates || {})) };
+                if (fromData._logos) newData._logos = JSON.parse(JSON.stringify(fromData._logos));
+                newData._lastAspectKey = preset;
+            }
+            
+            if (!await confirmSlotOverwrite(preset, newData)) return; 
+            assignedSlots[preset] = newData; 
+            renderPresetCanvas(preset); 
+            await saveAppState();
+            
+        } else {
+            // リストからスロットへのドロップ
+            const idx = parseInt(raw, 10);
+            if (!isNaN(idx) && idx >= 0 && idx < processedImages.length) {
+                const dropped = processedImages[idx]; 
+                if (!await confirmSlotOverwrite(preset, dropped)) return;
+                
+                let newSlotData;
+                if (dropped.isSplitData) {
+                    // 分割画像の場合は専用のパラメータをディープコピー
+                    newSlotData = { ...dropped };
+                    newSlotData.splitSelectedImages = [...dropped.splitSelectedImages];
+                    newSlotData.splitStates = JSON.parse(JSON.stringify(dropped.splitStates));
+                    newSlotData._lastAspectKey = preset;
+                } else {
+                    // 通常画像の場合
+                    newSlotData = { ...dropped, _modeStates: JSON.parse(JSON.stringify(dropped._modeStates || {})) };
+                    if (dropped._logos) newSlotData._logos = JSON.parse(JSON.stringify(dropped._logos));
+                    newSlotData._lastAspectKey = preset;
+                }
+                
+                assignedSlots[preset] = newSlotData;
+                renderPresetCanvas(preset);
+                
+                // 分割データか通常データかで開くプレビュー関数を分岐
+                if (newSlotData.isSplitData) {
+                    restoreSplitPreview(newSlotData, preset);
+                } else {
+                    showImagePreview(newSlotData, preset);
+                }
+                
+                await saveAppState();
+            }
+        }
+    });
 });
 let savedLogos = JSON.parse(localStorage.getItem('webLeonLogos') || '[]');
 let currentLogos = []; let activeLogoId = null; let logoAction = null;
