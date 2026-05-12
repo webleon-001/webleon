@@ -55,12 +55,13 @@
 
   <h2>1. 入力</h2>
   <p>ブランド名と連絡先（電話番号・URL・メールアドレス）のリストを貼り付けてください。<br>
-  <small>※URLはハイパーリンク化し、メールアドレスはテキストのまま出力します。<br>
+  <small>※アルファベットは日本語読み（A→エー、B→ビー…）として50音順に並び替えます。<br>
+  ※URLはハイパーリンク化し、メールアドレスはテキストのまま出力します。<br>
   ※間のスペースの有無や数に関わらず、自動で全角空き1つに整えます。</small></p>
   <textarea id="inputText" rows="8" placeholder="例:
+F.E.N.　03-3498-1640
 カルティエ カスタマー サービスセンター　0120-1847-00
-ブリーズ　https://ceive.jp
-ブリーズ　tenbingo@gmail.com"></textarea>
+ブリーズ　https://ceive.jp"></textarea>
   
   <button class="btn" onclick="processData()">変換して並び替え</button>
 
@@ -80,16 +81,35 @@
       return halfStr;
     }
 
+    // アルファベットをカタカナ読みに変換するテーブル（ソート用）
+    const alphabetToKana = {
+      'A': 'エー', 'B': 'ビー', 'C': 'シー', 'D': 'ディー', 'E': 'イー',
+      'F': 'エフ', 'G': 'ジー', 'H': 'エイチ', 'I': 'アイ', 'J': 'ジェイ',
+      'K': 'ケー', 'L': 'エル', 'M': 'エム', 'N': 'エヌ', 'O': 'オー',
+      'P': 'ピー', 'Q': 'キュー', 'R': 'アール', 'S': 'エス', 'T': 'ティー',
+      'U': 'ユー', 'V': 'ブイ', 'W': 'ダブリュー', 'X': 'エックス', 'Y': 'ワイ', 'Z': 'ゼット',
+      'a': 'エー', 'b': 'ビー', 'c': 'シー', 'd': 'ディー', 'e': 'イー',
+      'f': 'エフ', 'g': 'ジー', 'h': 'エイチ', 'i': 'アイ', 'j': 'ジェイ',
+      'k': 'ケー', 'l': 'エル', 'm': 'エム', 'n': 'エヌ', 'o': 'オー',
+      'p': 'ピー', 'q': 'キュー', 'r': 'アール', 's': 'エス', 't': 'ティー',
+      'u': 'ユー', 'v': 'ブイ', 'w': 'ダブリュー', 'x': 'エックス', 'y': 'ワイ', 'z': 'ゼット'
+    };
+
+    // ソート用のキーを生成する関数（アルファベットをカナに変換）
+    function createSortKey(str) {
+      return str.replace(/[A-Za-z]/g, function(match) {
+        return alphabetToKana[match];
+      });
+    }
+
     function processData() {
       const input = document.getElementById('inputText').value;
       const lines = input.split('\n').filter(line => line.trim() !== '');
       
-      // 電話番号、URL、メールアドレスを判定するための正規表現
       const phoneRegex = /[0-9０-９][0-9０-９\-\−\－\―\ー]{8,}/;
       const urlRegex = /https?:\/\/[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=%]+/;
       const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/;
       
-      // 行末が電話番号、URL、メールアドレスのいずれかである場合にマッチ
       const regex = new RegExp(`^(.*?)[\\s　]*(${phoneRegex.source}|${urlRegex.source}|${emailRegex.source})$`, 'i');
       
       const data = lines.map(line => {
@@ -102,35 +122,42 @@
           let type = '';
           let processedValue = contactInfo;
           
-          // 連絡先の種類を判別
           if (/^https?:\/\//i.test(contactInfo)) {
             type = 'url';
           } else if (/@/.test(contactInfo)) {
             type = 'email';
           } else {
             type = 'phone';
-            processedValue = convertToHalfWidth(contactInfo); // 電話番号の場合は半角化
+            processedValue = convertToHalfWidth(contactInfo);
           }
           
-          return { name: brandName, contact: processedValue, type: type };
+          // ソート用のキーを追加して返す
+          return { 
+            name: brandName, 
+            contact: processedValue, 
+            type: type,
+            sortKey: createSortKey(brandName) 
+          };
         } else {
-          return { name: line.trim(), contact: '', type: 'none' }; 
+          return { 
+            name: line.trim(), 
+            contact: '', 
+            type: 'none',
+            sortKey: createSortKey(line.trim()) 
+          }; 
         }
       });
 
-      // 50音順ソート
-      data.sort((a, b) => a.name.localeCompare(b.name, 'ja'));
+      // 生成したソートキー（sortKey）を使って50音順に並び替え
+      data.sort((a, b) => a.sortKey.localeCompare(b.sortKey, 'ja'));
 
       let htmlOutput = '';
       data.forEach(item => {
         if (item.type === 'phone') {
-          // 電話番号は tel: リンク
           htmlOutput += `${item.name}　<a href="tel:${item.contact}">${item.contact}</a><br>\n`;
         } else if (item.type === 'url') {
-          // URLは通常のハイパーリンク
           htmlOutput += `${item.name}　<a href="${item.contact}">${item.contact}</a><br>\n`;
         } else if (item.type === 'email') {
-          // メールアドレスはリンクなしのテキスト
           htmlOutput += `${item.name}　${item.contact}<br>\n`;
         } else {
           htmlOutput += `${item.name}<br>\n`;
@@ -140,7 +167,6 @@
       document.getElementById('preview').innerHTML = htmlOutput;
     }
 
-    // CMS貼り付け用にリッチテキストとしてコピーする関数
     function copyResult() {
       const previewBox = document.getElementById('preview');
       const html = previewBox.innerHTML;
@@ -166,7 +192,6 @@
       }
     }
 
-    // 古いブラウザ用のフォールバック
     function fallbackCopyText(element) {
       const range = document.createRange();
       range.selectNodeContents(element);
