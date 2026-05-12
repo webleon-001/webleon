@@ -719,6 +719,7 @@ function showCustomDialog(options) {
       msgEl.parentNode.insertBefore(selectEl, modal.querySelector('.custom-dialog-actions'));
     }
 
+    // マルチセレクト（グリッド）の生成と追加
     let multiSelectContainer = byId('customDialogMultiSelect');
     if (!multiSelectContainer) {
       multiSelectContainer = document.createElement('div');
@@ -775,7 +776,6 @@ function showCustomDialog(options) {
       if (options.items) {
           options.items.forEach(item => {
               const div = document.createElement('div');
-              // 各アイテムをカード形式にする
               div.style.cssText = 'display:flex; align-items:center; gap:12px; padding:10px; border:1px solid var(--border); border-radius:8px; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.04);';
               
               let optionsHtml = `<option value="original">オリジナル(${item.w}px)</option>`;
@@ -803,11 +803,19 @@ function showCustomDialog(options) {
     modal.style.display = 'flex';
     if (options.type === 'prompt') { setTimeout(() => { inputEl.focus(); inputEl.select(); }, 100); }
     
+    // 【復元】画像クリック時のジャンプ機能
     const cleanup = () => { 
         modal.style.display = 'none'; 
         inputEl.onkeydown = null; 
+        msgEl.removeEventListener('click', navClickHandler); 
         card.style.width = ''; card.style.height = ''; 
     };
+    
+    const navClickHandler = (e) => { 
+        const navEl = e.target.closest('[data-nav]'); 
+        if (navEl) { cleanup(); resolve({ navigate: navEl.dataset.nav }); } 
+    };
+    msgEl.addEventListener('click', navClickHandler);
     
     // Enterキーのイベント
     inputEl.onkeydown = (e) => {
@@ -829,8 +837,11 @@ function showCustomDialog(options) {
             cleanup(); resolve(val);
         }
     };
-    cancelBtn.onclick = () => { cleanup(); resolve(null); };
-    closeBtn.onclick = () => { cleanup(); resolve(null); };
+    
+    // 【復元】キャンセルの戻り値を正しく維持
+    const isValueExpected = options.type === 'prompt' || options.type === 'select' || options.type === 'multi-select';
+    cancelBtn.onclick = () => { cleanup(); resolve(isValueExpected ? null : false); };
+    closeBtn.onclick = () => { cleanup(); resolve(isValueExpected ? null : null); }; // closeの場合は常に処理中断
     extraBtn.onclick = () => { cleanup(); resolve('extra'); };
   });
 }
