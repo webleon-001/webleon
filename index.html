@@ -695,19 +695,28 @@ function showCustomDialog(options) {
       extraBtn.id = 'customDialogExtraBtn';
       modal.querySelector('.custom-dialog-actions').appendChild(extraBtn);
     }
+    
+    // 入力欄の生成と追加
     let inputEl = byId('customDialogInput');
     if (!inputEl) {
       inputEl = document.createElement('input');
       inputEl.type = 'text';
       inputEl.id = 'customDialogInput';
       inputEl.style.cssText = 'display:none; width: 100%; padding: 10px 12px; margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; outline: none; box-sizing: border-box; background: var(--bg); color: var(--text);';
+      inputEl.onfocus = function() { this.style.borderColor = 'var(--accent)'; };
+      inputEl.onblur = function() { this.style.borderColor = 'var(--border)'; };
+      msgEl.parentNode.insertBefore(inputEl, modal.querySelector('.custom-dialog-actions'));
     }
     
+    // セレクトボックスの生成と追加
     let selectEl = byId('customDialogSelect');
     if (!selectEl) {
       selectEl = document.createElement('select');
       selectEl.id = 'customDialogSelect';
       selectEl.style.cssText = 'display:none; width: 100%; padding: 10px 12px; margin-bottom: 20px; border-radius: 6px; border: 1px solid var(--border); font-family: inherit; font-size: 0.9rem; outline: none; box-sizing: border-box; background: var(--bg); color: var(--text); cursor: pointer;';
+      selectEl.onfocus = function() { this.style.borderColor = 'var(--accent)'; };
+      selectEl.onblur = function() { this.style.borderColor = 'var(--border)'; };
+      msgEl.parentNode.insertBefore(selectEl, modal.querySelector('.custom-dialog-actions'));
     }
 
     let multiSelectContainer = byId('customDialogMultiSelect');
@@ -798,6 +807,14 @@ function showCustomDialog(options) {
         modal.style.display = 'none'; 
         inputEl.onkeydown = null; 
         card.style.width = ''; card.style.height = ''; 
+    };
+    
+    // Enterキーのイベント
+    inputEl.onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            okBtn.click();
+        }
     };
     
     okBtn.onclick = () => { 
