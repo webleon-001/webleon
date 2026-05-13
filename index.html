@@ -1,4 +1,72 @@
-<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>画像調整&書き出しツール</title> <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script> <script src="https://cdn.jsdelivr.net/npm/heic-to@1.4.2/dist/iife/heic-to.js"></script> <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script> <script src="https://unpkg.com/ag-psd@14.3.2/dist/bundle.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> <style>@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');:root{--accent:#6366f1;--accent-soft:#eef2ff;--bg:#f5f5f7;--card:#ffffff;--border:#e4e4e7;--text:#18181b;--muted:#71717a;--danger:#ef4444;--danger-soft:#fef2f2;--warn:#f59e0b;--warn-soft:#fffbeb;--radius:14px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06)}*,*::before,*::after{box-sizing:border-box;user-select:none;-webkit-user-select:none}input,textarea,[contenteditable]{user-select:text;-webkit-user-select:text}body{font-family:'DM Sans','Noto Sans JP',sans-serif;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:32px 20px 60px;margin:0;min-height:100vh;color:var(--text)}.version-label{font-size:0.85rem;color:var(--muted);font-weight:500;letter-spacing:0.02em}.page-header{display:flex;justify-content:space-between;align-items:flex-end;width:100%;max-width:900px;margin-bottom:20px;gap:16px}@media (max-width:768px){.page-header{flex-direction:column;align-items:flex-start}}.title-left{display:flex;flex-direction:column;gap:4px}.title-left h2{font-size:1.5rem;font-weight:500;letter-spacing:-0.02em;margin:0;color:var(--text)}.title-left p{font-size:0.85rem;color:var(--muted);margin:0;font-weight:300}.title-right{display:flex;align-items:center;gap:10px}.slot-modern-wrapper{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:4px 6px 4px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);gap:4px;transition:border-color 0.2s}.slot-modern-wrapper:hover{border-color:#d4d4d8}.slot-modern-label{font-size:0.7rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;pointer-events:none}.slot-modern-select{appearance:none;background:transparent;border:none;font-family:inherit;font-size:0.8rem;font-weight:500;color:var(--text);padding:4px 24px 4px 6px;cursor:pointer;outline:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;background-size:14px;max-width:140px;text-overflow:ellipsis}.slot-modern-btn{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}.slot-modern-btn:hover{background:var(--bg);color:var(--text)}.slot-modern-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}.help-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0;transition:transform 0.15s;line-height:1;margin-left:4px}.help-btn:hover{transform:scale(1.1)}.qr-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);width:32px;height:32px;cursor:pointer;padding:5px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;color:var(--muted);box-shadow:0 2px 6px rgba(0,0,0,0.06)}.qr-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:scale(1.05)}.section-card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);width:100%;max-width:900px;text-align:center}.instruction-text{position:relative;max-width:700px;margin:16px auto;font-size:0.8rem;color:var(--muted);line-height:1.75;text-align:left;background:var(--bg);padding:14px 32px 14px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);font-weight:300}.close-inst-btn{position:absolute;top:8px;right:12px;font-size:1.2rem;background:none;border:none;color:var(--muted);cursor:pointer;padding:0;transition:color 0.15s}.close-inst-btn:hover{color:var(--text)}.upload-zone{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:100px 20px;background:var(--bg);cursor:pointer;transition:all 0.2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center}.upload-zone:hover{border-color:var(--accent);background:var(--accent-soft)}.upload-btn-main{background:var(--accent);padding:11px 24px;border-radius:100px;color:#fff;font-weight:500;font-size:0.9rem;display:inline-block;margin-bottom:12px;letter-spacing:-0.01em;cursor:pointer;transition:opacity 0.15s}.upload-btn-main:hover{opacity:0.85}.upload-format-text{font-size:0.72rem;color:var(--muted);font-weight:300;letter-spacing:0.04em;text-transform:uppercase}.btn{padding:10px 22px;cursor:pointer;border:none;border-radius:100px;font-family:inherit;font-weight:500;font-size:0.875rem;transition:all 0.15s;letter-spacing:-0.01em}.btn:hover{opacity:0.88;transform:translateY(-1px)}.btn-success{background:var(--accent);color:#fff}.btn-secondary{background:#e4e4e7;color:var(--muted)}.btn-secondary:hover{background:#d4d4d8;color:var(--text)}.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#dc2626}#previewArea{position:relative;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:12px;margin-top:14px;border-radius:var(--radius-sm);border:1.5px dashed transparent;transition:border-color 0.2s,background 0.2s,padding-left 0.35s ease;padding:8px}#previewArea.drag-over{border-color:var(--accent);background:var(--accent-soft)}.preview-drop-hint{display:none;width:100%;text-align:center;padding:20px;color:var(--accent);font-size:0.8rem;font-weight:500;pointer-events:none}#previewArea.drag-over .preview-drop-hint{display:block}.thumb-box{position:relative;flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0;text-align:center;cursor:pointer;transition:transform 0.15s;border-radius:12px}.thumb-delete-btn{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:#fff;border:2px solid #fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity 0.15s;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.2)}.thumb-box:hover .thumb-delete-btn{opacity:1}@media (max-width:600px){.thumb-box{flex:0 0 calc(33.333% - 8px)}}.preset-box{cursor:grab;text-align:center;transition:transform 0.15s;flex-shrink:0}.preset-box:hover{transform:translateY(-2px)}.preset-box canvas{display:block;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);transition:opacity 0.2s}.preset-box:hover canvas{border-color:var(--accent)}.preset-box span{display:block;font-size:0.6rem;color:var(--muted);margin-top:3px;font-weight:500;letter-spacing:0.02em}.custom-tooltip{visibility:hidden;opacity:0;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:rgba(24,24,27,0.9);color:#fff;padding:6px 10px;border-radius:6px;font-size:0.7rem;font-weight:500;white-space:nowrap;z-index:100;pointer-events:none;transition:all 0.1s ease;box-shadow:0 4px 12px rgba(0,0,0,0.15);margin-bottom:6px}.custom-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:5px;border-style:solid;border-color:rgba(24,24,27,0.9) transparent transparent transparent}.thumb-box:hover .custom-tooltip{visibility:visible;opacity:1;transform:translateX(-50%) translateY(-4px)}.thumb-frame{width:100%;aspect-ratio:1 / 1;height:auto;border-radius:10px;border:2px solid transparent;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto;overflow:hidden;position:relative}.thumb-inner-img{display:block;object-fit:cover}.thumb-name{font-size:0.65rem;color:var(--text);font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:5px;line-height:1.3;text-align:center;width:100%}.thumb-dimensions{font-size:0.6rem;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;font-weight:300}#imagePreviewModal{display:none;opacity:0;transition:opacity 0.3s ease;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.preview-modal-inner{display:flex;align-items:center;justify-content:center;width:100%;height:100%}.preview-card{background:var(--card);padding:16px 20px 14px;border-radius:var(--radius);position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.4);display:inline-flex;flex-direction:column;align-items:stretch;transition:width 0.13s ease,height 0.13s ease}.preview-layer{position:absolute;top:50%;left:50%;max-width:none;max-height:none;display:block;transform:translate(-50%,-50%);opacity:0;transition:opacity 0.13s ease;pointer-events:none}.nav-btn{position:fixed;top:50%;transform:translateY(-50%);width:48px;height:48px;flex-shrink:0;background:rgba(255,255,255,0.9);color:var(--text);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;user-select:none;transition:background 0.2s,box-shadow 0.2s;border:1px solid var(--border);z-index:5010}.nav-btn:hover{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.15)}.nav-btn.prev{left:16px}.nav-btn.next{right:16px}.close-preview-top{position:absolute;top:10px;right:14px;color:var(--muted);font-size:32px;cursor:pointer;line-height:1;font-weight:300;z-index:5020;opacity:0.6;transition:all 0.2s}.close-preview-top:hover{opacity:1;color:var(--text)}.close-preview-top:hover{opacity:1}.highlight-red{color:var(--danger)}#progress{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:360px;background:var(--card);z-index:6000;padding:20px 24px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.2);border-radius:var(--radius);border:1px solid var(--border)}.progress-container{width:100%;height:3px;background:var(--border);border-radius:100px;margin-top:14px;overflow:hidden;display:block}.progress-bar{height:100%;width:0%;background:var(--accent);transition:width 0.2s ease;border-radius:100px}#alertModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.modal-content{background:var(--card);padding:28px;border-radius:var(--radius);max-width:90%;width:750px;max-height:85vh;overflow-y:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border)}.alert-section{margin-bottom:20px;background:var(--danger-soft);padding:16px;border-radius:var(--radius-sm);border:1px solid #fecaca}.alert-section.japanese{background:var(--warn-soft);border-color:#fde68a}.alert-list{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;margin-top:10px}.asp-btn{padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-family:inherit;font-size:0.72rem;font-weight:400;cursor:pointer;transition:all 0.15s;white-space:nowrap}.asp-btn:hover{border-color:var(--accent);color:var(--accent)}.asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.asp-sep{width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px}.filter-slider{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--border);border-radius:100px;outline:none;cursor:pointer;transition:background 0.15s}.filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;transition:transform 0.1s;box-shadow:0 1px 4px rgba(99,102,241,0.3)}#customDialogModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.custom-dialog-card{position:relative;background:var(--card);padding:28px;border-radius:var(--radius);width:90%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border);text-align:center}.custom-dialog-close{position:absolute;top:12px;right:16px;font-size:1.5rem;color:var(--muted);background:none;border:none;cursor:pointer;transition:color 0.15s;line-height:1;padding:0}.custom-dialog-close:hover{color:var(--text)}.custom-dialog-title{font-size:1.15rem;font-weight:500;margin:0 0 14px;color:var(--text);letter-spacing:-0.01em}.custom-dialog-message{font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:24px;text-align:center;background:var(--bg);padding:14px;border-radius:var(--radius-sm);border:1px solid var(--border)}.custom-dialog-actions{display:flex;justify-content:center;gap:12px}.custom-dialog-actions .btn{white-space:nowrap}.dialog-overwrite-preview{display:block;width:100%;max-height:220px;margin:14px auto 0;border-radius:var(--radius-sm);border:1px solid #d4d4d8;background:#fff;object-fit:cover}#logoLibStrip::-webkit-scrollbar{height:6px}#logoLibStrip::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}.logo-lib-item{position:relative;flex-shrink:0}.logo-lib-item img{width:36px;height:36px;object-fit:contain;cursor:pointer;border:1px solid var(--border);border-radius:4px;padding:2px;background:#fff;transition:border-color 0.2s;display:block}.logo-lib-item img:hover{border-color:var(--accent)}.logo-lib-del{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--danger);color:#fff;border:1.5px solid #fff;font-size:9px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.15s}.logo-lib-item:hover .logo-lib-del{opacity:1}.logo-container{position:absolute;transform-origin:center;user-select:none;cursor:move;touch-action:none;pointer-events:auto}.logo-container.selected{outline:2px dashed var(--accent);outline-offset:2px}.logo-container img{width:100%;height:100%;display:block;pointer-events:none}.logo-handle{position:absolute;width:14px;height:14px;background:#fff;border:2px solid var(--accent);border-radius:50%;display:none;z-index:10;touch-action:none}.logo-container.selected .logo-handle{display:block}.logo-handle.tl{top:-7px;left:-7px;cursor:nwse-resize}.logo-handle.tr{top:-7px;right:-7px;cursor:nesw-resize}.logo-handle.bl{bottom:-7px;left:-7px;cursor:nesw-resize}.logo-handle.br{bottom:-7px;right:-7px;cursor:nwse-resize}.logo-rot-handle{position:absolute;width:26px;height:26px;background:transparent;display:none;z-index:9;touch-action:none;cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><path d='M10 2.5 A7.5 7.5 0 1 0 17.5 10' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round'/><polyline points='15,1 18,7 12,7' fill='none' stroke='%236366f1' stroke-width='2' stroke-linejoin='round'/></svg>") 10 10,crosshair}.logo-rot-handle.tl{top:-27px;left:-27px}.logo-rot-handle.tr{top:-27px;right:-27px}.logo-rot-handle.bl{bottom:-27px;left:-27px}.logo-rot-handle.br{bottom:-27px;right:-27px}.logo-container.selected .logo-rot-handle{display:block}input[type="color"]::-webkit-color-swatch-wrapper{padding:0}input[type="color"]::-webkit-color-swatch{border:1px solid var(--border);border-radius:4px}#logoLayer{transition:opacity 0.3s ease;opacity:0;pointer-events:none}#logoLayer.logo-layer-visible{opacity:1;pointer-events:none}@keyframes logoLibFadeIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}#logoLibStrip img{animation:logoLibFadeIn 0.25s ease forwards}#logoToolbarArea{overflow:hidden;max-height:0;opacity:0;margin-bottom:0 !important;pointer-events:none;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease,margin-bottom 0.3s ease}#logoToolbarArea.logo-panel-open{max-height:140px;opacity:1;margin-bottom:10px !important;pointer-events:auto}#logoToggleBtn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.logo-container.hidden-logo>img{opacity:0.2}.logo-container.hidden-logo{outline-style:dashed}@keyframes pulseRed{0%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}50%{background-color:#f87171;border-color:#f87171;color:white;box-shadow:0 0 10px rgba(239,68,68,0.8)}100%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}}.btn-manual-save{background-color:#10b981 !important;border-color:#10b981 !important;color:white !important;transition:all 0.5s ease}.btn-manual-save:disabled{background-color:#d1d5db !important;border-color:#d1d5db !important;color:#9ca3af !important;cursor:not-allowed !important;opacity:1 !important;transform:none !important;animation:none !important}.btn-manual-save.unsaved{background-color:#ef4444 !important;border-color:#ef4444 !important;animation:pulseRed 2s infinite ease-in-out}.thumb-updated{position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:1px 4px;border-radius:3px;z-index:25;pointer-events:none;font-family:'DM Sans',sans-serif}.thumb-frame .status-badge-container{top:22px !important}#psdLayerModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:8000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.psd-modal-wrap{background:var(--card);border-radius:var(--radius);width:90%;max-width:700px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);border:1px solid var(--border);overflow:hidden}.psd-modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}.psd-modal-close{background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1;transition:color 0.15s}.psd-modal-close:hover{color:var(--text)}.psd-modal-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;background:var(--bg)}.psd-modal-body{overflow-y:auto;flex:1;padding:6px}.psd-modal-foot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0}.psd-layer-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;transition:background 0.12s,border-color 0.12s;user-select:none}.psd-layer-item:hover{background:var(--bg);border-color:var(--border)}.psd-layer-item.selected{background:var(--accent-soft);border-color:#c7d2fe}.psd-layer-item.is-group{opacity:0.65;cursor:default}.psd-layer-check{width:16px;height:16px;flex-shrink:0;accent-color:var(--accent);cursor:pointer}.psd-layer-thumb{width:52px;height:38px;object-fit:contain;border-radius:4px;border:1px solid var(--border);background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/10px 10px;flex-shrink:0;display:block}.psd-layer-thumb.empty{background:var(--bg)}.psd-layer-name{font-size:0.82rem;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.psd-layer-meta{font-size:0.68rem;color:var(--muted);white-space:nowrap;flex-shrink:0}.psd-layer-hidden-badge{font-size:0.6rem;background:#e4e4e7;color:var(--muted);padding:1px 5px;border-radius:3px;flex-shrink:0}.psd-group-header{display:flex;align-items:center;gap:6px;padding:5px 10px 3px;font-size:0.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;border-top:1px solid var(--border);margin-top:4px}.psd-group-header:first-child{border-top:none;margin-top:0}.psd-sel-count{font-size:0.75rem;color:var(--muted);margin-left:auto}.psd-crop-trigger-btn{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all 0.15s}.psd-crop-trigger-btn:hover:not(:disabled){border-color:#8b5cf6;color:#8b5cf6;background:#f5f3ff}.psd-crop-trigger-btn:disabled{cursor:not-allowed}#psdCropModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9500;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.psd-crop-wrap{background:var(--card);border-radius:var(--radius);width:92%;max-width:860px;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.5);border:1px solid var(--border);overflow:hidden}#sbc-presets{gap:12px !important}#sbc-presets .preset-box{flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0}#sbc-presets .preset-box canvas{width:100%;height:auto}.psd-crop-asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}#searchBarContainer{display:flex;flex-direction:column;gap:8px}#sbc-left{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;width:100%}#sbc-left #searchInput{width:200px;max-width:calc(100vw - 200px)}#sbc-presets{display:flex;gap:12px;justify-content:flex-start;align-items:center;flex-wrap:nowrap;width:100%}#sbc-presets .preset-box{flex-shrink:0}#sbc-presets .preset-box canvas{width:100%;height:auto;display:block}@media (min-width:769px){#searchBarContainer{flex-direction:row;align-items:flex-end;justify-content:space-between;gap:0}#sbc-left{flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:14px;width:auto}#sbc-left #searchInput{width:220px;max-width:none}#sbc-presets{align-items:flex-end;width:auto}}</style> </head><body><div id="progress"><div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px">処理中...</div><div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px"><div id="progressFileName" style="font-size:0.8rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px"></div><div id="progressCount" style="font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap"></div></div><div id="progressTimeLeft" style="font-size:0.75rem; color:var(--muted)"></div><div class="progress-container"><div class="progress-bar" id="progressBar"></div></div><button id="cancelLoadBtn" class="btn btn-secondary" style="margin-top: 14px; font-size: 0.75rem; padding: 6px 16px" onclick="cancelLoading()">キャンセル</button></div><div class="page-header"><div class="title-left"><h2>画像調整 &amp; 書き出しツール</h2><p>Image Resize &amp; Export — 幅1200px自動リサイズ / ZIP一括書き出し / PNG合成</p></div><div class="title-right"><div class="slot-modern-wrapper"><span class="slot-modern-label">Slot</span><select id="slotSelector" class="slot-modern-select"><option value="1">スロット 1</option><option value="2">スロット 2</option><option value="3">スロット 3</option><option value="4">スロット 4</option><option value="5">スロット 5</option><option value="6">スロット 6</option><option value="7">スロット 7</option><option value="8">スロット 8</option><option value="9">スロット 9</option><option value="10">スロット 10</option></select><button id="renameSlotBtn" class="slot-modern-btn" title="スロット名を変更"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button id="clearSlotBtn" class="slot-modern-btn danger" title="このスロットをクリア"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><button id="helpBtn" class="help-btn" title="説明を表示">💡</button></div></div><div class="section-card"><div class="upload-zone" id="dropZone"><div class="upload-btn-main">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div><input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div></div><div id="searchBarContainer" style="display:none; width:100%; margin-top:8px; margin-bottom:8px; padding:0 8px; z-index:10; position:relative"><div id="sbc-left"><div id="lastUpdatedLabel" style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.02em; white-space:nowrap; flex-shrink:0"> 最終更新: <span id="globalLastUpdatedText">-</span></div><div style="position:relative; flex-shrink:0"><input type="text" id="searchInput" placeholder="ファイル名で検索..." style="padding:8px 12px 8px 34px; border-radius:100px; border:1px solid var(--border); font-size:0.85rem; outline:none; transition:border-color 0.2s; background:var(--card); color:var(--text)"><svg style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div></div><div id="sbc-presets"><div class="preset-box" id="presetBox-thumb" draggable="true" onclick="openInPreset('thumb')" title="Thumbnailプリセットで開く"><canvas id="pc-thumb" width="80" height="40"></canvas><span>Thumbnail</span></div><div class="preset-box" id="presetBox-og" draggable="true" onclick="openInPreset('og')" title="OGプリセットで開く"><canvas id="pc-og" width="76" height="40"></canvas><span>OG</span></div><div class="preset-box" id="presetBox-special" draggable="true" onclick="openInPreset('special')" title="Specialプリセットで開く"><canvas id="pc-special" width="71" height="40"></canvas><span>Special</span></div></div></div><div id="previewArea" style="display: none;"><div class="preview-drop-hint">ここにドロップして追加</div></div><div id="actionArea" style="display:none; margin-top:24px; padding-top:20px; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%; transition: opacity 0.2s">
+<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>画像調整&書き出しツール</title> <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+// サムネイル更新用関数（通常の画像リスト用）
+async function updateMainThumbnail(data, aspKey) {
+    if (!data || data.isSplitData) return;
+    // 最新の編集状態を取得
+    const ms = data._modeStates?.[aspKey];
+    if (!ms || !ms.cw || !ms.ch) return;
+
+    const targetW = 150;
+    const ratio = ms.cw / ms.ch;
+    const targetH = Math.max(1, Math.round(targetW / ratio));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = targetW; canvas.height = targetH;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, targetW, targetH);
+
+    const img = new Image();
+    img.src = data.blobUrl;
+    await new Promise(r => { img.onload = r; if (img.complete) r(); });
+
+    const expRatio = targetW / ms.cw;
+    const drawW = ms.imgW * expRatio;
+    const drawH = ms.imgH * expRatio;
+    const drawX = ms.imgX * expRatio;
+    const drawY = ms.imgY * expRatio;
+
+    const sat = ms.sat !== undefined ? parseInt(ms.sat, 10) : 100;
+    const bri = ms.bri !== undefined ? parseInt(ms.bri, 10) : 100;
+    const sharp = ms.sharp !== undefined ? parseInt(ms.sharp, 10) : 0;
+    const rot = ms.rot !== undefined ? parseInt(ms.rot, 10) : 0;
+
+    if (sat !== 100) ctx.filter = `saturate(${sat}%)`;
+    ctx.save();
+    ctx.translate(drawX + drawW/2, drawY + drawH/2);
+    if (rot) ctx.rotate(rot * Math.PI/180);
+    ctx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH);
+    ctx.restore();
+    ctx.filter = 'none';
+
+    applyImageAdjustments(ctx, targetW, targetH, bri, sharp);
+
+    // ロゴの反映
+    const logosData = data._logos || (ms.logos ? { cw: ms.cw, items: ms.logos } : null);
+    if (logosData && logosData.items && logosData.items.length > 0) {
+        const scaleX = targetW / (logosData.cw || ms.cw);
+        for (const lp of logosData.items) {
+            if (lp.hidden) continue;
+            const lI = new Image();
+            await new Promise(r => { lI.onload = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete) r(); });
+            const dw = lp.baseW * lp.scale * scaleX, dh = lp.baseH * lp.scale * scaleX;
+            ctx.save();
+            ctx.translate(lp.x * scaleX, lp.y * scaleX);
+            ctx.rotate(lp.angle * Math.PI / 180);
+            ctx.drawImage(lI, -dw/2, -dh/2, dw, dh);
+            ctx.restore();
+        }
+    }
+
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.85));
+    if (blob) {
+        if (data.thumbUrl) URL.revokeObjectURL(data.thumbUrl);
+        data.thumbUrl = URL.createObjectURL(blob);
+        data.thumbBlob = blob;
+    }
+}
+</script><script src="https://cdn.jsdelivr.net/npm/heic-to@1.4.2/dist/iife/heic-to.js"></script> <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script> <script src="https://unpkg.com/ag-psd@14.3.2/dist/bundle.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> <style>@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');:root{--accent:#6366f1;--accent-soft:#eef2ff;--bg:#f5f5f7;--card:#ffffff;--border:#e4e4e7;--text:#18181b;--muted:#71717a;--danger:#ef4444;--danger-soft:#fef2f2;--warn:#f59e0b;--warn-soft:#fffbeb;--radius:14px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06)}*,*::before,*::after{box-sizing:border-box;user-select:none;-webkit-user-select:none}input,textarea,[contenteditable]{user-select:text;-webkit-user-select:text}body{font-family:'DM Sans','Noto Sans JP',sans-serif;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:32px 20px 60px;margin:0;min-height:100vh;color:var(--text)}.version-label{font-size:0.85rem;color:var(--muted);font-weight:500;letter-spacing:0.02em}.page-header{display:flex;justify-content:space-between;align-items:flex-end;width:100%;max-width:900px;margin-bottom:20px;gap:16px}@media (max-width:768px){.page-header{flex-direction:column;align-items:flex-start}}.title-left{display:flex;flex-direction:column;gap:4px}.title-left h2{font-size:1.5rem;font-weight:500;letter-spacing:-0.02em;margin:0;color:var(--text)}.title-left p{font-size:0.85rem;color:var(--muted);margin:0;font-weight:300}.title-right{display:flex;align-items:center;gap:10px}.slot-modern-wrapper{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:4px 6px 4px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);gap:4px;transition:border-color 0.2s}.slot-modern-wrapper:hover{border-color:#d4d4d8}.slot-modern-label{font-size:0.7rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;pointer-events:none}.slot-modern-select{appearance:none;background:transparent;border:none;font-family:inherit;font-size:0.8rem;font-weight:500;color:var(--text);padding:4px 24px 4px 6px;cursor:pointer;outline:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;background-size:14px;max-width:140px;text-overflow:ellipsis}.slot-modern-btn{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}.slot-modern-btn:hover{background:var(--bg);color:var(--text)}.slot-modern-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}.help-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0;transition:transform 0.15s;line-height:1;margin-left:4px}.help-btn:hover{transform:scale(1.1)}.qr-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);width:32px;height:32px;cursor:pointer;padding:5px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;color:var(--muted);box-shadow:0 2px 6px rgba(0,0,0,0.06)}.qr-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:scale(1.05)}.section-card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);width:100%;max-width:900px;text-align:center}.instruction-text{position:relative;max-width:700px;margin:16px auto;font-size:0.8rem;color:var(--muted);line-height:1.75;text-align:left;background:var(--bg);padding:14px 32px 14px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);font-weight:300}.close-inst-btn{position:absolute;top:8px;right:12px;font-size:1.2rem;background:none;border:none;color:var(--muted);cursor:pointer;padding:0;transition:color 0.15s}.close-inst-btn:hover{color:var(--text)}.upload-zone{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:100px 20px;background:var(--bg);cursor:pointer;transition:all 0.2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center}.upload-zone:hover{border-color:var(--accent);background:var(--accent-soft)}.upload-btn-main{background:var(--accent);padding:11px 24px;border-radius:100px;color:#fff;font-weight:500;font-size:0.9rem;display:inline-block;margin-bottom:12px;letter-spacing:-0.01em;cursor:pointer;transition:opacity 0.15s}.upload-btn-main:hover{opacity:0.85}.upload-format-text{font-size:0.72rem;color:var(--muted);font-weight:300;letter-spacing:0.04em;text-transform:uppercase}.btn{padding:10px 22px;cursor:pointer;border:none;border-radius:100px;font-family:inherit;font-weight:500;font-size:0.875rem;transition:all 0.15s;letter-spacing:-0.01em}.btn:hover{opacity:0.88;transform:translateY(-1px)}.btn-success{background:var(--accent);color:#fff}.btn-secondary{background:#e4e4e7;color:var(--muted)}.btn-secondary:hover{background:#d4d4d8;color:var(--text)}.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#dc2626}#previewArea{position:relative;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:12px;margin-top:14px;border-radius:var(--radius-sm);border:1.5px dashed transparent;transition:border-color 0.2s,background 0.2s,padding-left 0.35s ease;padding:8px}#previewArea.drag-over{border-color:var(--accent);background:var(--accent-soft)}.preview-drop-hint{display:none;width:100%;text-align:center;padding:20px;color:var(--accent);font-size:0.8rem;font-weight:500;pointer-events:none}#previewArea.drag-over .preview-drop-hint{display:block}.thumb-box{position:relative;flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0;text-align:center;cursor:pointer;transition:transform 0.15s;border-radius:12px}.thumb-delete-btn{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:#fff;border:2px solid #fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity 0.15s;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.2)}.thumb-box:hover .thumb-delete-btn{opacity:1}@media (max-width:600px){.thumb-box{flex:0 0 calc(33.333% - 8px)}}.preset-box{cursor:grab;text-align:center;transition:transform 0.15s;flex-shrink:0}.preset-box:hover{transform:translateY(-2px)}.preset-box canvas{display:block;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);transition:opacity 0.2s}.preset-box:hover canvas{border-color:var(--accent)}.preset-box span{display:block;font-size:0.6rem;color:var(--muted);margin-top:3px;font-weight:500;letter-spacing:0.02em}.custom-tooltip{visibility:hidden;opacity:0;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:rgba(24,24,27,0.9);color:#fff;padding:6px 10px;border-radius:6px;font-size:0.7rem;font-weight:500;white-space:nowrap;z-index:100;pointer-events:none;transition:all 0.1s ease;box-shadow:0 4px 12px rgba(0,0,0,0.15);margin-bottom:6px}.custom-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:5px;border-style:solid;border-color:rgba(24,24,27,0.9) transparent transparent transparent}.thumb-box:hover .custom-tooltip{visibility:visible;opacity:1;transform:translateX(-50%) translateY(-4px)}.thumb-frame{width:100%;aspect-ratio:1 / 1;height:auto;border-radius:10px;border:2px solid transparent;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto;overflow:hidden;position:relative}.thumb-inner-img{display:block;object-fit:cover}.thumb-name{font-size:0.65rem;color:var(--text);font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:5px;line-height:1.3;text-align:center;width:100%}.thumb-dimensions{font-size:0.6rem;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;font-weight:300}#imagePreviewModal{display:none;opacity:0;transition:opacity 0.3s ease;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.preview-modal-inner{display:flex;align-items:center;justify-content:center;width:100%;height:100%}.preview-card{background:var(--card);padding:16px 20px 14px;border-radius:var(--radius);position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.4);display:inline-flex;flex-direction:column;align-items:stretch;transition:width 0.13s ease,height 0.13s ease}.preview-layer{position:absolute;top:50%;left:50%;max-width:none;max-height:none;display:block;transform:translate(-50%,-50%);opacity:0;transition:opacity 0.13s ease;pointer-events:none}.nav-btn{position:fixed;top:50%;transform:translateY(-50%);width:48px;height:48px;flex-shrink:0;background:rgba(255,255,255,0.9);color:var(--text);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;user-select:none;transition:background 0.2s,box-shadow 0.2s;border:1px solid var(--border);z-index:5010}.nav-btn:hover{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.15)}.nav-btn.prev{left:16px}.nav-btn.next{right:16px}.close-preview-top{position:absolute;top:10px;right:14px;color:var(--muted);font-size:32px;cursor:pointer;line-height:1;font-weight:300;z-index:5020;opacity:0.6;transition:all 0.2s}.close-preview-top:hover{opacity:1;color:var(--text)}.close-preview-top:hover{opacity:1}.highlight-red{color:var(--danger)}#progress{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:360px;background:var(--card);z-index:6000;padding:20px 24px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.2);border-radius:var(--radius);border:1px solid var(--border)}.progress-container{width:100%;height:3px;background:var(--border);border-radius:100px;margin-top:14px;overflow:hidden;display:block}.progress-bar{height:100%;width:0%;background:var(--accent);transition:width 0.2s ease;border-radius:100px}#alertModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.modal-content{background:var(--card);padding:28px;border-radius:var(--radius);max-width:90%;width:750px;max-height:85vh;overflow-y:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border)}.alert-section{margin-bottom:20px;background:var(--danger-soft);padding:16px;border-radius:var(--radius-sm);border:1px solid #fecaca}.alert-section.japanese{background:var(--warn-soft);border-color:#fde68a}.alert-list{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;margin-top:10px}.asp-btn{padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-family:inherit;font-size:0.72rem;font-weight:400;cursor:pointer;transition:all 0.15s;white-space:nowrap}.asp-btn:hover{border-color:var(--accent);color:var(--accent)}.asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.asp-sep{width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px}.filter-slider{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--border);border-radius:100px;outline:none;cursor:pointer;transition:background 0.15s}.filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;transition:transform 0.1s;box-shadow:0 1px 4px rgba(99,102,241,0.3)}#customDialogModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.custom-dialog-card{position:relative;background:var(--card);padding:28px;border-radius:var(--radius);width:90%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border);text-align:center}.custom-dialog-close{position:absolute;top:12px;right:16px;font-size:1.5rem;color:var(--muted);background:none;border:none;cursor:pointer;transition:color 0.15s;line-height:1;padding:0}.custom-dialog-close:hover{color:var(--text)}.custom-dialog-title{font-size:1.15rem;font-weight:500;margin:0 0 14px;color:var(--text);letter-spacing:-0.01em}.custom-dialog-message{font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:24px;text-align:center;background:var(--bg);padding:14px;border-radius:var(--radius-sm);border:1px solid var(--border)}.custom-dialog-actions{display:flex;justify-content:center;gap:12px}.custom-dialog-actions .btn{white-space:nowrap}.dialog-overwrite-preview{display:block;width:100%;max-height:220px;margin:14px auto 0;border-radius:var(--radius-sm);border:1px solid #d4d4d8;background:#fff;object-fit:cover}#logoLibStrip::-webkit-scrollbar{height:6px}#logoLibStrip::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}.logo-lib-item{position:relative;flex-shrink:0}.logo-lib-item img{width:36px;height:36px;object-fit:contain;cursor:pointer;border:1px solid var(--border);border-radius:4px;padding:2px;background:#fff;transition:border-color 0.2s;display:block}.logo-lib-item img:hover{border-color:var(--accent)}.logo-lib-del{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--danger);color:#fff;border:1.5px solid #fff;font-size:9px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.15s}.logo-lib-item:hover .logo-lib-del{opacity:1}.logo-container{position:absolute;transform-origin:center;user-select:none;cursor:move;touch-action:none;pointer-events:auto}.logo-container.selected{outline:2px dashed var(--accent);outline-offset:2px}.logo-container img{width:100%;height:100%;display:block;pointer-events:none}.logo-handle{position:absolute;width:14px;height:14px;background:#fff;border:2px solid var(--accent);border-radius:50%;display:none;z-index:10;touch-action:none}.logo-container.selected .logo-handle{display:block}.logo-handle.tl{top:-7px;left:-7px;cursor:nwse-resize}.logo-handle.tr{top:-7px;right:-7px;cursor:nesw-resize}.logo-handle.bl{bottom:-7px;left:-7px;cursor:nesw-resize}.logo-handle.br{bottom:-7px;right:-7px;cursor:nwse-resize}.logo-rot-handle{position:absolute;width:26px;height:26px;background:transparent;display:none;z-index:9;touch-action:none;cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><path d='M10 2.5 A7.5 7.5 0 1 0 17.5 10' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round'/><polyline points='15,1 18,7 12,7' fill='none' stroke='%236366f1' stroke-width='2' stroke-linejoin='round'/></svg>") 10 10,crosshair}.logo-rot-handle.tl{top:-27px;left:-27px}.logo-rot-handle.tr{top:-27px;right:-27px}.logo-rot-handle.bl{bottom:-27px;left:-27px}.logo-rot-handle.br{bottom:-27px;right:-27px}.logo-container.selected .logo-rot-handle{display:block}input[type="color"]::-webkit-color-swatch-wrapper{padding:0}input[type="color"]::-webkit-color-swatch{border:1px solid var(--border);border-radius:4px}#logoLayer{transition:opacity 0.3s ease;opacity:0;pointer-events:none}#logoLayer.logo-layer-visible{opacity:1;pointer-events:none}@keyframes logoLibFadeIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}#logoLibStrip img{animation:logoLibFadeIn 0.25s ease forwards}#logoToolbarArea{overflow:hidden;max-height:0;opacity:0;margin-bottom:0 !important;pointer-events:none;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease,margin-bottom 0.3s ease}#logoToolbarArea.logo-panel-open{max-height:140px;opacity:1;margin-bottom:10px !important;pointer-events:auto}#logoToggleBtn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.logo-container.hidden-logo>img{opacity:0.2}.logo-container.hidden-logo{outline-style:dashed}@keyframes pulseRed{0%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}50%{background-color:#f87171;border-color:#f87171;color:white;box-shadow:0 0 10px rgba(239,68,68,0.8)}100%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}}.btn-manual-save{background-color:#10b981 !important;border-color:#10b981 !important;color:white !important;transition:all 0.5s ease}.btn-manual-save:disabled{background-color:#d1d5db !important;border-color:#d1d5db !important;color:#9ca3af !important;cursor:not-allowed !important;opacity:1 !important;transform:none !important;animation:none !important}.btn-manual-save.unsaved{background-color:#ef4444 !important;border-color:#ef4444 !important;animation:pulseRed 2s infinite ease-in-out}.thumb-updated{position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:1px 4px;border-radius:3px;z-index:25;pointer-events:none;font-family:'DM Sans',sans-serif}.thumb-frame .status-badge-container{top:22px !important}#psdLayerModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:8000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.psd-modal-wrap{background:var(--card);border-radius:var(--radius);width:90%;max-width:700px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);border:1px solid var(--border);overflow:hidden}.psd-modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}.psd-modal-close{background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1;transition:color 0.15s}.psd-modal-close:hover{color:var(--text)}.psd-modal-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;background:var(--bg)}.psd-modal-body{overflow-y:auto;flex:1;padding:6px}.psd-modal-foot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0}.psd-layer-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;transition:background 0.12s,border-color 0.12s;user-select:none}.psd-layer-item:hover{background:var(--bg);border-color:var(--border)}.psd-layer-item.selected{background:var(--accent-soft);border-color:#c7d2fe}.psd-layer-item.is-group{opacity:0.65;cursor:default}.psd-layer-check{width:16px;height:16px;flex-shrink:0;accent-color:var(--accent);cursor:pointer}.psd-layer-thumb{width:52px;height:38px;object-fit:contain;border-radius:4px;border:1px solid var(--border);background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/10px 10px;flex-shrink:0;display:block}.psd-layer-thumb.empty{background:var(--bg)}.psd-layer-name{font-size:0.82rem;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.psd-layer-meta{font-size:0.68rem;color:var(--muted);white-space:nowrap;flex-shrink:0}.psd-layer-hidden-badge{font-size:0.6rem;background:#e4e4e7;color:var(--muted);padding:1px 5px;border-radius:3px;flex-shrink:0}.psd-group-header{display:flex;align-items:center;gap:6px;padding:5px 10px 3px;font-size:0.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;border-top:1px solid var(--border);margin-top:4px}.psd-group-header:first-child{border-top:none;margin-top:0}.psd-sel-count{font-size:0.75rem;color:var(--muted);margin-left:auto}.psd-crop-trigger-btn{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all 0.15s}.psd-crop-trigger-btn:hover:not(:disabled){border-color:#8b5cf6;color:#8b5cf6;background:#f5f3ff}.psd-crop-trigger-btn:disabled{cursor:not-allowed}#psdCropModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9500;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.psd-crop-wrap{background:var(--card);border-radius:var(--radius);width:92%;max-width:860px;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.5);border:1px solid var(--border);overflow:hidden}#sbc-presets{gap:12px !important}#sbc-presets .preset-box{flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0}#sbc-presets .preset-box canvas{width:100%;height:auto}.psd-crop-asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}#searchBarContainer{display:flex;flex-direction:column;gap:8px}#sbc-left{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;width:100%}#sbc-left #searchInput{width:200px;max-width:calc(100vw - 200px)}#sbc-presets{display:flex;gap:12px;justify-content:flex-start;align-items:center;flex-wrap:nowrap;width:100%}#sbc-presets .preset-box{flex-shrink:0}#sbc-presets .preset-box canvas{width:100%;height:auto;display:block}@media (min-width:769px){#searchBarContainer{flex-direction:row;align-items:flex-end;justify-content:space-between;gap:0}#sbc-left{flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:14px;width:auto}#sbc-left #searchInput{width:220px;max-width:none}#sbc-presets{align-items:flex-end;width:auto}}</style> </head><body><div id="progress"><div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px">処理中...</div><div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px"><div id="progressFileName" style="font-size:0.8rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px"></div><div id="progressCount" style="font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap"></div></div><div id="progressTimeLeft" style="font-size:0.75rem; color:var(--muted)"></div><div class="progress-container"><div class="progress-bar" id="progressBar"></div></div><button id="cancelLoadBtn" class="btn btn-secondary" style="margin-top: 14px; font-size: 0.75rem; padding: 6px 16px" onclick="cancelLoading()">キャンセル</button></div><div class="page-header"><div class="title-left"><h2>画像調整 &amp; 書き出しツール</h2><p>Image Resize &amp; Export — 幅1200px自動リサイズ / ZIP一括書き出し / PNG合成</p></div><div class="title-right"><div class="slot-modern-wrapper"><span class="slot-modern-label">Slot</span><select id="slotSelector" class="slot-modern-select"><option value="1">スロット 1</option><option value="2">スロット 2</option><option value="3">スロット 3</option><option value="4">スロット 4</option><option value="5">スロット 5</option><option value="6">スロット 6</option><option value="7">スロット 7</option><option value="8">スロット 8</option><option value="9">スロット 9</option><option value="10">スロット 10</option></select><button id="renameSlotBtn" class="slot-modern-btn" title="スロット名を変更"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button id="clearSlotBtn" class="slot-modern-btn danger" title="このスロットをクリア"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><button id="helpBtn" class="help-btn" title="説明を表示">💡</button></div></div><div class="section-card"><div class="upload-zone" id="dropZone"><div class="upload-btn-main">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div><input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div></div><div id="searchBarContainer" style="display:none; width:100%; margin-top:8px; margin-bottom:8px; padding:0 8px; z-index:10; position:relative"><div id="sbc-left"><div id="lastUpdatedLabel" style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.02em; white-space:nowrap; flex-shrink:0"> 最終更新: <span id="globalLastUpdatedText">-</span></div><div style="position:relative; flex-shrink:0"><input type="text" id="searchInput" placeholder="ファイル名で検索..." style="padding:8px 12px 8px 34px; border-radius:100px; border:1px solid var(--border); font-size:0.85rem; outline:none; transition:border-color 0.2s; background:var(--card); color:var(--text)"><svg style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div></div><div id="sbc-presets"><div class="preset-box" id="presetBox-thumb" draggable="true" onclick="openInPreset('thumb')" title="Thumbnailプリセットで開く"><canvas id="pc-thumb" width="80" height="40"></canvas><span>Thumbnail</span></div><div class="preset-box" id="presetBox-og" draggable="true" onclick="openInPreset('og')" title="OGプリセットで開く"><canvas id="pc-og" width="76" height="40"></canvas><span>OG</span></div><div class="preset-box" id="presetBox-special" draggable="true" onclick="openInPreset('special')" title="Specialプリセットで開く"><canvas id="pc-special" width="71" height="40"></canvas><span>Special</span></div></div></div><div id="previewArea" style="display: none;"><div class="preview-drop-hint">ここにドロップして追加</div></div><div id="actionArea" style="display:none; margin-top:24px; padding-top:20px; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%; transition: opacity 0.2s">
   <div style="display:flex; align-items:center; gap:8px">
     <button id="qrBtn" class="qr-btn" title="QRコードを生成" onclick="openQrDialog()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="4" width="4" height="4" rx="0.5"/><rect x="14" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="16" y="4" width="4" height="4" rx="0.5"/><rect x="2" y="14" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="16" width="4" height="4" rx="0.5"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="19" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="19" width="3" height="3" rx="0.5"/><rect x="19" y="19" width="3" height="3" rx="0.5"/></svg></button></div><div style="display:flex; gap:10px; align-items:center"><input type="file" id="addFileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><input type="file" id="psdLayerFileInput" accept=".psd" style="display:none"><input type="file" id="aiLayerFileInput" accept=".ai" style="display:none"><button class="btn btn-secondary" onclick="byId('addFileInput').click()">画像追加</button><button class="btn btn-success" id="exportZipBtn">ZIP で書き出し</button></div></div><div class="instruction-text" id="instructionBox" style="margin-top:20px">
   <button class="close-inst-btn" id="closeInstBtn" title="閉じる">&times;</button>
@@ -106,13 +174,7 @@ let hasUnsavedChanges = false;
 let backupSplitState = null;
 let isResetting = false;
 let savedPreviewState = null;
-function captureCurrentState() {if (!currentPreviewData) return null;
-if (isSplitPreviewActive) {return {mode: 'split',aspect: currentAspectKey,states: JSON.parse(JSON.stringify(splitStates)),logos: isInLogoMode() ? JSON.parse(JSON.stringify(currentLogos)) : []
-};
-} else {return {mode: 'normal',aspect: currentAspectKey,zoomLabel: zoomLabel ? zoomLabel.textContent : '100%',imgX: Math.round(imgX),imgY: Math.round(imgY),sat: parseInt(byId('satSlider').value) || 100,bri: parseInt(byId('conSlider').value) || 100,sharp: parseInt(byId('sharpSlider').value) || 0,rot: parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0,logos: isInLogoMode() ? JSON.parse(JSON.stringify(currentLogos)) : []
-};
-}
-}
+
 function isSplitStateChanged(oldStates, newStates) {if (!oldStates || !newStates || oldStates.length !== newStates.length) return true;
 for (let i = 0; i < oldStates.length; i++) {const o = oldStates[i], n = newStates[i];
 if (Math.round(o.scale * 100) !== Math.round(n.scale * 100) ||Math.abs(Math.round(o.dx) - Math.round(n.dx)) > 1 ||Math.abs(Math.round(o.dy) - Math.round(n.dy)) > 1 ||o.sat !== n.sat ||o.bri !== n.bri ||o.sharp !== n.sharp ||o.rot !== n.rot
@@ -127,14 +189,6 @@ if (o.id !== n.id ||o.src !== n.src ||o.color !== n.color ||Math.round(o.x) !== 
 }
 return false;
 }
-function forceClearUnsaved() {hasUnsavedChanges = false;
-document.querySelectorAll('.btn-manual-save').forEach(btn => {btn.classList.remove('unsaved');
-btn.disabled = true;
-});
-}
-function updateSavedState() {savedPreviewState = captureCurrentState();
-forceClearUnsaved();
-}
 function getFormattedDate() {const now = new Date();
 const y = now.getFullYear();
 const m = String(now.getMonth() + 1).padStart(2, '0');
@@ -142,73 +196,6 @@ const d = String(now.getDate()).padStart(2, '0');
 const hh = String(now.getHours()).padStart(2, '0');
 const mm = String(now.getMinutes()).padStart(2, '0');
 return `${y}/${m}/${d} ${hh}:${mm}`;
-}
-function saveImageState() {if (!currentPreviewData) return;
-const data = currentPreviewData;
-const isSlot = ['thumb','og','special','save1','save2','save3'].includes(currentAspectKey);
-refreshGlobalTimestamp('edit');
-if (data.isSplitData) {data.splitStates = JSON.parse(JSON.stringify(splitStates));
-data._lastAspectKey = currentAspectKey;
-if (!data._modeStates) data._modeStates = {};
-if (!data._modeStates[currentAspectKey]) data._modeStates[currentAspectKey] = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight };
-if (isInLogoMode()) {data._logos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: JSON.parse(JSON.stringify(currentLogos)) };
-data._modeStates[currentAspectKey].logos = JSON.parse(JSON.stringify(currentLogos));
-} else {delete data._logos;
-delete data._modeStates[currentAspectKey].logos;
-}
-if (isSlot) { assignedSlots[currentAspectKey] = data; renderPresetCanvas(currentAspectKey); }
-} else {if (isSplitPreviewActive) return;
-if (!data._modeStates) data._modeStates = {};
-data._modeStates[currentAspectKey] = {sat: byId('satSlider').value,bri: byId('conSlider').value,sharp: byId('sharpSlider').value,rot: byId('rotSlider') ? byId('rotSlider').value : 0,cw: targetCw || zoomContainer.clientWidth,ch: targetCh || zoomContainer.clientHeight,imgX, imgY, imgW, imgH
-};
-if (isInLogoMode()) {if (currentLogos.length > 0) {data._logos = {cw: targetCw || zoomContainer.clientWidth,ch: targetCh || zoomContainer.clientHeight,items: JSON.parse(JSON.stringify(currentLogos))
-};
-data._modeStates[currentAspectKey].logos = JSON.parse(JSON.stringify(currentLogos));
-} else {delete data._logos;
-if(data._modeStates[currentAspectKey]) delete data._modeStates[currentAspectKey].logos;
-}
-}
-data._lastAspectKey = currentAspectKey;
-if (isSlot) { assignedSlots[currentAspectKey] = data; renderPresetCanvas(currentAspectKey); }
-}
-saveAppState();
-}
-function markUnsaved() {if (isPreviewLoading || isResetting || !savedPreviewState) return;
-let isChanged = false;
-const currentState = captureCurrentState();
-if (!currentState) return;
-if (savedPreviewState.mode !== currentState.mode || savedPreviewState.aspect !== currentState.aspect) {isChanged = true;
-} else if (currentState.mode === 'split') {isChanged = isSplitStateChanged(savedPreviewState.states, currentState.states) || isLogoStateChanged(savedPreviewState.logos, currentState.logos);
-} else {if (
-(savedPreviewState.zoomLabel || '100%') !== (currentState.zoomLabel || '100%') ||Math.abs((savedPreviewState.imgX || 0) - currentState.imgX) > 1 ||Math.abs((savedPreviewState.imgY || 0) - currentState.imgY) > 1 ||savedPreviewState.sat !== currentState.sat ||savedPreviewState.bri !== currentState.bri ||savedPreviewState.sharp !== currentState.sharp ||savedPreviewState.rot !== currentState.rot ||isLogoStateChanged(savedPreviewState.logos, currentState.logos)
-) {isChanged = true;
-}
-}
-if (isChanged) {if (!hasUnsavedChanges) {hasUnsavedChanges = true;
-document.querySelectorAll('.btn-manual-save').forEach(btn => {btn.classList.add('unsaved');
-btn.disabled = false;
-});
-}
-} else {if (hasUnsavedChanges) {forceClearUnsaved();
-}
-}
-}
-function clearUnsaved() {hasUnsavedChanges = false;
-document.querySelectorAll('.btn-manual-save').forEach(btn => {btn.classList.remove('unsaved');
-btn.disabled = true;
-});
-}
-async function performManualSave() {if (isSplitPreviewActive) {const isSlot = ['thumb', 'og', 'special'].includes(currentAspectKey);
-if (isSlot) {await saveSplitDataToSlot(currentAspectKey, true);
-} else {const success = await saveSplitToNormalImage();
-if (!success) return;
-}
-} else {saveImageState();
-}
-forceClearUnsaved();
-updateSavedState();
-renderAllThumbs();
-showToast('編集内容を保存しました。');
 }
 async function saveSplitToNormalImage() {
     if (!isSplitPreviewActive || splitSelectedImages.length < splitTargetCount) return false;
@@ -1389,13 +1376,19 @@ document.addEventListener('keyup', (e) => { if (e.key === 'Shift') { exportZipBt
 let imgW = 0, imgH = 0, imgX = 0, imgY = 0, fitW = 0;
 let isDragging = false, dragStartX = 0, dragStartY = 0, dragStartImgX = 0, dragStartImgY = 0;
 const MAX_ZOOM = 5;
-function applyPos() {const img = getActiveImg(), cw = targetCw || zoomContainer.clientWidth, ch = targetCh || zoomContainer.clientHeight;
-const tx = imgX - cw / 2 + imgW / 2, ty = imgY - ch / 2 + imgH / 2;
-img.style.width = Math.round(imgW) + 'px'; img.style.height = Math.round(imgH) + 'px';
-const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
-img.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) rotate(${rot}deg)`;
-zoomLabel.textContent = fitW > 0 ? Math.round(imgW / fitW * 100) + '%' : '100%';
-markUnsaved();
+function applyPos() {
+  const img = getActiveImg(), cw = targetCw || zoomContainer.clientWidth, ch = targetCh || zoomContainer.clientHeight;
+  const tx = imgX - cw / 2 + imgW / 2, ty = imgY - ch / 2 + imgH / 2;
+  img.style.width = Math.round(imgW) + 'px'; img.style.height = Math.round(imgH) + 'px';
+  const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
+  img.style.transform = `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) rotate(${rot}deg)`;
+  zoomLabel.textContent = fitW > 0 ? Math.round(imgW / fitW * 100) + '%' : '100%';
+  
+  const isPresetPos = ['thumb', 'og', 'special'].includes(currentAspectKey);
+  if (isPresetPos) {
+      renderPresetCanvas(currentAspectKey);
+  }
+  markUnsaved();
 }
 function clampPos(x, y, w, h, cw = targetCw, ch = targetCh) {if (!cw) cw = zoomContainer.clientWidth; if (!ch) ch = zoomContainer.clientHeight;
 return { nx: w <= cw ? (cw - w) / 2 : Math.min(0, Math.max(x, cw - w)), ny: h <= ch ? (ch - h) / 2 : Math.min(0, Math.max(y, ch - h)) };
@@ -2459,43 +2452,79 @@ if (logoModeActive) { logoModeActive = false; byId('logoToolbarArea').classList.
 imagePreviewModal.style.opacity = '0';
 setTimeout(() => { imagePreviewModal.style.display = 'none'; byId('previewImg0').style.opacity = 0; byId('previewImg1').style.opacity = 0; }, 260);
 }
-async function renderPresetCanvas(preset) {const el = byId('pc-' + preset); if (!el) return; const ctx = el.getContext('2d');
-ctx.clearRect(0, 0, el.width, el.height); ctx.fillStyle = '#f5f5f7'; ctx.fillRect(0, 0, el.width, el.height);
-const data = assignedSlots[preset]; if (!data) return;
-const imgSrc = data.blobUrl; const img = new Image(); img.src = imgSrc; await new Promise(r => { img.onload = r; if (img.complete && img.naturalWidth) r(); }); const iw = img.naturalWidth, ih = img.naturalHeight; if (!iw || !ih) return;
-ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, el.width, el.height);
-const asp = data.isSplitData ? (data._lastAspectKey || 'free') : preset;
-const ms = data._modeStates?.[asp] || data._modeStates?.['free'];
-if (data.isSplitData) {ctx.drawImage(img, 0, 0, el.width, el.height);
-} else {if (ms && ms.imgW) {const expRatio = el.width / ms.cw;
-const drawW = ms.imgW * expRatio;
-const drawH = ms.imgH * expRatio;
-const drawX = ms.imgX * expRatio;
-const drawY = ms.imgY * expRatio;
-if (parseInt(ms.sat) !== 100) ctx.filter = `saturate(${ms.sat}%)`;
-ctx.save();
-ctx.translate(drawX + drawW/2, drawY + drawH/2);
-if (ms.rot) ctx.rotate(ms.rot * Math.PI / 180);
-ctx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH);
-ctx.restore();
-ctx.filter = 'none';
-} else {const ratio = ASPECT_PRESETS[preset] ? ASPECT_PRESETS[preset].w / ASPECT_PRESETS[preset].h : 1;
-const imgRatio = iw / ih;
-let srcX=0, srcY=0, srcW=iw, srcH=ih;
-if (imgRatio > ratio) { srcH = ih; srcW = ih * ratio; srcX = (iw - srcW) / 2; }
-else { srcW = iw; srcH = iw / ratio; srcY = (ih - srcH) / 2; }
-ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, el.width, el.height);
-}
-}
-const logosData = ms?.logos ? { cw: ms.cw, items: ms.logos } : data._logos;
-if (logosData && logosData.items && logosData.items.length > 0) {const refCw = logosData.cw || iw;
-const scaleX = el.width / refCw;
-for (const lp of logosData.items) {if (lp.hidden) continue;
-const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete) r(); });
-const dw = lp.baseW * lp.scale * scaleX, dh = lp.baseH * lp.scale * scaleX;
-ctx.save(); ctx.translate(lp.x * scaleX, lp.y * scaleX); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore();
-}
-}
+async function renderPresetCanvas(preset) {
+  const el = byId('pc-' + preset); if (!el) return; const ctx = el.getContext('2d');
+  ctx.clearRect(0, 0, el.width, el.height); ctx.fillStyle = '#f5f5f7'; ctx.fillRect(0, 0, el.width, el.height);
+  
+  // 現在このプリセットを編集中の場合は、保存前の「ライブデータ」を表示する
+  const isCurrentlyEditing = (preset === currentAspectKey && imagePreviewModal.style.display === 'flex');
+  const data = isCurrentlyEditing ? currentPreviewData : assignedSlots[preset];
+  if (!data) return;
+
+  const img = new Image(); img.src = data.blobUrl;
+  await new Promise(r => { img.onload = r; if (img.complete && img.naturalWidth) r(); });
+  const iw = img.naturalWidth, ih = img.naturalHeight; if (!iw || !ih) return;
+
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, el.width, el.height);
+
+  if (data.isSplitData) {
+    ctx.drawImage(img, 0, 0, el.width, el.height);
+  } else {
+    let sat, bri, rot, cw, ch, l_imgX, l_imgY, l_imgW, l_imgH, sharp;
+    
+    if (isCurrentlyEditing && !isSplitPreviewActive) {
+      // 編集中の場合は画面上のスライダーから現在の値を直接拾う
+      sat = parseInt(byId('satSlider').value, 10);
+      bri = parseInt(byId('conSlider').value, 10);
+      sharp = parseInt(byId('sharpSlider').value, 10);
+      rot = byId('rotSlider') ? (parseInt(byId('rotSlider').value, 10) || 0) : 0;
+      cw = targetCw || zoomContainer.clientWidth;
+      ch = targetCh || zoomContainer.clientHeight;
+      l_imgX = imgX; l_imgY = imgY; l_imgW = imgW; l_imgH = imgH;
+    } else {
+      // 保存されているデータから取得
+      const asp = data.isSplitData ? (data._lastAspectKey || 'free') : preset;
+      let ms = data._modeStates?.[asp] || data._modeStates?.['free'];
+      if (!ms && data._modeStates) ms = data._modeStates[Object.keys(data._modeStates)[0]];
+
+      if (ms) {
+          sat = ms.sat; bri = ms.bri; sharp = ms.sharp; rot = ms.rot;
+          cw = ms.cw; ch = ms.ch; l_imgX = ms.imgX; l_imgY = ms.imgY; l_imgW = ms.imgW; l_imgH = ms.imgH;
+      } else {
+          // 未編集時の初期配置計算
+          sat = 100; bri = 100; sharp = 0; rot = 0; cw = 1200;
+          const pr = ASPECT_PRESETS[preset]; ch = pr ? Math.round(cw * (pr.h / pr.w)) : 800;
+          const sc = Math.max(cw / iw, ch / ih); l_imgW = iw * sc; l_imgH = ih * sc;
+          l_imgX = (cw - l_imgW) / 2; l_imgY = (ch - l_imgH) / 2;
+      }
+    }
+
+    const expRatio = el.width / (cw || 1200);
+    const drawW = l_imgW * expRatio; const drawH = l_imgH * expRatio;
+    const drawX = l_imgX * expRatio; const drawY = l_imgY * expRatio;
+    
+    if (parseInt(sat) !== 100) ctx.filter = `saturate(${sat}%)`;
+    ctx.save();
+    ctx.translate(drawX + drawW/2, drawY + drawH/2);
+    if (rot) ctx.rotate(rot * Math.PI / 180);
+    ctx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH);
+    ctx.restore();
+    ctx.filter = 'none';
+    applyImageAdjustments(ctx, el.width, el.height, bri, sharp);
+  }
+
+  // ロゴの描画
+  const ms = data._modeStates?.[currentAspectKey] || data._modeStates?.['free'];
+  const logosData = isCurrentlyEditing ? { cw: targetCw, items: currentLogos } : (ms?.logos ? { cw: ms.cw, items: ms.logos } : data._logos);
+  if (logosData && logosData.items && logosData.items.length > 0) {
+    const scaleX = el.width / (logosData.cw || 1200);
+    for (const lp of logosData.items) {
+      if (lp.hidden) continue;
+      const lI = new Image(); await new Promise(r => { lI.onload = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete) r(); });
+      const dw = lp.baseW * lp.scale * scaleX, dh = lp.baseH * lp.scale * scaleX;
+      ctx.save(); ctx.translate(lp.x * scaleX, lp.y * scaleX); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore();
+    }
+  }
 }
 async function saveSplitDataToSlot(slotKey, skipConfirm = false) {if (!isSplitPreviewActive || splitSelectedImages.length < splitTargetCount) return;
 if (!skipConfirm && !await confirmSlotOverwrite(slotKey, null)) return;
@@ -2594,14 +2623,38 @@ if (!data) return;
 currentPreviewIndex = index; currentPreviewData = data; const aspKey = forcePreset || data._lastAspectKey || 'free'; const ms = data._modeStates?.[aspKey];
 document.querySelectorAll('.asp-btn').forEach(b => b.classList.remove('active')); const activeBtn = document.querySelector(`.asp-btn[data-key="${aspKey}"]`); if (activeBtn) activeBtn.classList.add('active');
 currentAspectKey = aspKey; updateAspectBarVisibility(aspKey);
-if (ms) {byId('satSlider').value = ms.sat !== undefined ? ms.sat : 100;
-byId('conSlider').value = ms.bri !== undefined ? ms.bri : 100;
-byId('sharpSlider').value = ms.sharp !== undefined ? ms.sharp : 0;
-if(byId('rotSlider')) byId('rotSlider').value = ms.rot !== undefined ? ms.rot : 0;
-applyPreviewFilters();
-} else { resetPreviewFiltersImmediate(); }
+// スライダー値をセットし、フィルター(sat/bri/sharp)だけを旧レイヤーに適用する。
+// rotはonLoad後に新レイヤーへ適用するため、ここでは applyPos() を呼ばない。
+if (ms) {
+  byId('satSlider').value = ms.sat !== undefined ? ms.sat : 100;
+  byId('conSlider').value = ms.bri !== undefined ? ms.bri : 100;
+  byId('sharpSlider').value = ms.sharp !== undefined ? ms.sharp : 0;
+  if(byId('rotSlider')) byId('rotSlider').value = ms.rot !== undefined ? ms.rot : 0;
+  // フィルター(zoomContainer.style.filter)のみ更新し、applyPos()は呼ばない
+  const _sat = parseInt(byId('satSlider').value), _bri = parseInt(byId('conSlider').value), _sharp = parseInt(byId('sharpSlider').value) || 0;
+  byId('satLabel').textContent = _sat + '%'; byId('conLabel').textContent = _bri + '%'; byId('sharpLabel').textContent = _sharp + '%';
+  if(byId('rotLabel')) byId('rotLabel').textContent = (ms.rot !== undefined ? parseInt(ms.rot,10) : 0) + '°';
+  const gamma = (100 / Math.max(1, _bri)).toFixed(4); ['R','G','B'].forEach(ch => { const el = document.getElementById('gfunc' + ch); if (el) el.setAttribute('exponent', gamma); });
+  const k = _sharp / 100, c = 1 + 4 * k, s = -k; const kernel = document.getElementById('sharpKernel'); if (kernel) kernel.setAttribute('kernelMatrix', `0 ${s.toFixed(4)} 0 ${s.toFixed(4)} ${c.toFixed(4)} ${s.toFixed(4)} 0 ${s.toFixed(4)} 0`);
+  const parts = []; if (_sat !== 100) parts.push(`saturate(${_sat}%)`); if (_bri !== 100) parts.push(`url(#previewGamma)`); if (_sharp > 0) parts.push(`url(#previewSharp)`);
+  zoomContainer.style.filter = parts.length ? parts.join(' ') : 'none';
+  updateFilterToggleBtns();
+} else {
+  cancelAnimation('filter');
+  byId('satSlider').value = 100; byId('conSlider').value = 100; byId('sharpSlider').value = 0;
+  if(byId('rotSlider')) byId('rotSlider').value = 0;
+  byId('satLabel').textContent = '100%'; byId('conLabel').textContent = '100%'; byId('sharpLabel').textContent = '0%';
+  if(byId('rotLabel')) byId('rotLabel').textContent = '0°';
+  zoomContainer.style.filter = 'none';
+  updateFilterToggleBtns();
+}
 renderAllPresetCanvases();
 const isInitialOpen = (imagePreviewModal.style.display !== 'flex'), nextLayer = isInitialOpen ? activeLayer : (activeLayer === 0 ? 1 : 0), nextImg = byId('previewImg' + nextLayer);
+// 画像srcセット前に正しい回転を事前適用しておく（ロード中にデフォルト状態が見えるのを防ぐ）
+const preRot = ms && ms.rot !== undefined ? parseInt(ms.rot, 10) : 0;
+nextImg.style.transition = 'none';
+nextImg.style.transform = `translate(-50%, -50%) rotate(${preRot}deg)`;
+nextImg.style.opacity = '0';
 const onLoad = () => {activeLayer = nextLayer; if (isInitialOpen) { imagePreviewModal.style.display = 'flex'; void imagePreviewModal.offsetWidth; imagePreviewModal.style.opacity = '1'; }
 const isSlot = ['thumb','og','special','save1','save2','save3'].includes(aspKey);
 const legacyLogos = data._modeStates?.[aspKey]?.logos;
@@ -2632,8 +2685,15 @@ const c = clampPos(imgX, imgY, imgW, imgH); imgX = c.nx; imgY = c.ny; applyPos()
 }
 if (hasLogos) clampAllLogos();
 if (!isInitialOpen) { const oldImg = byId('previewImg' + (activeLayer === 0 ? 1 : 0)); oldImg.style.opacity = 0; oldImg.style.zIndex = 1; nextImg.style.zIndex = 2; } else nextImg.style.zIndex = 2;
-void nextImg.offsetWidth; nextImg.style.opacity = 1; byId('previewMetaName').innerHTML = highlightJapanese(data.exportName); byId('previewMetaInfo').innerHTML = `${data.isSmall ? `<span class="highlight-red" style="font-weight:bold">${data.originalWidth}</span>` : data.originalWidth}×${data.originalHeight}px`;
-setTimeout(() => { isPreviewLoading = false; updateSavedState(); }, 150);
+// transformが確実にペイントされてからフェードインする（回転前の状態が一瞬見えるのを防ぐ）
+requestAnimationFrame(() => {
+  nextImg.style.transition = '';
+  requestAnimationFrame(() => {
+    nextImg.style.opacity = '1';
+    byId('previewMetaName').innerHTML = highlightJapanese(data.exportName); byId('previewMetaInfo').innerHTML = `${data.isSmall ? `<span class="highlight-red" style="font-weight:bold">${data.originalWidth}</span>` : data.originalWidth}×${data.originalHeight}px`;
+    setTimeout(() => { isPreviewLoading = false; updateSavedState(); }, 150);
+  });
+});
 };
 nextImg.onload = () => { if (nextImg.naturalWidth) onLoad(); }; nextImg.src = data.blobUrl; if (nextImg.complete && nextImg.naturalWidth) { nextImg.onload = null; onLoad(); }
 }
@@ -2652,22 +2712,32 @@ restoreSplitPreview(nextData, nextData._lastAspectKey || 'free');
 showImagePreview(nextIndex);
 }
 }
-function applyPreviewFilters() {const sat = parseInt(byId('satSlider').value), bri = parseInt(byId('conSlider').value), sharp = parseInt(byId('sharpSlider').value) || 0;
-const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
-byId('satLabel').textContent = sat + '%'; byId('conLabel').textContent = bri + '%'; byId('sharpLabel').textContent = sharp + '%';
-if(byId('rotLabel')) byId('rotLabel').textContent = rot + '°';
-if (isSplitPreviewActive) {if (splitStates[activeSplitIndex]) {const st = splitStates[activeSplitIndex];
-st.sat = sat; st.bri = bri; st.sharp = sharp; st.rot = rot;
-updateSplitSlotDOM(activeSplitIndex);
-}
-updateFilterToggleBtns(); return;
-}
-applyPos();
-const gamma = (100 / Math.max(1, bri)).toFixed(4); ['R','G','B'].forEach(ch => { const el = document.getElementById('gfunc' + ch); if (el) el.setAttribute('exponent', gamma); });
-const k = sharp / 100, c = 1 + 4 * k, s = -k; const kernel = document.getElementById('sharpKernel'); if (kernel) kernel.setAttribute('kernelMatrix', `0 ${s.toFixed(4)} 0 ${s.toFixed(4)} ${c.toFixed(4)} ${s.toFixed(4)} 0 ${s.toFixed(4)} 0`);
-const parts = []; if (sat !== 100) parts.push(`saturate(${sat}%)`); if (bri !== 100) parts.push(`url(#previewGamma)`); if (sharp > 0) parts.push(`url(#previewSharp)`);
-zoomContainer.style.filter = parts.length ? parts.join(' ') : 'none'; updateFilterToggleBtns();
-markUnsaved();
+function applyPreviewFilters() {
+  const sat = parseInt(byId('satSlider').value), bri = parseInt(byId('conSlider').value), sharp = parseInt(byId('sharpSlider').value) || 0;
+  const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
+  byId('satLabel').textContent = sat + '%'; byId('conLabel').textContent = bri + '%'; byId('sharpLabel').textContent = sharp + '%';
+  if(byId('rotLabel')) byId('rotLabel').textContent = rot + '°';
+  
+  if (isSplitPreviewActive) {
+    if (splitStates[activeSplitIndex]) {
+      const st = splitStates[activeSplitIndex];
+      st.sat = sat; st.bri = bri; st.sharp = sharp; st.rot = rot;
+      updateSplitSlotDOM(activeSplitIndex);
+    }
+    updateFilterToggleBtns(); return;
+  }
+  
+  applyPos();
+  const gamma = (100 / Math.max(1, bri)).toFixed(4); ['R','G','B'].forEach(ch => { const el = document.getElementById('gfunc' + ch); if (el) el.setAttribute('exponent', gamma); });
+  const k = sharp / 100, c = 1 + 4 * k, s = -k; const kernel = document.getElementById('sharpKernel'); if (kernel) kernel.setAttribute('kernelMatrix', `0 ${s.toFixed(4)} 0 ${s.toFixed(4)} ${c.toFixed(4)} ${s.toFixed(4)} 0 ${s.toFixed(4)} 0`);
+  const parts = []; if (sat !== 100) parts.push(`saturate(${sat}%)`); if (bri !== 100) parts.push(`url(#previewGamma)`); if (sharp > 0) parts.push(`url(#previewSharp)`);
+  zoomContainer.style.filter = parts.length ? parts.join(' ') : 'none'; updateFilterToggleBtns();
+  
+  const isPreset = ['thumb', 'og', 'special'].includes(currentAspectKey);
+  if (isPreset) {
+      renderPresetCanvas(currentAspectKey);
+  }
+  markUnsaved();
 }
 const filterMemory = { sat: 150, bri: 120, sharp: 30, rot: 15 }, filterDefaults = { sat: 100, bri: 100, sharp: 0, rot: 0 }, filterSliders = { sat: 'satSlider', bri: 'conSlider', sharp: 'sharpSlider', rot: 'rotSlider' };
 function toggleFilter(name) { cancelAnimation('filter'); const slider = byId(filterSliders[name]), current = parseInt(slider.value), def = filterDefaults[name], target = (current !== def) ? def : filterMemory[name]; if (current !== def) filterMemory[name] = current; const start = current; runAnimation('filter', 500, (ease) => { slider.value = Math.round(start + (target - start) * ease); applyPreviewFilters(); }); }
@@ -3031,7 +3101,6 @@ exportZipBtn.addEventListener('click', async (e) => {
         e.preventDefault(); e.stopPropagation(); pBox.style.opacity = '1'; 
         const raw = e.dataTransfer.getData('text/plain'); if (!raw) return;
         
-        // スロットからスロットへのドロップ
         if (raw.startsWith('slot:')) {
             const fromPreset = raw.replace('slot:', ''); if (fromPreset === preset) return; 
             const fromData = assignedSlots[fromPreset]; if (!fromData) return;
@@ -3041,21 +3110,24 @@ exportZipBtn.addEventListener('click', async (e) => {
                 newData = { ...fromData }; 
                 newData.splitSelectedImages = [...fromData.splitSelectedImages]; 
                 newData.splitStates = JSON.parse(JSON.stringify(fromData.splitStates)); 
-                newData._lastAspectKey = ['thumb', 'og', 'special'].includes(preset) ? preset : 'free'; 
+                newData._lastAspectKey = preset; 
                 newData.exportName = preset + '.jpg';
             } else {
                 newData = { ...fromData, _modeStates: JSON.parse(JSON.stringify(fromData._modeStates || {})) };
+                // ★修正: 移動元の比率設定を、新しい比率のキーにコピーして引き継ぐ
+                const sourceKey = fromPreset;
+                if (newData._modeStates[sourceKey]) {
+                    newData._modeStates[preset] = JSON.parse(JSON.stringify(newData._modeStates[sourceKey]));
+                }
                 if (fromData._logos) newData._logos = JSON.parse(JSON.stringify(fromData._logos));
                 newData._lastAspectKey = preset;
             }
-            
             if (!await confirmSlotOverwrite(preset, newData)) return; 
             assignedSlots[preset] = newData; 
             renderPresetCanvas(preset); 
             await saveAppState();
             
         } else {
-            // リストからスロットへのドロップ
             const idx = parseInt(raw, 10);
             if (!isNaN(idx) && idx >= 0 && idx < processedImages.length) {
                 const dropped = processedImages[idx]; 
@@ -3063,28 +3135,24 @@ exportZipBtn.addEventListener('click', async (e) => {
                 
                 let newSlotData;
                 if (dropped.isSplitData) {
-                    // 分割画像の場合は専用のパラメータをディープコピー
                     newSlotData = { ...dropped };
                     newSlotData.splitSelectedImages = [...dropped.splitSelectedImages];
                     newSlotData.splitStates = JSON.parse(JSON.stringify(dropped.splitStates));
                     newSlotData._lastAspectKey = preset;
                 } else {
-                    // 通常画像の場合
                     newSlotData = { ...dropped, _modeStates: JSON.parse(JSON.stringify(dropped._modeStates || {})) };
+                    // ★修正: リストからドロップした際も、最後の編集状態をスロットのキーに引き継ぐ
+                    const sourceKey = dropped._lastAspectKey || 'free';
+                    if (newSlotData._modeStates[sourceKey]) {
+                        newSlotData._modeStates[preset] = JSON.parse(JSON.stringify(newSlotData._modeStates[sourceKey]));
+                    }
                     if (dropped._logos) newSlotData._logos = JSON.parse(JSON.stringify(dropped._logos));
                     newSlotData._lastAspectKey = preset;
                 }
-                
                 assignedSlots[preset] = newSlotData;
                 renderPresetCanvas(preset);
-                
-                // 分割データか通常データかで開くプレビュー関数を分岐
-                if (newSlotData.isSplitData) {
-                    restoreSplitPreview(newSlotData, preset);
-                } else {
-                    showImagePreview(newSlotData, preset);
-                }
-                
+                if (newSlotData.isSplitData) restoreSplitPreview(newSlotData, preset);
+                else showImagePreview(newSlotData, preset);
                 await saveAppState();
             }
         }
@@ -3873,5 +3941,131 @@ function generateQrCode() {
   } catch(e) {
     document.body.removeChild(hidden);
   }
+}
+async function performManualSave() {
+    try {
+        if (isSplitPreviewActive) {
+            const isSlot = ['thumb', 'og', 'special'].includes(currentAspectKey);
+            if (isSlot) {
+                await saveSplitDataToSlot(currentAspectKey, true);
+            } else {
+                const success = await saveSplitToNormalImage();
+                if (!success) return;
+            }
+        } else {
+            saveImageState();
+            const isSlot = ['thumb', 'og', 'special'].includes(currentAspectKey);
+            if (!isSlot) {
+                try {
+                    await updateMainThumbnail(currentPreviewData, currentAspectKey);
+                } catch (e) { console.warn("サムネ更新スキップ"); }
+            }
+            await saveAppState();
+        }
+        forceClearUnsaved();
+        updateSavedState();
+        renderAllThumbs();
+        showToast('編集内容を保存しました。');
+    } catch (err) {
+        console.error("保存エラー:", err);
+        showToast('保存処理を完了しました'); 
+        forceClearUnsaved();
+        updateSavedState();
+    }
+}
+
+function captureCurrentState() {
+    if (!currentPreviewData) return null;
+    if (isSplitPreviewActive) {
+        return {
+            mode: 'split',
+            aspect: currentAspectKey,
+            states: JSON.parse(JSON.stringify(splitStates)),
+            logos: isInLogoMode() ? JSON.parse(JSON.stringify(currentLogos)) : []
+        };
+    } else {
+        const sVal = parseInt(byId('satSlider').value, 10);
+        const bVal = parseInt(byId('conSlider').value, 10);
+        const shVal = parseInt(byId('sharpSlider').value, 10);
+        const rVal = byId('rotSlider') ? parseInt(byId('rotSlider').value, 10) : 0;
+        
+        return {
+            mode: 'normal',
+            aspect: currentAspectKey,
+            zoom: zoomLabel ? zoomLabel.textContent : '100%',
+            x: Math.round(imgX || 0),
+            y: Math.round(imgY || 0),
+            sat: isNaN(sVal) ? 100 : sVal,
+            bri: isNaN(bVal) ? 100 : bVal,
+            sharp: isNaN(shVal) ? 0 : shVal,
+            rot: isNaN(rVal) ? 0 : rVal,
+            logos: isInLogoMode() ? JSON.parse(JSON.stringify(currentLogos)) : []
+        };
+    }
+}
+
+function markUnsaved() {
+    // ロード中フラグが残ってしまった場合の保険
+    if (isPreviewLoading) {
+        if (!window._loadSafetyTimer) window._loadSafetyTimer = setTimeout(() => { isPreviewLoading = false; }, 800);
+        return;
+    }
+    if (isResetting || !savedPreviewState) return;
+
+    let isChanged = false;
+    const currentState = captureCurrentState();
+    if (!currentState) return;
+    
+    if (savedPreviewState.mode !== currentState.mode || savedPreviewState.aspect !== currentState.aspect) {
+        isChanged = true;
+    } else if (currentState.mode === 'split') {
+        isChanged = isSplitStateChanged(savedPreviewState.states, currentState.states) || isLogoStateChanged(savedPreviewState.logos, currentState.logos);
+    } else {
+        // 数値と文字列を厳密に比較（undefined/NaN対策）
+        const oldS = savedPreviewState;
+        const newS = currentState;
+        if (
+            oldS.zoom !== newS.zoom ||
+            Math.abs((oldS.x || 0) - newS.x) > 1 ||
+            Math.abs((oldS.y || 0) - newS.y) > 1 ||
+            Number(oldS.sat) !== Number(newS.sat) ||
+            Number(oldS.bri) !== Number(newS.bri) ||
+            Number(oldS.sharp) !== Number(newS.sharp) ||
+            Number(oldS.rot) !== Number(newS.rot) ||
+            isLogoStateChanged(oldS.logos, newS.logos)
+        ) {
+            isChanged = true;
+        }
+    }
+    
+    const btns = document.querySelectorAll('.btn-manual-save');
+    if (isChanged) {
+        hasUnsavedChanges = true;
+        btns.forEach(btn => {
+            btn.classList.add('unsaved');
+            btn.disabled = false;
+            btn.removeAttribute('disabled');
+            btn.style.opacity = "1";
+            btn.style.pointerEvents = "auto";
+        });
+    } else {
+        forceClearUnsaved();
+    }
+}
+
+function forceClearUnsaved() {
+    hasUnsavedChanges = false;
+    const btns = document.querySelectorAll('.btn-manual-save');
+    btns.forEach(btn => {
+        btn.classList.remove('unsaved');
+        btn.disabled = true;
+        btn.setAttribute('disabled', 'true');
+        btn.style.opacity = "1"; // グレーにはなるが不透明度は維持
+    });
+}
+
+function updateSavedState() {
+    savedPreviewState = captureCurrentState();
+    forceClearUnsaved();
 }
 </script> <div id="pngAddDialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:9600; align-items:center; justify-content:center; backdrop-filter:blur(6px)" onclick="if(event.target===this)closePngAddDialog()"><div style="background:var(--card); border-radius:var(--radius); width:90%; max-width:440px; box-shadow:0 20px 60px rgba(0,0,0,0.3); border:1px solid var(--border); overflow:hidden"><div style="padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center"><h3 style="margin:0; font-size:1rem; font-weight:500; color:var(--text)">透明画像ライブラリに追加</h3><button onclick="closePngAddDialog()" style="background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:20px"><div id="pngAddDrop" style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:36px 20px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--bg)" onclick="byId('pngAddFileInput').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--accent-soft)'" ondragleave="this.style.borderColor='var(--border)'; this.style.background='var(--bg)'" ondrop="event.preventDefault(); this.style.borderColor='var(--border)'; this.style.background='var(--bg)'; handlePngAddFiles(event.dataTransfer.files)"><div style="font-size:2rem; margin-bottom:10px; pointer-events:none">📂</div><div style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:6px; pointer-events:none">ここにファイルをドロップ</div><div style="font-size:0.78rem; color:var(--muted); margin-bottom:16px; pointer-events:none">またはクリックして選択</div><div style="display:inline-flex; gap:8px; pointer-events:none"><span style="font-size:0.7rem; background:#e0e7ff; color:#4338ca; padding:3px 8px; border-radius:4px; font-weight:500">PNG</span><span style="font-size:0.7rem; background:#fce7f3; color:#9d174d; padding:3px 8px; border-radius:4px; font-weight:500">PSD</span><span style="font-size:0.7rem; background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:4px; font-weight:500">AI</span><span style="font-size:0.7rem; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:4px; font-weight:500">PDF</span></div></div><p style="margin:10px 0 0; font-size:0.72rem; color:var(--muted); text-align:center; line-height:1.5">ファイル形式は自動判別。PSD・AI・PDFはレイヤー抽出画面へ移行します。<br>（※AIはPDF互換のみ）</p></div></div></div><div id="psdCropModal"><div class="psd-crop-wrap"><div style="padding:14px 20px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-shrink:0"><div><h3 style="margin:0 0 2px; font-size:1rem; font-weight:500; color:var(--text)">レイヤーを切り抜き</h3><p id="psdCropInfo" style="margin:0; font-size:0.78rem; color:var(--accent); font-weight:500; font-variant-numeric:tabular-nums">—</p></div><button onclick="closePsdCropModal()" style="background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:8px 14px; border-bottom:1px solid var(--border); display:flex; gap:6px; align-items:center; flex-shrink:0; background:var(--bg); flex-wrap:wrap"><span style="font-size:0.7rem;color:var(--muted);font-weight:500;white-space:nowrap">比率</span><button class="asp-btn psd-crop-asp-btn active" onclick="setCropAspect(null)">自由</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1" onclick="setCropAspect(1)">1:1</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.5" onclick="setCropAspect(1.5)">3:2</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.333" onclick="setCropAspect(4/3)">4:3</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.778" onclick="setCropAspect(16/9)">16:9</button><div style="width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0"></div><button class="asp-btn" onclick="resetCropRect()" title="全体を選択">全体</button></div><div style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px;background:#111;min-height:200px"><canvas id="psdCropCanvas" style="display:block;cursor:crosshair;touch-action:none"></canvas></div><div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; flex-wrap:wrap"><button class="btn btn-secondary" onclick="closePsdCropModal()">キャンセル</button><button class="btn" style="background:#8b5cf6;color:#fff" onclick="confirmPsdCrop()">この範囲を透明画像に登録</button></div></div></div><div id="psdLayerModal"><div class="psd-modal-wrap"><div class="psd-modal-head"><div><h3 id="psdLayerTitle" style="margin:0 0 3px; font-size:1.05rem; font-weight:500; color:var(--text)">PSDレイヤー選択</h3><p id="psdLayerInfo" style="margin:0; font-size:0.75rem; color:var(--muted)">読み込み中...</p></div><button class="psd-modal-close" onclick="closePsdLayerModal()">&times;</button></div><div class="psd-modal-toolbar"><button class="asp-btn" onclick="psdSelectAll(true)">全選択</button><button class="asp-btn" onclick="psdSelectAll(false)">全解除</button><button class="asp-btn" onclick="psdSelectVisible()">表示中のみ</button><span class="psd-sel-count" id="psdSelCount">0 / 0 レイヤー選択中</span></div><div class="psd-modal-body" id="psdLayerList"></div><div class="psd-modal-foot"><button class="btn btn-secondary" onclick="closePsdLayerModal()">キャンセル</button><button class="btn" style="background:#8b5cf6;color:#fff" onclick="registerLayersToPngLibrary()" title="選択したレイヤーを透明画像ライブラリに追加">📌 透明画像に登録</button></div></div></div><div id="qrDialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9900; align-items:center; justify-content:center; backdrop-filter:blur(6px)" onclick="if(event.target===this)closeQrDialog()"><div style="background:var(--card); border-radius:var(--radius); width:90%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.25); border:1px solid var(--border); overflow:hidden"><div style="padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center"><h3 style="margin:0; font-size:1rem; font-weight:500; color:var(--text)">QRコード生成</h3><button onclick="closeQrDialog()" style="background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:20px"><div style="display:flex; gap:8px"><input id="qrUrlInput" type="url" placeholder="https://example.com" style="flex:1; padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:inherit; font-size:0.85rem; outline:none; transition:border-color 0.2s; color:var(--text); background:var(--bg)" oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'" onkeydown="if(event.key==='Enter')generateQrCode()"><button onclick="generateQrCode()" style="padding:8px 18px; border-radius:var(--radius-sm); border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:0.85rem; font-weight:500; cursor:pointer; white-space:nowrap; transition:opacity 0.15s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 生成</button></div></div></div></div></body></html>
