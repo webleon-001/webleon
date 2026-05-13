@@ -66,13 +66,12 @@
   <p>ブランド名と連絡先（電話番号・URL・メールアドレス）のリストを貼り付けてください。<br>
   <small>※アルファベットは日本語読みとして50音順に並び替えます。<br>
   ※電話番号の横に注釈（※〜等）がある場合、リンクと注釈を綺麗に切り分けて出力します。<br>
-  ※httpやwwwが無いURLも自動でリンク化し、末尾に「/」がある場合は表示テキストのみ「/」を削除します。</small></p>
+  ※1行に複数のブランドが含まれている場合や、http//のような入力ミスも自動補正して分割します。</small></p>
   <textarea id="inputText" rows="10" placeholder="例:
 F.E.N.　03-3498-1640
 JR大阪三越伊勢丹　06-6457-1111（大代表）
-シャネル 　0120-525-519　※時計・宝飾から変更
-MARUKU　inomaruku09.com/
-アストンマーティンジャパン astonmartin.com/ja"></textarea>
+赤屋根製造所　http//akayane.shop
+アグ オーストラリア 03-5785-0502 　　　　アークコーポレーション　075-821-7200"></textarea>
   
   <button class="btn" onclick="processData()">変換して並び替え</button>
 
@@ -84,7 +83,6 @@ MARUKU　inomaruku09.com/
   <button class="btn btn-copy" onclick="copyResult()">結果をコピーする</button>
 
   <script>
-    // 全角数字・ハイフンを半角に変換する関数
     function convertToHalfWidth(str) {
       let halfStr = str.replace(/[０-９]/g, function(s) {
         return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
@@ -93,7 +91,6 @@ MARUKU　inomaruku09.com/
       return halfStr;
     }
 
-    // アルファベットをカタカナ読みに変換するテーブル（ソート用）
     const alphabetToKana = {
       'A': 'エー', 'B': 'ビー', 'C': 'シー', 'D': 'ディー', 'E': 'イー',
       'F': 'エフ', 'G': 'ジー', 'H': 'エイチ', 'I': 'アイ', 'J': 'ジェイ',
@@ -107,7 +104,6 @@ MARUKU　inomaruku09.com/
       'u': 'ユー', 'v': 'ブイ', 'w': 'ダブリュー', 'x': 'エックス', 'y': 'ワイ', 'z': 'ゼット'
     };
 
-    // ソート用のキーを生成する関数
     function createSortKey(str) {
       return str.replace(/[A-Za-z]/g, function(match) {
         return alphabetToKana[match];
@@ -118,72 +114,115 @@ MARUKU　inomaruku09.com/
       const input = document.getElementById('inputText').value;
       const lines = input.split('\n').filter(line => line.trim() !== '');
       
-      // 各連絡先の正規表現パターン
       const phoneRegex = /[0-9０-９][0-9０-９\-\−\－\―\ー]{8,}/.source;
       const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/.source;
-      const urlRegex = /(?:https?:\/\/|www\.|[a-zA-Z0-9.\-]+\.(?:com|jp|net|org|info|co\.jp|ne\.jp|me|io|biz|tokyo|us|uk|co|inc|site|online|store|shop|app|dev))(?:[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=%]*)/.source;
+      const urlRegex = /(?:https?:?\/\/|www\.|[a-zA-Z0-9.\-]+\.(?:com|jp|net|org|info|co\.jp|ne\.jp|me|io|biz|tokyo|us|uk|co|inc|site|online|store|shop|app|dev))(?:[a-zA-Z0-9\-._~:/?#[\]@!$&'()*+,;=%]*)/.source;
       
       const regexGlobal = new RegExp(`(${phoneRegex}|${emailRegex}|${urlRegex})`, 'ig');
       
-      const data = lines.map(line => {
+      const data = [];
+
+      lines.forEach(line => {
         const matches = [...line.matchAll(regexGlobal)];
         
         if (matches.length > 0) {
-          const lastMatch = matches[matches.length - 1];
-          const contactStart = lastMatch.index;
-          const contactInfo = lastMatch[0];
+          let currentPos = 0;
           
-          let brandName = line.substring(0, contactStart).trim();
-          
-          let annotationRaw = line.substring(contactStart + contactInfo.length);
-          let annotationStr = '';
-          if (annotationRaw.length > 0) {
-            const spaceMatch = annotationRaw.match(/^[\s　]+/);
-            if (spaceMatch) {
-              annotationStr = '　' + annotationRaw.trim();
+          for (let i = 0; i < matches.length; i++) {
+            const match = matches[i];
+            const contactStart = match.index;
+            const contactInfo = match[0];
+            
+            let brandNameRaw = line.substring(currentPos, contactStart);
+            let annotationStr = '';
+            let endPos = contactStart + contactInfo.length;
+            
+            // 1行に複数ブランドがある場合の切り離し処理
+            if (i < matches.length - 1) {
+              let nextMatch = matches[i + 1];
+              let betweenStr = line.substring(endPos, nextMatch.index);
+              
+              // 2つ以上の空白（またはタブ）を明確な区切りとする
+              let splitMatch = betweenStr.match(/[ \t　]{2,}|\t/);
+              if (splitMatch) {
+                let annRaw = betweenStr.substring(0, splitMatch.index);
+                if (annRaw.trim().length > 0) {
+                   annotationStr = '　' + annRaw.trim();
+                }
+                currentPos = endPos + splitMatch.index + splitMatch[0].length;
+              } else {
+                // 明確な区切りがない場合は最初の空白で分割
+                let singleSpaceMatch = betweenStr.match(/[ \t　]+/);
+                if (singleSpaceMatch) {
+                   let annRaw = betweenStr.substring(0, singleSpaceMatch.index);
+                   if (annRaw.trim().length > 0) {
+                      annotationStr = '　' + annRaw.trim();
+                   }
+                   currentPos = endPos + singleSpaceMatch.index + singleSpaceMatch[0].length;
+                } else {
+                   currentPos = endPos;
+                }
+              }
             } else {
-              annotationStr = annotationRaw; 
+               // 行の最後の連絡先の場合
+               let annRaw = line.substring(endPos);
+               if (annRaw.trim().length > 0) {
+                 const spaceMatch = annRaw.match(/^[\s　]+/);
+                 if (spaceMatch) {
+                   annotationStr = '　' + annRaw.trim();
+                 } else {
+                   annotationStr = annRaw;
+                 }
+               }
             }
+            
+            let brandName = brandNameRaw.trim();
+            if (brandName === '') continue;
+
+            let type = '';
+            let displayValue = contactInfo;
+            let linkValue = contactInfo;
+            
+            if (/@/.test(contactInfo)) {
+              type = 'email';
+            } else if (/^(https?:?\/\/|www\.|[a-zA-Z0-9.\-]+\.(?:com|jp|net|org|info|co\.jp|ne\.jp|me|io|biz|tokyo|us|uk|co|inc|site|online|store|shop|app|dev))/i.test(contactInfo)) {
+              type = 'url';
+              
+              // http// などの入力ミスを補正
+              if (/^https?:?\/\//i.test(contactInfo)) {
+                displayValue = displayValue.replace(/^http\/\//i, 'http://').replace(/^https\/\//i, 'https://');
+                linkValue = displayValue;
+              } else {
+                linkValue = 'https://' + contactInfo;
+              }
+              
+              if (displayValue.endsWith('/')) {
+                displayValue = displayValue.slice(0, -1);
+              }
+            } else {
+              type = 'phone';
+              displayValue = convertToHalfWidth(contactInfo);
+              linkValue = displayValue.replace(/[^0-9\-]/g, '');
+            }
+            
+            data.push({ 
+              name: brandName, 
+              display: displayValue, 
+              link: linkValue,
+              annotation: annotationStr,
+              type: type,
+              sortKey: createSortKey(brandName) 
+            });
           }
-          
-          let type = '';
-          let displayValue = contactInfo;
-          let linkValue = contactInfo;
-          
-          if (/@/.test(contactInfo)) {
-            type = 'email';
-          } else if (/^(https?:\/\/|www\.|[a-zA-Z0-9.\-]+\.(?:com|jp|net|org|info|co\.jp|ne\.jp|me|io|biz|tokyo|us|uk|co|inc|site|online|store|shop|app|dev))/i.test(contactInfo)) {
-            type = 'url';
-            if (!/^https?:\/\//i.test(contactInfo)) {
-              linkValue = 'https://' + contactInfo;
-            }
-            // 表示テキストの末尾が「/」であれば削除
-            if (displayValue.endsWith('/')) {
-              displayValue = displayValue.slice(0, -1);
-            }
-          } else {
-            type = 'phone';
-            displayValue = convertToHalfWidth(contactInfo);
-            linkValue = displayValue.replace(/[^0-9\-]/g, '');
-          }
-          
-          return { 
-            name: brandName, 
-            display: displayValue, 
-            link: linkValue,
-            annotation: annotationStr,
-            type: type,
-            sortKey: createSortKey(brandName) 
-          };
         } else {
-          return { 
+          data.push({ 
             name: line.trim(), 
             display: '', 
             link: '',
             annotation: '',
             type: 'none',
             sortKey: createSortKey(line.trim()) 
-          }; 
+          }); 
         }
       });
 
