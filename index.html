@@ -1671,44 +1671,113 @@ async function clearCurrentSlot() {
       renderAllThumbs();
   }
 }
-function updateAspectBarVisibility(aspKey) {const isPreset = ["thumb", "og", "special"].includes(aspKey);
-const inSplit = isSplitPreviewActive;
-const specialBar = byId("specialSizeBar");
-if (specialBar) specialBar.style.display = "none";
-const aspectBarEl = byId("aspectBar");
-if (aspectBarEl) aspectBarEl.style.display = "flex";
-document.querySelectorAll("#aspectBar .asp-btn").forEach(btn => {if (btn.id === "splitModeBtn") {btn.style.display = "inline-block";
-const canAddMore = !inSplit || splitTargetCount < 4;
-btn.style.pointerEvents = canAddMore ? "auto" : "none";
-btn.style.opacity = canAddMore ? "1" : "0.4";
-}
-else if (btn.id === "logoToggleBtn" || btn.id === "gridToggleBtn" || btn.id === "guideToggleBtn") {btn.style.display = "inline-block";
-btn.style.pointerEvents = "auto";
-}
-else if (btn.classList.contains("btn-manual-save")) {btn.style.display = "inline-block";
-}
-else if (btn.classList.contains("slot-assign-btn")) {btn.style.display = (!isPreset && !inSplit) ? "inline-block" : "none";
-}
-else if (btn.classList.contains("preset-nav-btn")) {const showPresetNav = isPreset || (inSplit && ["thumb", "og", "special"].includes(splitModePreservedAspect));
-btn.style.display = showPresetNav ? "inline-block" : "none";
-btn.classList.toggle("active", btn.dataset.key === aspKey);
-btn.style.pointerEvents = inSplit ? "none" : "auto";
-btn.style.opacity = inSplit ? "0.6" : "1";
-}
-else if (btn.classList.contains("ratio-btn")) {btn.style.display = isPreset ? "none" : "inline-block";
-btn.classList.toggle("active", btn.dataset.key === aspKey);
-}
-else { btn.style.display = "none"; }
-});
-const delBtn = byId("previewDeleteBtn");
-// 新規作成時（currentPreviewIndex === -1）以外は分割モードでも削除ボタンを表示する
-if (delBtn) delBtn.style.display = (isPreset || (inSplit && currentPreviewIndex === -1)) ? "none" : "inline-block";
+function updateAspectBarVisibility(aspKey) {
+  const isPreset = ["thumb", "og", "special"].includes(aspKey);
+  const inSplit = isSplitPreviewActive;
+  const specialBar = byId("specialSizeBar");
+  if (specialBar) specialBar.style.display = "none";
+  const aspectBarEl = byId("aspectBar");
+  if (aspectBarEl) aspectBarEl.style.display = "flex";
 
-const clearSlotBtn = byId("clearSlotBtnPreview");
-if (clearSlotBtn) clearSlotBtn.style.display = isPreset ? "inline-block" : "none";
-document.querySelectorAll(".nav-btn").forEach(btn => {const shouldHideNav = isPreset || processedImages.length <= 1;
-btn.style.display = shouldHideNav ? "none" : "flex";
-});
+  // オリジナル画像のアスペクト比を計算
+  let imgRatio = 0;
+  if (!inSplit && currentPreviewData && currentPreviewData.originalWidth && currentPreviewData.originalHeight) {
+    imgRatio = currentPreviewData.originalWidth / currentPreviewData.originalHeight;
+  }
+
+  document.querySelectorAll("#aspectBar .asp-btn").forEach(btn => {
+    if (btn.id === "splitModeBtn") {
+      btn.style.display = "inline-block";
+      const canAddMore = !inSplit || splitTargetCount < 4;
+      btn.style.pointerEvents = canAddMore ? "auto" : "none";
+      btn.style.opacity = canAddMore ? "1" : "0.4";
+    }
+    else if (btn.id === "logoToggleBtn" || btn.id === "gridToggleBtn" || btn.id === "guideToggleBtn") {
+      btn.style.display = "inline-block";
+      btn.style.pointerEvents = "auto";
+    }
+    else if (btn.classList.contains("btn-manual-save")) {
+      btn.style.display = "inline-block";
+    }
+    else if (btn.classList.contains("slot-assign-btn")) {
+      btn.style.display = (!isPreset && !inSplit) ? "inline-block" : "none";
+    }
+    else if (btn.classList.contains("preset-nav-btn")) {
+      const showPresetNav = isPreset || (inSplit && ["thumb", "og", "special"].includes(splitModePreservedAspect));
+      btn.style.display = showPresetNav ? "inline-block" : "none";
+      btn.classList.toggle("active", btn.dataset.key === aspKey);
+      btn.style.pointerEvents = inSplit ? "none" : "auto";
+      btn.style.opacity = inSplit ? "0.6" : "1";
+    }
+    else if (btn.classList.contains("ratio-btn")) {
+      btn.style.display = isPreset ? "none" : "inline-block";
+      
+      let isActive = false;
+      let isMatchOriginal = false;
+      
+      // 1. 自分自身が現在選択されている
+      if (btn.dataset.key === aspKey) {
+        isActive = true;
+      }
+      
+      // 2. 現在「オリジナル(free)」が選択されていて、このボタンの比率が元画像と一致する
+      if (aspKey === "free" && btn.dataset.key !== "free" && imgRatio > 0) {
+        const preset = ASPECT_PRESETS[btn.dataset.key];
+        if (preset && preset.h > 0) {
+          const targetRatio = preset.w / preset.h;
+          if (Math.abs(imgRatio - targetRatio) < 0.01) {
+            isActive = true;
+            isMatchOriginal = true;
+          }
+        }
+      }
+      
+      // 3. 現在「何らかの比率（例: 3:2）」が選択されていて、それが元画像と一致するときに、このボタンが「オリジナル(free)」である
+      if (aspKey !== "free" && btn.dataset.key === "free" && imgRatio > 0) {
+        const preset = ASPECT_PRESETS[aspKey];
+        if (preset && preset.h > 0) {
+          const selectedRatio = preset.w / preset.h;
+          if (Math.abs(imgRatio - selectedRatio) < 0.01) {
+            isActive = true;
+            isMatchOriginal = true;
+          }
+        }
+      }
+
+      btn.classList.toggle("active", isActive);
+      
+      // active なボタンは無効化する（オリジナルの無効化も含む）
+      if (isActive) {
+        btn.disabled = true;
+        btn.style.opacity = "1"; // ★ 変更: 半透明にせず、.activeクラスの色をそのまま表示
+        btn.style.cursor = "not-allowed";
+        if (isMatchOriginal) {
+          btn.title = "元の画像と同じ比率です";
+        } else {
+          btn.title = "現在選択中の比率です";
+        }
+      } else {
+        btn.disabled = false;
+        btn.style.opacity = "1";
+        btn.style.cursor = "pointer";
+        btn.removeAttribute("title");
+      }
+    }
+    else { 
+      btn.style.display = "none"; 
+    }
+  });
+
+  const delBtn = byId("previewDeleteBtn");
+  if (delBtn) delBtn.style.display = (isPreset || (inSplit && currentPreviewIndex === -1)) ? "none" : "inline-block";
+
+  const clearSlotBtn = byId("clearSlotBtnPreview");
+  if (clearSlotBtn) clearSlotBtn.style.display = isPreset ? "inline-block" : "none";
+  
+  document.querySelectorAll(".nav-btn").forEach(btn => {
+    const shouldHideNav = isPreset || processedImages.length <= 1;
+    btn.style.display = shouldHideNav ? "none" : "flex";
+  });
 }
 async function setAspect(btn, skipConfirm = false, forceTransit = false) {const targetKey = btn.dataset.key;
 const isSpecial = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(targetKey);
@@ -1768,46 +1837,81 @@ return result === true;
 const msg = `既に画像が保存されていますが、上書き保存してもよろしいですか？<img src="${imgUrl}" class="dialog-overwrite-preview">`;
 return await showCustomDialog({ title: '上書き確認', message: msg, okText: '上書き保存', okClass: 'btn btn-success', cancelText: 'キャンセル', type: 'confirm' });
 }
-async function assignCurrentToSlot(preset) {if (!currentPreviewData) return;
-const inPresetView = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey);
-const targetPresets = { 'thumb': 'Thumbnail', 'og': 'OG', 'special': 'Special' };
-const isTransitionTarget = !!targetPresets[preset] && currentAspectKey !== preset;
-const confirmResult = await confirmSlotOverwrite(preset, inPresetView ? null : currentPreviewData, isTransitionTarget);
-if (!confirmResult) return;
-if (confirmResult === 'transit') {const btn = document.querySelector(`.asp-btn[data-key="${preset}"]`);
-if (btn) await setAspect(btn, true, true);
-return;
-}
-refreshGlobalTimestamp('edit');
-const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
-if (!currentPreviewData.isSmall && isBgVisible(imgX, imgY, imgW, imgH, rot, targetCw || zoomContainer.clientWidth, targetCh || zoomContainer.clientHeight)) {const confirmBg = await showCustomDialog({ title: '確認', message: '下地（余白）が見えた状態ですが、このままスロットに保存しますか？', okText: '保存する', cancelText: 'キャンセル', type: 'confirm' });
-if (!confirmBg) return;
-}
-const d = { ...currentPreviewData, _modeStates: JSON.parse(JSON.stringify(currentPreviewData._modeStates || {})) };
-d._modeStates[preset] = { sat: byId('satSlider').value, bri: byId('conSlider').value, sharp: byId('sharpSlider').value, rot: byId('rotSlider') ? byId('rotSlider').value : 0, cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, imgX, imgY, imgW, imgH };
-if (isInLogoMode() && currentLogos.length > 0) {d._logos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: JSON.parse(JSON.stringify(currentLogos)) };
-d._modeStates[preset].logos = JSON.parse(JSON.stringify(currentLogos));
-}
-d._lastAspectKey = preset;
-assignedSlots[preset] = d;
-renderPresetCanvas(preset);
-if (!inPresetView) {const target = processedImages.find(p => p.originalName === d.originalName && p.originalWidth === d.originalWidth);
-if (target) { delete target._modeStates; delete target._logos; target._lastAspectKey = 'free'; }
-renderAllThumbs();
-}
-await saveAppState();
-let displayName = preset.replace('save', '保存');
-if (preset === 'thumb') displayName = 'Thumbnail';
-else if (preset === 'og') displayName = 'OG';
-else if (preset === 'special') displayName = 'Special';
-if (isTransitionTarget) {
-    // 遷移確認ダイアログを出さずに直接遷移する
-    showToast(`${displayName} スロットに保存して遷移しました`);
+async function assignCurrentToSlot(preset) {
+  if (!currentPreviewData) return;
+  const inPresetView = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey);
+  const targetPresets = { 'thumb': 'Thumbnail', 'og': 'OG', 'special': 'Special' };
+  const isTransitionTarget = !!targetPresets[preset] && currentAspectKey !== preset;
+
+  // 変更点：保存前の空状態を記録しておく
+  const wasEmpty = !assignedSlots[preset];
+
+  const confirmResult = await confirmSlotOverwrite(preset, inPresetView ? null : currentPreviewData, isTransitionTarget);
+  if (!confirmResult) return;
+  if (confirmResult === 'transit') {
     const btn = document.querySelector(`.asp-btn[data-key="${preset}"]`);
-    if (btn) await setAspect(btn, true, false);
-} else {
+    if (btn) await setAspect(btn, true, true);
+    return;
+  }
+
+  refreshGlobalTimestamp('edit');
+  const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
+  if (!currentPreviewData.isSmall && isBgVisible(imgX, imgY, imgW, imgH, rot, targetCw || zoomContainer.clientWidth, targetCh || zoomContainer.clientHeight)) {
+    const confirmBg = await showCustomDialog({ title: '確認', message: '下地（余白）が見えた状態ですが、このままスロットに保存しますか？', okText: '保存する', cancelText: 'キャンセル', type: 'confirm' });
+    if (!confirmBg) return;
+  }
+
+  const d = { ...currentPreviewData, _modeStates: JSON.parse(JSON.stringify(currentPreviewData._modeStates || {})) };
+  d._modeStates[preset] = { sat: byId('satSlider').value, bri: byId('conSlider').value, sharp: byId('sharpSlider').value, rot: byId('rotSlider') ? byId('rotSlider').value : 0, cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, imgX, imgY, imgW, imgH };
+  
+  if (isInLogoMode() && currentLogos.length > 0) {
+    d._logos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: JSON.parse(JSON.stringify(currentLogos)) };
+    d._modeStates[preset].logos = JSON.parse(JSON.stringify(currentLogos));
+  }
+  
+  d._lastAspectKey = preset;
+  assignedSlots[preset] = d;
+  renderPresetCanvas(preset);
+  
+  if (!inPresetView) {
+    const target = processedImages.find(p => p.originalName === d.originalName && p.originalWidth === d.originalWidth);
+    if (target) { delete target._modeStates; delete target._logos; target._lastAspectKey = 'free'; }
+    renderAllThumbs();
+  }
+  await saveAppState();
+
+  let displayName = preset.replace('save', '保存');
+  if (preset === 'thumb') displayName = 'Thumbnail';
+  else if (preset === 'og') displayName = 'OG';
+  else if (preset === 'special') displayName = 'Special';
+
+  // 変更点：保存後の遷移制御（空だった場合はダイアログを出す）
+  if (isTransitionTarget) {
+    if (wasEmpty) {
+      const transitConfirm = await showCustomDialog({
+        title: '遷移の確認',
+        message: `画像が「${displayName}」に保存されました。\n続けて「${displayName}」の編集画面に遷移しますか？`,
+        okText: '遷移する',
+        okClass: 'btn btn-success',
+        cancelText: 'このまま',
+        type: 'confirm'
+      });
+      if (transitConfirm) {
+        showToast(`${displayName} スロットに遷移しました`);
+        const btn = document.querySelector(`.asp-btn[data-key="${preset}"]`);
+        if (btn) await setAspect(btn, true, false);
+      } else {
+        showToast(`${displayName} スロットに保存しました`);
+      }
+    } else {
+      // 既に画像が入っていて、Overwrite&Transit（上書き&遷移）を選んだ場合はそのまま遷移する
+      showToast(`${displayName} スロットに保存して遷移しました`);
+      const btn = document.querySelector(`.asp-btn[data-key="${preset}"]`);
+      if (btn) await setAspect(btn, true, false);
+    }
+  } else {
     showToast(`${displayName} スロットに保存しました`);
-}
+  }
 }
 async function exportCroppedView(e) {document.activeElement.blur();
 let hasBg = false;
