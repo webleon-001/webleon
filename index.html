@@ -1353,6 +1353,7 @@ return str;
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 if (pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 let processedImages = [], smallImages = [], japaneseImages = [];
+let loadedZipNames = new Set(); // 読み込んだZIPファイル名を追跡
 let isStartupEmpty = false;
 let assignedSlots = { thumb: null, og: null, special: null };
 let currentPreviewData = null, _progressStartTime = 0, currentPreviewIndex = -1;
@@ -2176,7 +2177,7 @@ const backupJapanese = [...japaneseImages];
 showProgressPanel('追加読み込み中...'); let allTasks = [];
 for (let i = 0; i < files.length; i++) {if (isLoadingCanceled) break;
 const file = files[i], name = file.name.toLowerCase();
-if (name.endsWith('.zip')) { try { const zip = await new JSZip().loadAsync(file); Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff|psd|ai)$/i.test(k)).forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip })); } catch(e) { console.error(e); } }
+if (name.endsWith('.zip')) { try { const zip = await new JSZip().loadAsync(file); loadedZipNames.add(file.name); Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff|psd|ai)$/i.test(k)).forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip })); } catch(e) { console.error(e); } }
 else if (name.endsWith('.pdf')) { allTasks.push({ file, name: file.name, isPdf: true }); } else if (name.endsWith('.psd')) { allTasks.push({ file, name: file.name, isPsd: true }); } else if (name.endsWith('.ai')) { allTasks.push({ file, name: file.name, isAi: true }); } else if (/\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(name)) { allTasks.push({ file, name: file.name }); }
 }
 allTasks.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
@@ -2211,10 +2212,10 @@ refreshGlobalTimestamp('edit');
 renderAllThumbs();
 await saveAppState();
 }
-async function handleFiles(files) {if (!files || !files.length) return; isStartupEmpty = false; showProgressPanel('読み込み中...'); processedImages = []; smallImages = []; japaneseImages = []; previewArea.innerHTML = ''; let allTasks = [];
+async function handleFiles(files) {if (!files || !files.length) return; isStartupEmpty = false; showProgressPanel('読み込み中...'); processedImages = []; smallImages = []; japaneseImages = []; previewArea.innerHTML = ''; loadedZipNames = new Set(); let allTasks = [];
 for (let i = 0; i < files.length; i++) {if (isLoadingCanceled) break;
 const file = files[i], name = file.name.toLowerCase();
-if (name.endsWith('.zip')) { try { const zip = await new JSZip().loadAsync(file); Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff|psd|ai)$/i.test(k)).forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip })); } catch(e) { console.error(e); } }
+if (name.endsWith('.zip')) { try { const zip = await new JSZip().loadAsync(file); loadedZipNames.add(file.name); Object.keys(zip.files).filter(k => !zip.files[k].dir && !k.split('/').pop().startsWith('.') && /\.(jpe?g|png|webp|gif|heic|heif|tif|tiff|psd|ai)$/i.test(k)).forEach(k => allTasks.push({ file, name: k.split('/').pop(), zipKey: k, zipObj: zip })); } catch(e) { console.error(e); } }
 else if (name.endsWith('.pdf')) { allTasks.push({ file, name: file.name, isPdf: true }); } else if (name.endsWith('.psd')) { allTasks.push({ file, name: file.name, isPsd: true }); } else if (name.endsWith('.ai')) { allTasks.push({ file, name: file.name, isAi: true }); } else if (/\.(jpe?g|png|webp|gif|heic|heif|tif|tiff)$/i.test(name)) { allTasks.push({ file, name: file.name }); }
 }
 allTasks.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
@@ -2900,6 +2901,7 @@ exportZipBtn.addEventListener('click', async (e) => {
             bgImages.push({ name: data.exportName, thumbUrl: data.thumbUrl || data.blobUrl, nav: `img:${i}` });
         }
     }
+    const presetLabel = { thumb: 'Thumbnail', og: 'OG', special: 'Special' };
     for (const preset of ['thumb', 'og', 'special']) {
         const data = assignedSlots[preset]; if (!data) continue;
         if (data.isSplitData) {
@@ -2910,12 +2912,12 @@ exportZipBtn.addEventListener('click', async (e) => {
                 const iw = d.originalWidth * st.baseScale * st.scale, ih = d.originalHeight * st.baseScale * st.scale;
                 if (isBgVisible(st.dx, st.dy, iw, ih, st.rot||0, cw, ch)) { hasBg = true; break; }
             }
-            if (hasBg) bgImages.push({ name: data.exportName, thumbUrl: data.thumbUrl || data.blobUrl, nav: `slot:${preset}` });
+            if (hasBg) bgImages.push({ name: presetLabel[preset], thumbUrl: data.thumbUrl || data.blobUrl, nav: `slot:${preset}` });
         } else {
             if (data.isSmall) continue;
             const ms = data._modeStates?.[preset] || data._modeStates?.['free'];
             if (ms && isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot||0, ms.cw, ms.ch)) {
-                bgImages.push({ name: data.exportName, thumbUrl: data.thumbUrl || data.blobUrl, nav: `slot:${preset}` });
+                bgImages.push({ name: presetLabel[preset], thumbUrl: data.thumbUrl || data.blobUrl, nav: `slot:${preset}` });
             }
         }
     }
@@ -3074,7 +3076,7 @@ exportZipBtn.addEventListener('click', async (e) => {
 
         if (isLoadingCanceled) {showToast('書き出しをキャンセルしました'); byId('progress').style.display = 'none'; return;}
         if (smallImages.length || japaneseImages.length) { const alertUrl = await generateAlertImageCanvas(); if (useFolder) { const fh = await dirHandle.getFileHandle("00_alert_summary.jpg", { create: true }), w = await fh.createWritable(); await w.write(await (await fetch(alertUrl)).blob()); await w.close(); } else zip.file("00_alert_summary.jpg", alertUrl.split(',')[1], {base64: true}); }
-        if (!useFolder) { const a = document.createElement('a'); a.href = URL.createObjectURL(await zip.generateAsync({ type: "blob" })); a.download = "webleon_images.zip"; a.click(); }
+        if (!useFolder) { const a = document.createElement('a'); a.href = URL.createObjectURL(await zip.generateAsync({ type: "blob" })); const zipBaseName = loadedZipNames.size === 1 ? [...loadedZipNames][0].replace(/\.zip$/i, '') + '_fix' : 'webleon_images'; a.download = zipBaseName + '.zip'; a.click(); }
     } catch (err) { 
         console.error(err); 
         await showCustomDialog({ title: 'エラー', message: '書き出し中にエラーが発生しました。', okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' }); 
