@@ -66,7 +66,7 @@ async function updateMainThumbnail(data, aspKey) {
         data.thumbBlob = blob;
     }
 }
-</script><script src="https://cdn.jsdelivr.net/npm/heic-to@1.4.2/dist/iife/heic-to.js"></script> <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script> <script src="https://unpkg.com/ag-psd@14.3.2/dist/bundle.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> <style>@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');:root{--accent:#6366f1;--accent-soft:#eef2ff;--bg:#f5f5f7;--card:#ffffff;--border:#e4e4e7;--text:#18181b;--muted:#71717a;--danger:#ef4444;--danger-soft:#fef2f2;--warn:#f59e0b;--warn-soft:#fffbeb;--radius:14px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06)}*,*::before,*::after{box-sizing:border-box;user-select:none;-webkit-user-select:none}input,textarea,[contenteditable]{user-select:text;-webkit-user-select:text}body{font-family:'DM Sans','Noto Sans JP',sans-serif;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:32px 20px 60px;margin:0;min-height:100vh;color:var(--text)}.version-label{font-size:0.85rem;color:var(--muted);font-weight:500;letter-spacing:0.02em}.page-header{display:flex;justify-content:space-between;align-items:flex-end;width:100%;max-width:900px;margin-bottom:20px;gap:16px}@media (max-width:768px){.page-header{flex-direction:column;align-items:flex-start}}.title-left{display:flex;flex-direction:column;gap:4px}.title-left h2{font-size:1.5rem;font-weight:500;letter-spacing:-0.02em;margin:0;color:var(--text)}.title-left p{font-size:0.85rem;color:var(--muted);margin:0;font-weight:300}.title-right{display:flex;align-items:center;gap:10px}.slot-modern-wrapper{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:4px 6px 4px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);gap:4px;transition:border-color 0.2s}.slot-modern-wrapper:hover{border-color:#d4d4d8}.slot-modern-label{font-size:0.7rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;pointer-events:none}.slot-modern-select{appearance:none;background:transparent;border:none;font-family:inherit;font-size:0.8rem;font-weight:500;color:var(--text);padding:4px 24px 4px 6px;cursor:pointer;outline:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;background-size:14px;max-width:140px;text-overflow:ellipsis}.slot-modern-btn{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}.slot-modern-btn:hover{background:var(--bg);color:var(--text)}.slot-modern-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}.help-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0;transition:transform 0.15s;line-height:1;margin-left:4px}.help-btn:hover{transform:scale(1.1)}.qr-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);width:32px;height:32px;cursor:pointer;padding:5px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;color:var(--muted);box-shadow:0 2px 6px rgba(0,0,0,0.06)}.qr-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:scale(1.05)}.section-card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);width:100%;max-width:900px;text-align:center}.instruction-text{position:relative;max-width:700px;margin:16px auto;font-size:0.8rem;color:var(--muted);line-height:1.75;text-align:left;background:var(--bg);padding:14px 32px 14px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);font-weight:300}.close-inst-btn{position:absolute;top:8px;right:12px;font-size:1.2rem;background:none;border:none;color:var(--muted);cursor:pointer;padding:0;transition:color 0.15s}.close-inst-btn:hover{color:var(--text)}.upload-zone{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:100px 20px;background:var(--bg);cursor:pointer;transition:all 0.2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center}.upload-zone:hover{border-color:var(--accent);background:var(--accent-soft)}.upload-btn-main{background:var(--accent);padding:11px 24px;border-radius:100px;color:#fff;font-weight:500;font-size:0.9rem;display:inline-block;margin-bottom:12px;letter-spacing:-0.01em;cursor:pointer;transition:opacity 0.15s}.upload-btn-main:hover{opacity:0.85}.upload-format-text{font-size:0.72rem;color:var(--muted);font-weight:300;letter-spacing:0.04em;text-transform:uppercase}.btn{padding:10px 22px;cursor:pointer;border:none;border-radius:100px;font-family:inherit;font-weight:500;font-size:0.875rem;transition:all 0.15s;letter-spacing:-0.01em}.btn:hover{opacity:0.88;transform:translateY(-1px)}.btn-success{background:var(--accent);color:#fff}.btn-secondary{background:#e4e4e7;color:var(--muted)}.btn-secondary:hover{background:#d4d4d8;color:var(--text)}.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#dc2626}#previewArea{position:relative;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:12px;margin-top:14px;border-radius:var(--radius-sm);border:1.5px dashed transparent;transition:border-color 0.2s,background 0.2s,padding-left 0.35s ease;padding:8px}#previewArea.drag-over{border-color:var(--accent);background:var(--accent-soft)}.preview-drop-hint{display:none;width:100%;text-align:center;padding:20px;color:var(--accent);font-size:0.8rem;font-weight:500;pointer-events:none}#previewArea.drag-over .preview-drop-hint{display:block}.thumb-box{position:relative;flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0;text-align:center;cursor:pointer;transition:transform 0.15s;border-radius:12px}.thumb-delete-btn{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:#fff;border:2px solid #fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity 0.15s;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.2)}.thumb-box:hover .thumb-delete-btn{opacity:1}@media (max-width:600px){.thumb-box{flex:0 0 calc(33.333% - 8px)}}.preset-box{cursor:grab;text-align:center;transition:transform 0.15s;flex-shrink:0}.preset-box:hover{transform:translateY(-2px)}.preset-canvas-wrap{position:relative;display:block;line-height:0;overflow:hidden;border-radius:6px}.preset-canvas-wrap canvas{display:block;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);transition:opacity 0.2s;width:100%;height:auto}.preset-box:hover .preset-canvas-wrap canvas{border-color:var(--accent)}.preset-edited-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--accent);border-radius:0 0 6px 6px;pointer-events:none;z-index:6}.preset-box span{display:block;font-size:0.6rem;color:var(--muted);margin-top:3px;font-weight:500;letter-spacing:0.02em}.custom-tooltip{visibility:hidden;opacity:0;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:rgba(24,24,27,0.9);color:#fff;padding:6px 10px;border-radius:6px;font-size:0.7rem;font-weight:500;white-space:nowrap;z-index:100;pointer-events:none;transition:all 0.1s ease;box-shadow:0 4px 12px rgba(0,0,0,0.15);margin-bottom:6px}.custom-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:5px;border-style:solid;border-color:rgba(24,24,27,0.9) transparent transparent transparent}.thumb-box:hover .custom-tooltip{visibility:visible;opacity:1;transform:translateX(-50%) translateY(-4px)}.thumb-frame{width:100%;aspect-ratio:1 / 1;height:auto;border-radius:10px;border:2px solid transparent;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto;overflow:hidden;position:relative}.thumb-inner-img{display:block;object-fit:cover}.thumb-name{font-size:0.65rem;color:var(--text);font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:5px;line-height:1.3;text-align:center;width:100%}.thumb-dimensions{font-size:0.6rem;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;font-weight:300}#imagePreviewModal{display:none;opacity:0;transition:opacity 0.3s ease;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.preview-modal-inner{display:flex;align-items:center;justify-content:center;width:100%;height:100%}.preview-card{background:var(--card);padding:16px 20px 14px;border-radius:var(--radius);position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.4);display:inline-flex;flex-direction:column;align-items:stretch;transition:width 0.13s ease,height 0.13s ease}.preview-layer{position:absolute;top:50%;left:50%;max-width:none;max-height:none;display:block;transform:translate(-50%,-50%);opacity:0;transition:opacity 0.13s ease;pointer-events:none}.nav-btn{position:fixed;top:50%;transform:translateY(-50%);width:48px;height:48px;flex-shrink:0;background:rgba(255,255,255,0.9);color:var(--text);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;user-select:none;transition:background 0.2s,box-shadow 0.2s;border:1px solid var(--border);z-index:5010}.nav-btn:hover{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.15)}.nav-btn.prev{left:16px}.nav-btn.next{right:16px}.close-preview-top{position:absolute;top:10px;right:14px;color:var(--muted);font-size:32px;cursor:pointer;line-height:1;font-weight:300;z-index:5020;opacity:0.6;transition:all 0.2s}.close-preview-top:hover{opacity:1;color:var(--text)}.close-preview-top:hover{opacity:1}.highlight-red{color:var(--danger)}#progress{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:360px;background:var(--card);z-index:6000;padding:20px 24px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.2);border-radius:var(--radius);border:1px solid var(--border)}.progress-container{width:100%;height:3px;background:var(--border);border-radius:100px;margin-top:14px;overflow:hidden;display:block}.progress-bar{height:100%;width:0%;background:var(--accent);transition:width 0.2s ease;border-radius:100px}#alertModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.modal-content{background:var(--card);padding:28px;border-radius:var(--radius);max-width:90%;width:750px;max-height:85vh;overflow-y:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border)}.alert-section{margin-bottom:20px;background:var(--danger-soft);padding:16px;border-radius:var(--radius-sm);border:1px solid #fecaca}.alert-section.japanese{background:var(--warn-soft);border-color:#fde68a}.alert-list{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;margin-top:10px}.asp-btn{padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-family:inherit;font-size:0.72rem;font-weight:400;cursor:pointer;transition:all 0.15s;white-space:nowrap}.asp-btn:hover{border-color:var(--accent);color:var(--accent)}.asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.asp-sep{width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px}.filter-slider{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--border);border-radius:100px;outline:none;cursor:pointer;transition:background 0.15s}.filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;transition:transform 0.1s;box-shadow:0 1px 4px rgba(99,102,241,0.3)}#customDialogModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.custom-dialog-card{position:relative;background:var(--card);padding:28px;border-radius:var(--radius);width:90%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border);text-align:center}.custom-dialog-close{position:absolute;top:12px;right:16px;font-size:1.5rem;color:var(--muted);background:none;border:none;cursor:pointer;transition:color 0.15s;line-height:1;padding:0}.custom-dialog-close:hover{color:var(--text)}.custom-dialog-title{font-size:1.15rem;font-weight:500;margin:0 0 14px;color:var(--text);letter-spacing:-0.01em}.custom-dialog-message{font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:24px;text-align:center;background:var(--bg);padding:14px;border-radius:var(--radius-sm);border:1px solid var(--border)}.custom-dialog-actions{display:flex;justify-content:center;gap:12px}.custom-dialog-actions .btn{white-space:nowrap}.dialog-overwrite-preview{display:block;width:100%;max-height:220px;margin:14px auto 0;border-radius:var(--radius-sm);border:1px solid #d4d4d8;background:#fff;object-fit:cover}#logoLibStrip::-webkit-scrollbar{height:6px}#logoLibStrip::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}.logo-lib-item{position:relative;flex-shrink:0}.logo-lib-item img{width:36px;height:36px;object-fit:contain;cursor:pointer;border:1px solid var(--border);border-radius:4px;padding:2px;background:#fff;transition:border-color 0.2s;display:block}.logo-lib-item img:hover{border-color:var(--accent)}.logo-lib-del{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--danger);color:#fff;border:1.5px solid #fff;font-size:9px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.15s}.logo-lib-item:hover .logo-lib-del{opacity:1}.logo-container{position:absolute;transform-origin:center;user-select:none;cursor:move;touch-action:none;pointer-events:auto}.logo-container.selected{outline:2px dashed var(--accent);outline-offset:2px}.logo-container img{width:100%;height:100%;display:block;pointer-events:none}.logo-handle{position:absolute;width:14px;height:14px;background:#fff;border:2px solid var(--accent);border-radius:50%;display:none;z-index:10;touch-action:none}.logo-container.selected .logo-handle{display:block}.logo-handle.tl{top:-7px;left:-7px;cursor:nwse-resize}.logo-handle.tr{top:-7px;right:-7px;cursor:nesw-resize}.logo-handle.bl{bottom:-7px;left:-7px;cursor:nesw-resize}.logo-handle.br{bottom:-7px;right:-7px;cursor:nwse-resize}.logo-rot-handle{position:absolute;width:26px;height:26px;background:transparent;display:none;z-index:9;touch-action:none;cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><path d='M10 2.5 A7.5 7.5 0 1 0 17.5 10' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round'/><polyline points='15,1 18,7 12,7' fill='none' stroke='%236366f1' stroke-width='2' stroke-linejoin='round'/></svg>") 10 10,crosshair}.logo-rot-handle.tl{top:-27px;left:-27px}.logo-rot-handle.tr{top:-27px;right:-27px}.logo-rot-handle.bl{bottom:-27px;left:-27px}.logo-rot-handle.br{bottom:-27px;right:-27px}.logo-container.selected .logo-rot-handle{display:block}input[type="color"]::-webkit-color-swatch-wrapper{padding:0}input[type="color"]::-webkit-color-swatch{border:1px solid var(--border);border-radius:4px}#logoLayer{transition:opacity 0.3s ease;opacity:0;pointer-events:none}#logoLayer.logo-layer-visible{opacity:1;pointer-events:none}@keyframes logoLibFadeIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}#logoLibStrip img{animation:logoLibFadeIn 0.25s ease forwards}#logoToolbarArea{overflow:hidden;max-height:0;opacity:0;margin-bottom:0 !important;pointer-events:none;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease,margin-bottom 0.3s ease}#logoToolbarArea.logo-panel-open{max-height:140px;opacity:1;margin-bottom:10px !important;pointer-events:auto}#logoToggleBtn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.logo-container.hidden-logo>img{opacity:0.2}.logo-container.hidden-logo{outline-style:dashed}@keyframes pulseRed{0%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}50%{background-color:#f87171;border-color:#f87171;color:white;box-shadow:0 0 10px rgba(239,68,68,0.8)}100%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}}.btn-manual-save{background-color:#10b981 !important;border-color:#10b981 !important;color:white !important;transition:all 0.5s ease}.btn-manual-save:disabled{background-color:#d1d5db !important;border-color:#d1d5db !important;color:#9ca3af !important;cursor:not-allowed !important;opacity:1 !important;transform:none !important;animation:none !important}.btn-manual-save.unsaved{background-color:#ef4444 !important;border-color:#ef4444 !important;animation:pulseRed 2s infinite ease-in-out}.thumb-updated{position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:1px 4px;border-radius:3px;z-index:25;pointer-events:none;font-family:'DM Sans',sans-serif}.thumb-frame .status-badge-container{top:22px !important}#psdLayerModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:8000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.psd-modal-wrap{background:var(--card);border-radius:var(--radius);width:90%;max-width:700px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);border:1px solid var(--border);overflow:hidden}.psd-modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}.psd-modal-close{background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1;transition:color 0.15s}.psd-modal-close:hover{color:var(--text)}.psd-modal-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;background:var(--bg)}.psd-modal-body{overflow-y:auto;flex:1;padding:6px}.psd-modal-foot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0}.psd-layer-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;transition:background 0.12s,border-color 0.12s;user-select:none}.psd-layer-item:hover{background:var(--bg);border-color:var(--border)}.psd-layer-item.selected{background:var(--accent-soft);border-color:#c7d2fe}.psd-layer-item.is-group{opacity:0.65;cursor:default}.psd-layer-check{width:16px;height:16px;flex-shrink:0;accent-color:var(--accent);cursor:pointer}.psd-layer-thumb{width:52px;height:38px;object-fit:contain;border-radius:4px;border:1px solid var(--border);background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/10px 10px;flex-shrink:0;display:block}.psd-layer-thumb.empty{background:var(--bg)}.psd-layer-name{font-size:0.82rem;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.psd-layer-meta{font-size:0.68rem;color:var(--muted);white-space:nowrap;flex-shrink:0}.psd-layer-hidden-badge{font-size:0.6rem;background:#e4e4e7;color:var(--muted);padding:1px 5px;border-radius:3px;flex-shrink:0}.psd-group-header{display:flex;align-items:center;gap:6px;padding:5px 10px 3px;font-size:0.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;border-top:1px solid var(--border);margin-top:4px}.psd-group-header:first-child{border-top:none;margin-top:0}.psd-sel-count{font-size:0.75rem;color:var(--muted);margin-left:auto}.psd-crop-trigger-btn{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all 0.15s}.psd-crop-trigger-btn:hover:not(:disabled){border-color:#8b5cf6;color:#8b5cf6;background:#f5f3ff}.psd-crop-trigger-btn:disabled{cursor:not-allowed}#psdCropModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9500;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.psd-crop-wrap{background:var(--card);border-radius:var(--radius);width:92%;max-width:860px;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.5);border:1px solid var(--border);overflow:hidden}#sbc-presets{gap:12px !important}#sbc-presets .preset-box{flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0}#sbc-presets .preset-box canvas{width:100%;height:auto}.psd-crop-asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}#searchBarContainer{display:flex;flex-direction:column;gap:8px}#sbc-left{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;width:100%}#sbc-left #searchInput{width:200px;max-width:calc(100vw - 200px)}#sbc-presets{display:flex;gap:12px;justify-content:flex-start;align-items:center;flex-wrap:nowrap;width:100%}#sbc-presets .preset-box{flex-shrink:0}#sbc-presets .preset-box canvas{width:100%;height:auto;display:block}@media (min-width:769px){#searchBarContainer{flex-direction:row;align-items:flex-end;justify-content:space-between;gap:0}#sbc-left{flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:14px;width:auto}#sbc-left #searchInput{width:220px;max-width:none}#sbc-presets{align-items:flex-end;width:auto}}</style> </head><body><div id="progress"><div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px">処理中...</div><div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px"><div id="progressFileName" style="font-size:0.8rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px"></div><div id="progressCount" style="font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap"></div></div><div id="progressTimeLeft" style="font-size:0.75rem; color:var(--muted)"></div><div class="progress-container"><div class="progress-bar" id="progressBar"></div></div><button id="cancelLoadBtn" class="btn btn-secondary" style="margin-top: 14px; font-size: 0.75rem; padding: 6px 16px" onclick="cancelLoading()">キャンセル</button></div><div class="page-header"><div class="title-left"><h2>画像調整 &amp; 書き出しツール</h2><p>Image Resize &amp; Export — 幅1200px自動リサイズ / ZIP一括書き出し / PNG合成</p></div><div class="title-right"><div class="slot-modern-wrapper"><span class="slot-modern-label">Slot</span><select id="slotSelector" class="slot-modern-select"><option value="1">スロット 1</option><option value="2">スロット 2</option><option value="3">スロット 3</option><option value="4">スロット 4</option><option value="5">スロット 5</option><option value="6">スロット 6</option><option value="7">スロット 7</option><option value="8">スロット 8</option><option value="9">スロット 9</option><option value="10">スロット 10</option></select><button id="renameSlotBtn" class="slot-modern-btn" title="スロット名を変更"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button id="clearSlotBtn" class="slot-modern-btn danger" title="このスロットをクリア"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><button id="helpBtn" class="help-btn" title="説明を表示">💡</button></div></div><div class="section-card"><div class="upload-zone" id="dropZone"><div class="upload-btn-main">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div><input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div></div><div id="searchBarContainer" style="display:none; width:100%; margin-top:8px; margin-bottom:8px; padding:0 8px; z-index:10; position:relative"><div id="sbc-left"><div id="lastUpdatedLabel" style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.02em; white-space:nowrap; flex-shrink:0"> 最終更新: <span id="globalLastUpdatedText">-</span></div></div><div id="sbc-presets"><div class="preset-box" id="presetBox-thumb" draggable="false" ondragstart="return false" onclick="openInPreset('thumb')" title="Thumbnailプリセットで開く" style="cursor:pointer;-webkit-user-drag:none"><div class="preset-canvas-wrap"><canvas id="pc-thumb" width="1200" height="600" draggable="false" ondragstart="return false"></canvas></div><span>Thumbnail</span></div><div class="preset-box" id="presetBox-og" draggable="false" ondragstart="return false" onclick="openInPreset('og')" title="OGプリセットで開く" style="cursor:pointer;-webkit-user-drag:none"><div class="preset-canvas-wrap"><canvas id="pc-og" width="1200" height="630" draggable="false" ondragstart="return false"></canvas></div><span>OG</span></div><div class="preset-box" id="presetBox-special" draggable="false" ondragstart="return false" onclick="openInPreset('special')" title="Specialプリセットで開く" style="cursor:pointer;-webkit-user-drag:none"><div class="preset-canvas-wrap"><canvas id="pc-special" width="1200" height="675" draggable="false" ondragstart="return false"></canvas></div><span>Special</span></div></div></div><div id="previewArea" style="display: none;"><div class="preview-drop-hint">ここにドロップして追加</div></div><div id="actionArea" style="display:none; margin-top:24px; padding-top:20px; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%; transition: opacity 0.2s">
+</script><script src="https://cdn.jsdelivr.net/npm/heic-to@1.4.2/dist/iife/heic-to.js"></script> <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script> <script src="https://unpkg.com/ag-psd@14.3.2/dist/bundle.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> <style>@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');:root{--accent:#6366f1;--accent-soft:#eef2ff;--bg:#f5f5f7;--card:#ffffff;--border:#e4e4e7;--text:#18181b;--muted:#71717a;--danger:#ef4444;--danger-soft:#fef2f2;--warn:#f59e0b;--warn-soft:#fffbeb;--radius:14px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06)}*,*::before,*::after{box-sizing:border-box;user-select:none;-webkit-user-select:none}input,textarea,[contenteditable]{user-select:text;-webkit-user-select:text}body{font-family:'DM Sans','Noto Sans JP',sans-serif;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:32px 20px 60px;margin:0;min-height:100vh;color:var(--text)}.version-label{font-size:0.85rem;color:var(--muted);font-weight:500;letter-spacing:0.02em}.page-header{display:flex;justify-content:space-between;align-items:flex-end;width:100%;max-width:900px;margin-bottom:20px;gap:16px}@media (max-width:768px){.page-header{flex-direction:column;align-items:flex-start}}.title-left{display:flex;flex-direction:column;gap:4px}.title-left h2{font-size:1.5rem;font-weight:500;letter-spacing:-0.02em;margin:0;color:var(--text)}.title-left p{font-size:0.85rem;color:var(--muted);margin:0;font-weight:300}.title-right{display:flex;align-items:center;gap:10px}.slot-modern-wrapper{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:4px 6px 4px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);gap:4px;transition:border-color 0.2s}.slot-modern-wrapper:hover{border-color:#d4d4d8}.slot-modern-label{font-size:0.7rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;pointer-events:none}.slot-modern-select{appearance:none;background:transparent;border:none;font-family:inherit;font-size:0.8rem;font-weight:500;color:var(--text);padding:4px 24px 4px 6px;cursor:pointer;outline:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;background-size:14px;max-width:140px;text-overflow:ellipsis}.slot-modern-btn{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}.slot-modern-btn:hover{background:var(--bg);color:var(--text)}.slot-modern-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}.help-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0;transition:transform 0.15s;line-height:1;margin-left:4px}.help-btn:hover{transform:scale(1.1)}.qr-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);width:32px;height:32px;cursor:pointer;padding:5px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;color:var(--muted);box-shadow:0 2px 6px rgba(0,0,0,0.06)}.qr-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:scale(1.05)}.section-card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);width:100%;max-width:900px;text-align:center}.instruction-text{position:relative;max-width:700px;margin:16px auto;font-size:0.8rem;color:var(--muted);line-height:1.75;text-align:left;background:var(--bg);padding:14px 32px 14px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);font-weight:300}.close-inst-btn{position:absolute;top:8px;right:12px;font-size:1.2rem;background:none;border:none;color:var(--muted);cursor:pointer;padding:0;transition:color 0.15s}.close-inst-btn:hover{color:var(--text)}.upload-zone{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:100px 20px;background:var(--bg);cursor:pointer;transition:all 0.2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center}.upload-zone:hover{border-color:var(--accent);background:var(--accent-soft)}.upload-btn-main{background:var(--accent);padding:11px 24px;border-radius:100px;color:#fff;font-weight:500;font-size:0.9rem;display:inline-block;margin-bottom:12px;letter-spacing:-0.01em;cursor:pointer;transition:opacity 0.15s}.upload-btn-main:hover{opacity:0.85}.upload-format-text{font-size:0.72rem;color:var(--muted);font-weight:300;letter-spacing:0.04em;text-transform:uppercase}.btn{padding:10px 22px;cursor:pointer;border:none;border-radius:100px;font-family:inherit;font-weight:500;font-size:0.875rem;transition:all 0.15s;letter-spacing:-0.01em}.btn:hover{opacity:0.88;transform:translateY(-1px)}.btn-success{background:var(--accent);color:#fff}.btn-secondary{background:#e4e4e7;color:var(--muted)}.btn-secondary:hover{background:#d4d4d8;color:var(--text)}.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#dc2626}#previewArea{position:relative;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:12px;margin-top:14px;border-radius:var(--radius-sm);border:1.5px dashed transparent;transition:border-color 0.2s,background 0.2s,padding-left 0.35s ease;padding:8px}#previewArea.drag-over{border-color:var(--accent);background:var(--accent-soft)}.preview-drop-hint{display:none;width:100%;text-align:center;padding:20px;color:var(--accent);font-size:0.8rem;font-weight:500;pointer-events:none}#previewArea.drag-over .preview-drop-hint{display:block}.thumb-box{position:relative;flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0;text-align:center;cursor:pointer;transition:transform 0.15s;border-radius:12px}.thumb-delete-btn{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:#fff;border:2px solid #fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity 0.15s;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.2)}.thumb-box:hover .thumb-delete-btn{opacity:1}@media (max-width:600px){.thumb-box{flex:0 0 calc(33.333% - 8px)}}.preset-box{cursor:grab;text-align:center;transition:transform 0.15s;flex-shrink:0}.preset-box:hover{transform:translateY(-2px)}.preset-canvas-wrap{position:relative;display:block;line-height:0;overflow:hidden;border-radius:6px}.preset-canvas-wrap canvas{display:block;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);transition:opacity 0.2s;width:100%;height:auto}.preset-box:hover .preset-canvas-wrap canvas{border-color:var(--accent)}.preset-edited-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--accent);border-radius:0 0 6px 6px;pointer-events:none;z-index:6}.preset-box span{display:block;font-size:0.6rem;color:var(--muted);margin-top:3px;font-weight:500;letter-spacing:0.02em}.custom-tooltip{visibility:hidden;opacity:0;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:rgba(24,24,27,0.9);color:#fff;padding:6px 10px;border-radius:6px;font-size:0.7rem;font-weight:500;white-space:nowrap;z-index:100;pointer-events:none;transition:all 0.1s ease;box-shadow:0 4px 12px rgba(0,0,0,0.15);margin-bottom:6px}.custom-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:5px;border-style:solid;border-color:rgba(24,24,27,0.9) transparent transparent transparent}.thumb-box:hover .custom-tooltip{visibility:visible;opacity:1;transform:translateX(-50%) translateY(-4px)}.thumb-frame{width:100%;aspect-ratio:1 / 1;height:auto;border-radius:10px;border:2px solid transparent;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto;overflow:hidden;position:relative}.thumb-inner-img{display:block;object-fit:cover}.thumb-name{font-size:0.65rem;color:var(--text);font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:5px;line-height:1.3;text-align:center;width:100%}.thumb-dimensions{font-size:0.6rem;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;font-weight:300}#imagePreviewModal{display:none;opacity:0;transition:opacity 0.3s ease;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.preview-modal-inner{display:flex;align-items:center;justify-content:center;width:100%;height:100%}.preview-card{background:var(--card);padding:16px 20px 14px;border-radius:var(--radius);position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.4);display:inline-flex;flex-direction:column;align-items:stretch;transition:width 0.13s ease,height 0.13s ease}.preview-layer{position:absolute;top:50%;left:50%;max-width:none;max-height:none;display:block;transform:translate(-50%,-50%);opacity:0;transition:opacity 0.13s ease;pointer-events:none}.nav-btn{position:fixed;top:50%;transform:translateY(-50%);width:48px;height:48px;flex-shrink:0;background:rgba(255,255,255,0.9);color:var(--text);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;user-select:none;transition:background 0.2s,box-shadow 0.2s;border:1px solid var(--border);z-index:5010}.nav-btn:hover{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.15)}.nav-btn.prev{left:16px}.nav-btn.next{right:16px}.close-preview-top{position:absolute;top:10px;right:14px;color:var(--muted);font-size:32px;cursor:pointer;line-height:1;font-weight:300;z-index:5020;opacity:0.6;transition:all 0.2s}.close-preview-top:hover{opacity:1;color:var(--text)}.close-preview-top:hover{opacity:1}.highlight-red{color:var(--danger)}#progress{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:360px;background:var(--card);z-index:6000;padding:20px 24px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.2);border-radius:var(--radius);border:1px solid var(--border)}.progress-container{width:100%;height:3px;background:var(--border);border-radius:100px;margin-top:14px;overflow:hidden;display:block}.progress-bar{height:100%;width:0%;background:var(--accent);transition:width 0.2s ease;border-radius:100px}#alertModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.modal-content{background:var(--card);padding:28px;border-radius:var(--radius);max-width:90%;width:750px;max-height:85vh;overflow-y:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border)}.alert-section{margin-bottom:20px;background:var(--danger-soft);padding:16px;border-radius:var(--radius-sm);border:1px solid #fecaca}.alert-section.japanese{background:var(--warn-soft);border-color:#fde68a}.alert-list{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;margin-top:10px}.asp-btn{padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-family:inherit;font-size:0.72rem;font-weight:400;cursor:pointer;transition:all 0.15s;white-space:nowrap}.asp-btn:hover{border-color:var(--accent);color:var(--accent)}.asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.asp-sep{width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px}.filter-slider{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--border);border-radius:100px;outline:none;cursor:pointer;transition:background 0.15s}.filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;transition:transform 0.1s;box-shadow:0 1px 4px rgba(99,102,241,0.3)}#customDialogModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.custom-dialog-card{position:relative;background:var(--card);padding:28px;border-radius:var(--radius);width:90%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border);text-align:center}.custom-dialog-close{position:absolute;top:12px;right:16px;font-size:1.5rem;color:var(--muted);background:none;border:none;cursor:pointer;transition:color 0.15s;line-height:1;padding:0}.custom-dialog-close:hover{color:var(--text)}.custom-dialog-title{font-size:1.15rem;font-weight:500;margin:0 0 14px;color:var(--text);letter-spacing:-0.01em}.custom-dialog-message{font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:24px;text-align:center;background:var(--bg);padding:14px;border-radius:var(--radius-sm);border:1px solid var(--border)}.custom-dialog-actions{display:flex;justify-content:center;gap:12px}.custom-dialog-actions .btn{white-space:nowrap}.dialog-overwrite-preview{display:block;width:100%;max-height:220px;margin:14px auto 0;border-radius:var(--radius-sm);border:1px solid #d4d4d8;background:#fff;object-fit:cover}#logoLibStrip::-webkit-scrollbar{height:6px}#logoLibStrip::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}.logo-lib-item{position:relative;flex-shrink:0}.logo-lib-item img{width:36px;height:36px;object-fit:contain;cursor:pointer;border:1px solid var(--border);border-radius:4px;padding:2px;background:#fff;transition:border-color 0.2s;display:block}.logo-lib-item img:hover{border-color:var(--accent)}.logo-lib-del{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--danger);color:#fff;border:1.5px solid #fff;font-size:9px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.15s}.logo-lib-item:hover .logo-lib-del{opacity:1}.logo-container{position:absolute;transform-origin:center;user-select:none;cursor:move;touch-action:none;pointer-events:auto}.logo-container.selected{outline:2px dashed var(--accent);outline-offset:2px}.logo-container img{width:100%;height:100%;display:block;pointer-events:none}.logo-handle{position:absolute;width:14px;height:14px;background:#fff;border:2px solid var(--accent);border-radius:50%;display:none;z-index:10;touch-action:none}.logo-container.selected .logo-handle{display:block}.logo-handle.tl{top:-7px;left:-7px;cursor:nwse-resize}.logo-handle.tr{top:-7px;right:-7px;cursor:nesw-resize}.logo-handle.bl{bottom:-7px;left:-7px;cursor:nesw-resize}.logo-handle.br{bottom:-7px;right:-7px;cursor:nwse-resize}.logo-rot-handle{position:absolute;width:26px;height:26px;background:transparent;display:none;z-index:9;touch-action:none;cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><path d='M10 2.5 A7.5 7.5 0 1 0 17.5 10' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round'/><polyline points='15,1 18,7 12,7' fill='none' stroke='%236366f1' stroke-width='2' stroke-linejoin='round'/></svg>") 10 10,crosshair}.logo-rot-handle.tl{top:-27px;left:-27px}.logo-rot-handle.tr{top:-27px;right:-27px}.logo-rot-handle.bl{bottom:-27px;left:-27px}.logo-rot-handle.br{bottom:-27px;right:-27px}.logo-container.selected .logo-rot-handle{display:block}input[type="color"]::-webkit-color-swatch-wrapper{padding:0}input[type="color"]::-webkit-color-swatch{border:1px solid var(--border);border-radius:4px}#logoLayer{transition:opacity 0.3s ease;opacity:0;pointer-events:none}#logoLayer.logo-layer-visible{opacity:1;pointer-events:none}@keyframes logoLibFadeIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}#logoLibStrip img{animation:logoLibFadeIn 0.25s ease forwards}#logoToolbarArea{overflow:hidden;max-height:0;opacity:0;margin-bottom:0 !important;pointer-events:none;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease,margin-bottom 0.3s ease}#logoToolbarArea.logo-panel-open{max-height:140px;opacity:1;margin-bottom:10px !important;pointer-events:auto}#logoToggleBtn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.logo-container.hidden-logo>img{opacity:0.2}.logo-container.hidden-logo{outline-style:dashed}@keyframes pulseRed{0%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}50%{background-color:#f87171;border-color:#f87171;color:white;box-shadow:0 0 10px rgba(239,68,68,0.8)}100%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}}.btn-manual-save{background-color:#10b981 !important;border-color:#10b981 !important;color:white !important;transition:all 0.5s ease}.btn-manual-save:disabled{background-color:#d1d5db !important;border-color:#d1d5db !important;color:#9ca3af !important;cursor:not-allowed !important;opacity:1 !important;transform:none !important;animation:none !important}.btn-manual-save.unsaved{background-color:#ef4444 !important;border-color:#ef4444 !important;animation:pulseRed 2s infinite ease-in-out}.thumb-updated{position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:1px 4px;border-radius:3px;z-index:25;pointer-events:none;font-family:'DM Sans',sans-serif}.thumb-frame .status-badge-container{top:22px !important}#psdLayerModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:8000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.psd-modal-wrap{background:var(--card);border-radius:var(--radius);width:90%;max-width:700px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);border:1px solid var(--border);overflow:hidden}.psd-modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}.psd-modal-close{background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1;transition:color 0.15s}.psd-modal-close:hover{color:var(--text)}.psd-modal-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;background:var(--bg)}.psd-modal-body{overflow-y:auto;flex:1;padding:6px}.psd-modal-foot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0}.psd-layer-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;transition:background 0.12s,border-color 0.12s;user-select:none}.psd-layer-item:hover{background:var(--bg);border-color:var(--border)}.psd-layer-item.selected{background:var(--accent-soft);border-color:#c7d2fe}.psd-layer-item.is-group{opacity:0.65;cursor:default}.psd-layer-check{width:16px;height:16px;flex-shrink:0;accent-color:var(--accent);cursor:pointer}.psd-layer-thumb{width:52px;height:38px;object-fit:contain;border-radius:4px;border:1px solid var(--border);background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/10px 10px;flex-shrink:0;display:block}.psd-layer-thumb.empty{background:var(--bg)}.psd-layer-name{font-size:0.82rem;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.psd-layer-meta{font-size:0.68rem;color:var(--muted);white-space:nowrap;flex-shrink:0}.psd-layer-hidden-badge{font-size:0.6rem;background:#e4e4e7;color:var(--muted);padding:1px 5px;border-radius:3px;flex-shrink:0}.psd-group-header{display:flex;align-items:center;gap:6px;padding:5px 10px 3px;font-size:0.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;border-top:1px solid var(--border);margin-top:4px}.psd-group-header:first-child{border-top:none;margin-top:0}.psd-sel-count{font-size:0.75rem;color:var(--muted);margin-left:auto}.psd-crop-trigger-btn{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all 0.15s}.psd-crop-trigger-btn:hover:not(:disabled){border-color:#ef4444;color:#ef4444;background:#f5f3ff}.psd-crop-trigger-btn:disabled{cursor:not-allowed}#psdCropModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9500;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.psd-crop-wrap{background:var(--card);border-radius:var(--radius);width:92%;max-width:860px;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.5);border:1px solid var(--border);overflow:hidden}#sbc-presets{gap:12px !important}#sbc-presets .preset-box{flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0}#sbc-presets .preset-box canvas{width:100%;height:auto}.psd-crop-asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}#searchBarContainer{display:flex;flex-direction:column;gap:8px}#sbc-left{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;width:100%}#sbc-left #searchInput{width:200px;max-width:calc(100vw - 200px)}#sbc-presets{display:flex;gap:12px;justify-content:flex-start;align-items:center;flex-wrap:nowrap;width:100%}#sbc-presets .preset-box{flex-shrink:0}#sbc-presets .preset-box canvas{width:100%;height:auto;display:block}@media (min-width:769px){#searchBarContainer{flex-direction:row;align-items:flex-end;justify-content:space-between;gap:0}#sbc-left{flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:14px;width:auto}#sbc-left #searchInput{width:220px;max-width:none}#sbc-presets{align-items:flex-end;width:auto}}</style> </head><body><div id="progress"><div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px">処理中...</div><div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px"><div id="progressFileName" style="font-size:0.8rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px"></div><div id="progressCount" style="font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap"></div></div><div id="progressTimeLeft" style="font-size:0.75rem; color:var(--muted)"></div><div class="progress-container"><div class="progress-bar" id="progressBar"></div></div><button id="cancelLoadBtn" class="btn btn-secondary" style="margin-top: 14px; font-size: 0.75rem; padding: 6px 16px" onclick="cancelLoading()">キャンセル</button></div><div class="page-header"><div class="title-left"><h2>画像調整 &amp; 書き出しツール</h2><p>Image Resize &amp; Export — 幅1200px自動リサイズ / ZIP一括書き出し / PNG合成</p></div><div class="title-right"><div class="slot-modern-wrapper"><span class="slot-modern-label">Slot</span><select id="slotSelector" class="slot-modern-select"><option value="1">スロット 1</option><option value="2">スロット 2</option><option value="3">スロット 3</option><option value="4">スロット 4</option><option value="5">スロット 5</option><option value="6">スロット 6</option><option value="7">スロット 7</option><option value="8">スロット 8</option><option value="9">スロット 9</option><option value="10">スロット 10</option></select><button id="renameSlotBtn" class="slot-modern-btn" title="スロット名を変更"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button id="clearSlotBtn" class="slot-modern-btn danger" title="このスロットをクリア"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><button id="helpBtn" class="help-btn" title="説明を表示">💡</button></div></div><div class="section-card"><div class="upload-zone" id="dropZone"><div class="upload-btn-main">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div><input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div></div><div id="searchBarContainer" style="display:none; width:100%; margin-top:8px; margin-bottom:8px; padding:0 8px; z-index:10; position:relative"><div id="sbc-left"><div id="lastUpdatedLabel" style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.02em; white-space:nowrap; flex-shrink:0"> 最終更新: <span id="globalLastUpdatedText">-</span></div></div><div id="sbc-presets"><div class="preset-box" id="presetBox-thumb" draggable="true" onclick="openInPreset('thumb')" title="Thumbnailプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-thumb" width="1200" height="600" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Thumbnail</span></div><div class="preset-box" id="presetBox-og" draggable="true" onclick="openInPreset('og')" title="OGプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-og" width="1200" height="630" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>OG</span></div><div class="preset-box" id="presetBox-special" draggable="true" onclick="openInPreset('special')" title="Specialプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-special" width="1200" height="675" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Special</span></div></div></div><div id="previewArea" style="display: none;"><div class="preview-drop-hint">ここにドロップして追加</div></div><div id="actionArea" style="display:none; margin-top:24px; padding-top:20px; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%; transition: opacity 0.2s">
   <div style="display:flex; align-items:center; gap:8px">
     <button id="qrBtn" class="qr-btn" title="QRコードを生成" onclick="openQrDialog()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="4" width="4" height="4" rx="0.5"/><rect x="14" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="16" y="4" width="4" height="4" rx="0.5"/><rect x="2" y="14" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="16" width="4" height="4" rx="0.5"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="19" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="19" width="3" height="3" rx="0.5"/><rect x="19" y="19" width="3" height="3" rx="0.5"/></svg></button>
     <div style="position:relative; flex-shrink:0"><input type="text" id="searchInput" placeholder="ファイル名で検索..." style="padding:8px 12px 8px 34px; border-radius:100px; border:1px solid var(--border); font-size:0.85rem; outline:none; transition:border-color 0.2s; background:var(--card); color:var(--text)"><svg style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted)" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
@@ -76,7 +76,7 @@ async function updateMainThumbnail(data, aspKey) {
   <div style="display:flex; flex-direction:column; gap:16px;">
     <div>
       <strong style="color:var(--accent); font-size:0.9rem;">1. ツールの概要</strong><br>
-      本ツールは、ブラウザ上で動作する高機能な画像一括処理アプリケーションです。アップロードされた画像を自動で<strong>幅1200px</strong>に最適化（リサイズ）し、ブログやSNS向けの画像を素早く作成できます。また、透明画像（ロゴ）の合成、複数画像の分割配置、色調補正などの豊富な編集機能を備え、最終的にZIPファイルとして一括で書き出すことが可能です。すべての処理はブラウザ内で完結するため、外部サーバーに画像データが送信されることはなく、安全に利用できます。
+      本ツールは、ブラウザ上で動作する高機能な画像一括処理アプリケーションです。アップロードされた画像を自動で<strong>幅1200px</strong>に最適化（リサイズ）し、ブログやSNS向けの画像を素早く作成できます。また、透過（ロゴ）の合成、複数画像の分割配置、色調補正などの豊富な編集機能を備え、最終的にZIPファイルとして一括で書き出すことが可能です。すべての処理はブラウザ内で完結するため、外部サーバーに画像データが送信されることはなく、安全に利用できます。
     </div>
 
     <div>
@@ -104,9 +104,9 @@ async function updateMainThumbnail(data, aspKey) {
         <li>各枠ごとに画像の拡大縮小・移動・色調補正が独立して行えます。</li>
       </ul>
 
-      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">✨ 透明画像（ロゴ）合成機能</h4>
+      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">✨ 透過（ロゴ）合成機能</h4>
       <ul style="margin:0 0 12px; padding-left:18px; display:flex; flex-direction:column; gap:3px;">
-        <li>「透明画像」ボタンを押すとロゴ専用のパネルが開きます。</li>
+        <li>「透過」ボタンを押すとロゴ専用のパネルが開きます。</li>
         <li>PNG画像のほか、PSD・AI・PDFファイルから透過レイヤーを抽出してライブラリにストックできます。</li>
         <li>配置したロゴはドラッグで移動、角のハンドルで回転・拡大縮小が可能です。また、ロゴの色を単色（白など）に変更することもできます。</li>
       </ul>
@@ -146,11 +146,11 @@ async function updateMainThumbnail(data, aspKey) {
     <span class="version-label" style="font-size: 0.75rem;">Ver 1.0.3</span>
   </div>
 
-  <div id="customDialogModal"><div class="custom-dialog-card"><button class="custom-dialog-close" id="customDialogCloseBtn" title="閉じる（キャンセル）">&times;</button><h3 id="customDialogTitle" class="custom-dialog-title"></h3><div id="customDialogMessage" class="custom-dialog-message"></div><div class="custom-dialog-actions"><button id="customDialogCancelBtn" class="btn btn-secondary">キャンセル</button><button id="customDialogOkBtn" class="btn btn-success">OK</button></div></div></div><div id="splitDialogModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px)"><div class="custom-dialog-card"><button class="custom-dialog-close" onclick="closeSplitDialog()" title="閉じる（キャンセル）">&times;</button><h3 class="custom-dialog-title">画面の分割</h3><p class="custom-dialog-message">プレビュー画面を何分割にしますか？</p><div class="custom-dialog-actions" style="gap:8px"><button id="splitBtn2" class="btn btn-secondary" onclick="startSplitMode(2)">2分割</button><button id="splitBtn3" class="btn btn-secondary" onclick="startSplitMode(3)">3分割</button><button id="splitBtn4" class="btn btn-secondary" onclick="startSplitMode(4)">4分割</button></div></div></div><div id="alertModal"><div class="modal-content"><h3 style="margin-top:0; font-size:1.1rem; font-weight:500; letter-spacing:-0.01em">確認が必要な画像があります</h3><div id="smallAlertContainer" class="alert-section"><h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:var(--danger)">幅1200px未満の画像</h4><div id="smallAlertList" class="alert-list"></div></div><div id="jpAlertContainer" class="alert-section japanese"><h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:#b45309">日本語ファイル名の画像</h4><div id="jpAlertList" class="alert-list"></div></div><div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top: 20px"><button class="btn btn-secondary" onclick="closeAlertModal()">確認して閉じる</button><button class="btn btn-success" onclick="downloadAlertImage()">アラート結果をJPGで保存</button></div></div></div><div id="imagePreviewModal"><div class="preview-modal-inner"><div class="nav-btn prev" onclick="changePreviewImage(-1)">❮</div><div class="preview-card" onclick="event.stopPropagation()"><span class="close-preview-top" onclick="closeImagePreview()">&times;</span><div id="toolbarContainer" style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 10px; margin-bottom: 10px; padding: 0 36px; box-sizing: border-box"><div style="display: flex; justify-content: center; align-items: center; width: 100%"><div id="aspectBar" style="display:flex; justify-content:center; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; width:100%"><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:nowrap"><button class="asp-btn" id="splitModeBtn" onclick="openSplitDialog()">分割</button><button class="asp-btn" id="logoToggleBtn" onclick="toggleLogoMode()">透明画像</button><button class="asp-btn" id="gridToggleBtn" onclick="toggleGrid()">グリッド</button>
+  <div id="customDialogModal"><div class="custom-dialog-card"><button class="custom-dialog-close" id="customDialogCloseBtn" title="閉じる（キャンセル）">&times;</button><h3 id="customDialogTitle" class="custom-dialog-title"></h3><div id="customDialogMessage" class="custom-dialog-message"></div><div class="custom-dialog-actions"><button id="customDialogCancelBtn" class="btn btn-secondary">キャンセル</button><button id="customDialogOkBtn" class="btn btn-success">OK</button></div></div></div><div id="splitDialogModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px)"><div class="custom-dialog-card"><button class="custom-dialog-close" onclick="closeSplitDialog()" title="閉じる（キャンセル）">&times;</button><h3 class="custom-dialog-title">画面の分割</h3><p class="custom-dialog-message">分割方向と分割数を選択してください。</p><div style="display:flex;flex-direction:column;gap:14px"><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">縦分割</span><span id="splitVerticalDisabledNote" style="font-size:0.7rem;color:var(--muted);display:none">（現在の分割中は変更できません）</span></div><div class="custom-dialog-actions" style="gap:8px" id="splitVerticalBtns"><button id="splitBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'vertical')">2分割</button><button id="splitBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'vertical')">3分割</button><button id="splitBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'vertical')">4分割</button></div></div><div style="height:1px;background:var(--border)"></div><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="18" height="8" rx="1"/><rect x="3" y="13" width="18" height="8" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">横分割</span></div><div class="custom-dialog-actions" style="gap:8px"><button id="splitHBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'horizontal')">2分割</button><button id="splitHBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'horizontal')">3分割</button><button id="splitHBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'horizontal')">4分割</button></div></div></div></div></div><div id="alertModal"><div class="modal-content"><h3 style="margin-top:0; font-size:1.1rem; font-weight:500; letter-spacing:-0.01em">確認が必要な画像があります</h3><div id="smallAlertContainer" class="alert-section"><h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:var(--danger)">幅1200px未満の画像</h4><div id="smallAlertList" class="alert-list"></div></div><div id="jpAlertContainer" class="alert-section japanese"><h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:#b45309">日本語ファイル名の画像</h4><div id="jpAlertList" class="alert-list"></div></div><div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top: 20px"><button class="btn btn-secondary" onclick="closeAlertModal()">確認して閉じる</button><button class="btn btn-success" onclick="downloadAlertImage()">アラート結果をJPGで保存</button></div></div></div><div id="imagePreviewModal"><div class="preview-modal-inner"><div class="nav-btn prev" onclick="changePreviewImage(-1)">❮</div><div class="preview-card" onclick="event.stopPropagation()"><span class="close-preview-top" onclick="closeImagePreview()">&times;</span><div id="toolbarContainer" style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 10px; margin-bottom: 10px; padding: 0 36px; box-sizing: border-box"><div style="display: flex; justify-content: center; align-items: center; width: 100%"><div id="aspectBar" style="display:flex; justify-content:center; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; width:100%"><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:nowrap"><button class="asp-btn" id="splitModeBtn" onclick="openSplitDialog()">分割</button><button class="asp-btn" id="logoToggleBtn" onclick="toggleLogoMode()">透過</button><button class="asp-btn" id="gridToggleBtn" onclick="toggleGrid()">グリッド</button>
 </div><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn ratio-btn" data-key="free" onclick="setAspect(this)">オリジナル</button><button class="asp-btn ratio-btn" data-key="1:1" onclick="setAspect(this)">1:1</button><button class="asp-btn ratio-btn" data-key="3:2" onclick="setAspect(this)">3:2</button><button class="asp-btn ratio-btn" data-key="4:3" onclick="setAspect(this)">4:3</button><button class="asp-btn ratio-btn" data-key="3:4" onclick="setAspect(this)">3:4</button><button class="asp-btn ratio-btn" data-key="2:3" onclick="setAspect(this)">2:3</button></div><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn slot-assign-btn" data-slot="thumb" onclick="assignCurrentToSlot('thumb')">Thumbnail</button><button class="asp-btn slot-assign-btn" data-slot="og" onclick="assignCurrentToSlot('og')">OG</button><button class="asp-btn slot-assign-btn" data-slot="special" onclick="assignCurrentToSlot('special')">Special</button><button class="asp-btn preset-nav-btn" data-key="thumb" onclick="handlePresetNavClick(this)" style="display:none">Thumbnail</button><button class="asp-btn preset-nav-btn" data-key="og" onclick="handlePresetNavClick(this)" style="display:none">OG</button><button class="asp-btn preset-nav-btn" data-key="special" onclick="handlePresetNavClick(this)" style="display:none">Special</button>
 <button class="asp-btn btn-manual-save" onclick="performManualSave()" disabled>保存</button>
 <button class="asp-btn btn-clear-slot" onclick="clearCurrentSlot()" style="display:none; color: var(--danger);">クリア</button>
-</div></div></div><div id="specialSizeBar" style="display:none; justify-content:center; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; width:100%"><button class="asp-btn" data-key="thumb" onclick="setAspect(this)">Thumbnail</button><button class="asp-btn" data-key="og" onclick="setAspect(this)">OG</button><button class="asp-btn" data-key="special" onclick="setAspect(this)">Special</button><button class="asp-btn btn-manual-save" onclick="performManualSave()" disabled>保存</button></div><div id="slotAssignBar" style="display:none"></div></div><div id="splitToolbarArea" style="display:none; align-items:center; flex-wrap:nowrap; transition: width 0.13s ease; margin-bottom:6px"></div><div id="logoToolbarArea" style="align-items:center; gap:10px; flex-wrap:wrap; background: var(--bg); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); width: 100%; transition: width 0.13s ease; display:flex"><div id="logoLibStrip" style="display:flex; gap:8px; overflow-x:auto; padding:4px; min-height:44px; flex:1; border: 1.5px dashed var(--border); border-radius: 6px; align-items: center; background: #fff"></div><input type="file" id="logoFileInput" accept="image/png" multiple style="display:none"><div style="display:flex; align-items:center; gap:8px; flex-shrink:0"><div style="position:relative" id="pngAddWrapper"><button id="pngAddBtn" onclick="openPngAddDialog()" style="padding:5px 12px; font-size:0.75rem; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer; transition:all 0.15s; white-space:nowrap" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">＋ 透明画像追加</button></div><input type="file" id="pngAddFileInput" accept=".png,.psd,.ai" multiple style="display:none"><div style="width:1px; height:20px; background:var(--border); flex-shrink:0"></div><div style="display:flex; align-items:center; gap:4px"><span style="font-size:0.7rem; color: var(--muted)">色</span><input type="color" id="logoColorPicker" value="#ffffff" title="選択中のPNGの色を変更" style="width: 26px; height: 26px; border: none; background: none; cursor: pointer; padding: 0"></div><button id="removeLogoBtn" onclick="removeSelectedLogo()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 100px; border: none; background: #e4e4e7; color: var(--text); cursor: pointer; transition: background 0.15s">選択消去</button><button id="clearAllLogosBtn" onclick="clearAllLogos()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 100px; border: none; background: var(--danger); color: white; cursor: pointer; transition: background 0.15s">全消去</button></div></div><div id="zoomContainer" style="position:relative; overflow:hidden; background:#ffffff; border-radius:0; cursor:grab; user-select:none; transition: width 0.13s ease, height 0.13s ease"><img id="previewImg0" class="preview-layer" src="" alt="拡大"><img id="previewImg1" class="preview-layer" src="" alt="拡大"><div id="logoLayer" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:40; overflow:hidden"></div><div id="splitContainer" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:30; background:transparent; flex-direction:row; flex-wrap:nowrap"></div><div id="overallGridOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:50; background-size:50px 50px; background-image:linear-gradient(to right, rgba(0, 200, 255, 0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 200, 255, 0.4) 1px, transparent 1px); background-position:calc(50% + 25px) calc(50% + 25px)"></div>
+</div></div></div><div id="specialSizeBar" style="display:none; justify-content:center; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; width:100%"><button class="asp-btn" data-key="thumb" onclick="setAspect(this)">Thumbnail</button><button class="asp-btn" data-key="og" onclick="setAspect(this)">OG</button><button class="asp-btn" data-key="special" onclick="setAspect(this)">Special</button><button class="asp-btn btn-manual-save" onclick="performManualSave()" disabled>保存</button></div><div id="slotAssignBar" style="display:none"></div></div><div id="splitToolbarArea" style="display:none; align-items:center; flex-wrap:nowrap; transition: width 0.13s ease; margin-bottom:6px"></div><div id="logoToolbarArea" style="align-items:center; gap:10px; flex-wrap:wrap; background: var(--bg); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); width: 100%; transition: width 0.13s ease; display:flex"><div id="logoLibStrip" style="display:flex; gap:8px; overflow-x:auto; padding:4px; min-height:44px; flex:1; border: 1.5px dashed var(--border); border-radius: 6px; align-items: center; background: #fff"></div><input type="file" id="logoFileInput" accept="image/png" multiple style="display:none"><div style="display:flex; align-items:center; gap:8px; flex-shrink:0"><div style="position:relative" id="pngAddWrapper"><button id="pngAddBtn" onclick="openPngAddDialog()" style="padding:5px 12px; font-size:0.75rem; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer; transition:all 0.15s; white-space:nowrap" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">＋ 透過追加</button></div><input type="file" id="pngAddFileInput" accept=".png,.psd,.ai" multiple style="display:none"><div style="width:1px; height:20px; background:var(--border); flex-shrink:0"></div><div style="display:flex; align-items:center; gap:4px"><span style="font-size:0.7rem; color: var(--muted)">色</span><input type="color" id="logoColorPicker" value="#ffffff" title="選択中のPNGの色を変更" style="width: 26px; height: 26px; border: none; background: none; cursor: pointer; padding: 0"></div><button id="removeLogoBtn" onclick="removeSelectedLogo()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 100px; border: none; background: #e4e4e7; color: var(--text); cursor: pointer; transition: background 0.15s">選択消去</button><button id="clearAllLogosBtn" onclick="clearAllLogos()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 100px; border: none; background: var(--danger); color: white; cursor: pointer; transition: background 0.15s">全消去</button></div></div><div id="zoomContainer" style="position:relative; overflow:hidden; background:#ffffff; border-radius:0; cursor:grab; user-select:none; transition: width 0.13s ease, height 0.13s ease"><img id="previewImg0" class="preview-layer" src="" alt="拡大"><img id="previewImg1" class="preview-layer" src="" alt="拡大"><div id="logoLayer" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:40; overflow:hidden"></div><div id="splitContainer" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:30; background:transparent; flex-wrap:nowrap; transition:opacity 0.25s ease"></div><div id="overallGridOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:50; background-size:50px 50px; background-image:linear-gradient(to right, rgba(0, 200, 255, 0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 200, 255, 0.4) 1px, transparent 1px); background-position:calc(50% + 25px) calc(50% + 25px)"></div>
 <div id="guideOverlay800" style="display:none; position:absolute; top:16.6666%; left:16.6666%; width:66.6666%; height:66.6666%; pointer-events:none; z-index:45; border:2px dashed rgba(239, 68, 68, 0.8);">
     <div id="guideText800" style="position:absolute; top:-22px; left:-2px; color:rgba(239, 68, 68, 0.8); font-size:12px; font-weight:bold; letter-spacing:0.05em; font-family:inherit;">800px</div>
 </div>
@@ -202,10 +202,14 @@ return `${y}/${m}/${d} ${hh}:${mm}`;
 async function saveSplitToNormalImage() {
     if (!isSplitPreviewActive || splitSelectedImages.length < splitTargetCount) return false;
     
+    ensureSplitBaseScales();
+
     let hasBg = false;
     for(let i=0; i<splitTargetCount; i++) {
         const st = splitStates[i], d = splitSelectedImages[i];
-        const cw = targetCw / splitTargetCount, ch = targetCh;
+        const isHoriz = splitDirection === 'horizontal';
+        const cw = isHoriz ? targetCw : targetCw / splitTargetCount;
+        const ch = isHoriz ? targetCh / splitTargetCount : targetCh;
         const iw = d.originalWidth * st.baseScale * st.scale, ih = d.originalHeight * st.baseScale * st.scale;
         if(isBgVisible(st.dx, st.dy, iw, ih, st.rot||0, cw, ch)) { hasBg = true; break; }
     }
@@ -215,30 +219,32 @@ async function saveSplitToNormalImage() {
         if (!confirmBg) return false;
     }
     
-    showProgressPanel('分割画像を保存中...');
-    ensureSplitBaseScales();
-    
     const effectiveAspect = splitModePreservedAspect || currentAspectKey || 'free';
     const expSize = EXPORT_SIZE[effectiveAspect] || { w: 1200, h: Math.round(1200 * targetCh / (targetCw || 1200)) };
     const outW = expSize.w || 1200, outH = expSize.h || Math.round(outW * (targetCh / (targetCw || outW)));
     
     const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH;
-    const ctx = canvas.getContext('2d'), segWidth = outW / splitTargetCount, exportRatio = outW / targetCw;
+    const ctx = canvas.getContext('2d');
+    const isHorizExp = splitDirection === 'horizontal';
+    const segWidth = isHorizExp ? outW : outW / splitTargetCount;
+    const segHeight = isHorizExp ? outH / splitTargetCount : outH;
+    const exportRatio = outW / targetCw;
     
     await Promise.all(splitSelectedImages.map(async (imgData, i) => {
         const img = new Image(); img.src = imgData.blobUrl; 
         await new Promise(r => { img.onload = r; if (img.complete) r(); });
         const st = splitStates[i], finalScale = st.baseScale * st.scale;
-        const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = outH;
-        const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0,0,segWidth,outH);
+        const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = segHeight;
+        const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0,0,segWidth,segHeight);
         const drawW = imgData.originalWidth * finalScale * exportRatio, drawH = imgData.originalHeight * finalScale * exportRatio, drawX = st.dx * exportRatio, drawY = st.dy * exportRatio;
         tCtx.filter = st.sat !== 100 ? `saturate(${st.sat}%)` : 'none';
         tCtx.save(); tCtx.translate(drawX + drawW/2, drawY + drawH/2); if(st.rot) tCtx.rotate(st.rot * Math.PI/180);
         tCtx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH); tCtx.restore(); tCtx.filter = 'none';
-        applyImageAdjustments(tCtx, segWidth, outH, st.bri, st.sharp); ctx.drawImage(tempCanvas, i * segWidth, 0);
+        applyImageAdjustments(tCtx, segWidth, segHeight, st.bri, st.sharp);
+        ctx.drawImage(tempCanvas, isHorizExp ? 0 : i * segWidth, isHorizExp ? i * segHeight : 0);
     }));
     
-    if (logoModeActive && currentLogos.length > 0) {
+    if (currentLogos.length > 0) {
         for (const lp of currentLogos) {
             if (lp.hidden) continue;
             const lI = new Image(); 
@@ -279,6 +285,7 @@ async function saveSplitToNormalImage() {
         originalName: finalOriginalName,
         exportName: finalExportName,
         splitTargetCount,
+        splitDirection,
         splitSelectedImages: [...splitSelectedImages],
         splitStates: JSON.parse(JSON.stringify(splitStates)),
         splitSelectedImagesData: splitSelectedImages.map(si => ({ previewBlob: si.previewBlob, originalWidth: si.originalWidth, originalHeight: si.originalHeight, originalName: si.originalName, exportName: si.exportName, isSmall: si.isSmall, hasJapanese: si.hasJapanese })),
@@ -305,6 +312,11 @@ async function saveSplitToNormalImage() {
         // 全く新しい分割画像として追加
         processedImages.push(newData);
         currentPreviewIndex = processedImages.length - 1;
+        currentPreviewData = newData;
+        await saveAppState();
+        renderAllThumbs();
+        showToast('分割画像は新規画像として保存しました。');
+        return 'new';
     }
     
     // プレビューの参照も新しいデータに更新する
@@ -312,7 +324,6 @@ async function saveSplitToNormalImage() {
 
     await saveAppState();
     renderAllThumbs();
-    byId('progress').style.display = 'none';
     return true;
 }
 function toggleGrid() {isGridVisible = !isGridVisible;
@@ -928,6 +939,7 @@ setTimeout(() => toast.style.display = 'none', 300);
 }, 3600);
 }
 let isSelectingForSplit = false, splitTargetCount = 0, splitSelectedImages = [], isSplitPreviewActive = false;
+let splitDirection = 'vertical'; // 'vertical' | 'horizontal'
 let splitStates = [], activeSplitIndex = 0, reselectingSplitIndex = -1, splitModePreservedAspect = null, initialSplitState = null;
 let pendingSplitLogos = null;
 let isGridVisible = false;
@@ -985,34 +997,153 @@ for(let i=0; i<count; i++) {defs += `<filter id="splitGamma${i}" color-interpola
 svg.innerHTML = `<defs>${defs}</defs>`;
 }
 async function openSplitDialog() {if (isSelectingForSplit) return;
-if (isSplitPreviewActive && splitTargetCount >= 4) {showToast("最大4分割まで追加可能です");
+if (isSplitPreviewActive && splitTargetCount >= 4 && splitDirection === 'horizontal') {showToast("最大4分割まで追加可能です");
 return;
 }
 const currentCount = isSplitPreviewActive ? splitTargetCount : 1;
-if (currentCount === 3) {startSplitMode(4);
-return;
-}
-const b2 = byId('splitBtn2');
-const b3 = byId('splitBtn3');
-const b4 = byId('splitBtn4');
-if (b2) {b2.disabled = (currentCount >= 2);
-b2.style.opacity = (currentCount >= 2) ? "0.3" : "1";
-b2.style.cursor = (currentCount >= 2) ? "not-allowed" : "pointer";
-}
-if (b3) {b3.disabled = (currentCount >= 3);
-b3.style.opacity = (currentCount >= 3) ? "0.3" : "1";
-b3.style.cursor = (currentCount >= 3) ? "not-allowed" : "pointer";
-}
-if (b4) {b4.disabled = (currentCount >= 4);
-b4.style.opacity = (currentCount >= 4) ? "0.3" : "1";
-b4.style.cursor = (currentCount >= 4) ? "not-allowed" : "pointer";
-}
+// ボタン有効判定:
+// 同方向 → 現在より多い分割数のみ有効
+// 逆方向 → 現在と同じ分割数のみ有効
+// 未分割 → 全て有効
+const vNote = byId('splitVerticalDisabledNote');
+if (vNote) vNote.style.display = 'none';
+[2,3,4].forEach((cnt, i) => {
+  const b = byId(['splitBtn2','splitBtn3','splitBtn4'][i]);
+  if (!b) return;
+  let dis = false;
+  if (isSplitPreviewActive) {
+    if (splitDirection === 'vertical') dis = cnt <= currentCount;       // 同方向: 現在以下は無効
+    else dis = cnt !== currentCount;                                     // 逆方向: 同数のみ有効
+  }
+  b.disabled = dis;
+  b.style.opacity = dis ? "0.3" : "1";
+  b.style.cursor = dis ? "not-allowed" : "pointer";
+});
+[2,3,4].forEach((cnt, i) => {
+  const b = byId(['splitHBtn2','splitHBtn3','splitHBtn4'][i]);
+  if (!b) return;
+  let dis = false;
+  if (isSplitPreviewActive) {
+    if (splitDirection === 'horizontal') dis = cnt <= currentCount;     // 同方向: 現在以下は無効
+    else dis = cnt !== currentCount;                                     // 逆方向: 同数のみ有効
+  }
+  b.disabled = dis;
+  b.style.opacity = dis ? "0.3" : "1";
+  b.style.cursor = dis ? "not-allowed" : "pointer";
+});
 byId('splitDialogModal').style.display = 'flex';
 }
 function closeSplitDialog() { byId('splitDialogModal').style.display = 'none'; }
-function startSplitMode(count) {if (isSplitPreviewActive && count <= splitTargetCount) {showToast(`現在は${splitTargetCount}分割です。それより多い枚数を選択してください。`);
+function startSplitMode(count, direction) {
+const newDir = direction || 'vertical';
+if (isSplitPreviewActive && newDir === splitDirection && count <= splitTargetCount) {showToast(`現在は${splitTargetCount}分割です。それより多い枚数を選択してください。`);
 closeSplitDialog();
 return;
+}
+// 既に分割中で方向が変わる場合（分割数変更も含む）はアニメーション切り替え
+if (isSplitPreviewActive && newDir !== splitDirection) {
+  closeSplitDialog();
+  splitDirection = newDir;
+  // 分割数が増える場合は画像追加選択フローへ
+  if (count > splitTargetCount) {
+    splitTargetCount = count;
+    isSelectingForSplit = true;
+    setupSplitFilters(count);
+    closeImagePreview(true);
+    showSplitMessage();
+    renderAllThumbs();
+    return;
+  }
+  // 分割数が同じまたは減る場合はアニメーション即切り替え
+  if (count < splitTargetCount) {
+    splitSelectedImages = splitSelectedImages.slice(0, count);
+    splitStates = splitStates.slice(0, count);
+    splitTargetCount = count;
+    setupSplitFilters(count);
+  }
+  const container = byId('splitContainer');
+  if (container) {
+    resizeContainerToAspect(currentAspectKey);
+    const toHoriz = splitDirection === 'horizontal';
+    const cw = container.offsetWidth, ch = container.offsetHeight;
+    const n = splitTargetCount;
+
+    // ── モーフアニメーション ──────────────────────────
+    // 既存スロットをアスペクト比を変えながら中央の1枚に集約
+    const oldSlots = Array.from(container.children).filter(el => el.id !== 'overallGridOverlay');
+    oldSlots.forEach((slot, i) => {
+      const fromHoriz = !toHoriz; // 切り替え前の方向
+      // 各スロットの現在位置・サイズ
+      const slotW = fromHoriz ? cw : cw / n;
+      const slotH = fromHoriz ? ch / n : ch;
+      const offsetX = fromHoriz ? 0 : i * slotW;
+      const offsetY = fromHoriz ? i * slotH : 0;
+      // 中央スロットへ向かう移動量
+      const centerX = cw / 2 - slotW / 2 - offsetX;
+      const centerY = ch / 2 - slotH / 2 - offsetY;
+      // 変形後サイズ（縦→横なら幅を縮めて高さを伸ばす、横→縦はその逆）
+      const scaleX = toHoriz ? (ch / cw) * 0.6 : 1;
+      const scaleY = toHoriz ? 1 : (cw / ch) * 0.6;
+      slot.style.transition = 'none';
+      slot.style.transformOrigin = 'center center';
+      slot.style.zIndex = '5';
+      requestAnimationFrame(() => {
+        slot.style.transition = `transform 0.42s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease 0.1s`;
+        slot.style.transform = `translate(${centerX}px,${centerY}px) scaleX(${scaleX}) scaleY(${scaleY})`;
+        slot.style.opacity = '0';
+      });
+    });
+
+    setTimeout(() => {
+      // 新しい方向で再描画
+      splitStates.forEach(st => { if (st) { st.baseScale = 0; st.scale = 1; st.dx = 0; st.dy = 0; } });
+      renderSplitContainer();
+
+      // 新スロットを中央の塊から各位置へ伸展
+      const newSlots = Array.from(container.children).filter(el => el.id !== 'overallGridOverlay');
+      newSlots.forEach((slot, i) => {
+        const slotW = toHoriz ? cw : cw / n;
+        const slotH = toHoriz ? ch / n : ch;
+        const offsetX = toHoriz ? 0 : i * slotW;
+        const offsetY = toHoriz ? i * slotH : 0;
+        const centerX = cw / 2 - slotW / 2 - offsetX;
+        const centerY = ch / 2 - slotH / 2 - offsetY;
+        // 逆方向のスケールから開始
+        const scaleX = toHoriz ? (ch / cw) * 0.6 : 1;
+        const scaleY = toHoriz ? 1 : (cw / ch) * 0.6;
+        const delay = i * 40;
+        slot.style.transition = 'none';
+        slot.style.transformOrigin = 'center center';
+        slot.style.transform = `translate(${centerX}px,${centerY}px) scaleX(${scaleX}) scaleY(${scaleY})`;
+        slot.style.opacity = '0';
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          slot.style.transition = `transform 0.48s cubic-bezier(0.34,1.3,0.64,1) ${delay}ms, opacity 0.28s ease ${delay}ms`;
+          slot.style.transform = 'translate(0,0) scaleX(1) scaleY(1)';
+          slot.style.opacity = '1';
+        }));
+      });
+
+      setTimeout(async () => {
+        Array.from(container.children).filter(el => el.id !== 'overallGridOverlay').forEach(slot => {
+          slot.style.transition = '';
+          slot.style.transform = '';
+          slot.style.opacity = '';
+          slot.style.transformOrigin = '';
+          slot.style.zIndex = '';
+        });
+        if (currentPreviewData && currentPreviewData.isSplitData) {
+          currentPreviewData.splitDirection = splitDirection;
+          currentPreviewData.splitStates = JSON.parse(JSON.stringify(splitStates));
+          currentPreviewData._viewCw = targetCw;
+          currentPreviewData._viewCh = targetCh;
+          await updateSplitThumbnail();
+          renderAllThumbs();
+        }
+        markUnsaved();
+      }, 550);
+    }, 400);
+  }
+  return;
 }
 if (isSplitPreviewActive) {backupSplitState = {images: [...splitSelectedImages],states: JSON.parse(JSON.stringify(splitStates)),count: splitTargetCount,wasUnsaved: hasUnsavedChanges
 };
@@ -1020,6 +1151,7 @@ if (isSplitPreviewActive) {backupSplitState = {images: [...splitSelectedImages],
 };
 }
 forceClearUnsaved();
+splitDirection = newDir;
 splitModePreservedAspect = currentAspectKey;
 closeSplitDialog();
 if (isSplitPreviewActive) {splitTargetCount = count;
@@ -1033,7 +1165,11 @@ initialSplitState = { sat, bri, sharp, rot, absoluteScale: 1, cxRatio: 0.5, cyRa
 }
 isSelectingForSplit = true;
 setupSplitFilters(count);
+// ロゴを退避してから closeImagePreview（closeImagePreview内でリセットされるため）
+const _savedLogos = currentLogos.length > 0 ? JSON.parse(JSON.stringify(currentLogos)) : null;
+const _savedLogoCw = targetCw;
 closeImagePreview(true);
+if (_savedLogos) { window._pendingSplitLogos = { logos: _savedLogos, cw: _savedLogoCw }; }
 showSplitMessage();
 renderAllThumbs();
 }
@@ -1093,8 +1229,7 @@ hideSplitMessage();
 renderAllThumbs();
 showSplitPreview();
 }
-function initSplitStates() {const newStates = splitSelectedImages.map((data, index) => {if (splitStates && splitStates[index]) {return splitStates[index];
-}
+function initSplitStates() {const newStates = splitSelectedImages.map((data, index) => {
 if (index === 0 && initialSplitState) {return { scale: 1, baseScale: 0, dx: 0, dy: 0, sat: initialSplitState.sat, bri: initialSplitState.bri, sharp: initialSplitState.sharp, rot: initialSplitState.rot || 0 };
 }
 return { scale: 1, baseScale: 0, dx: 0, dy: 0, sat: 100, bri: 100, sharp: 0, rot: 0 };
@@ -1104,17 +1239,55 @@ activeSplitIndex = 0;
 initialSplitState = null;
 }
 function clampSplitPos(x, y, scale, index) {const st = splitStates[index], data = splitSelectedImages[index]; if (!data) return { nx: x, ny: y };
-const slotW = targetCw / splitTargetCount, slotH = targetCh, finalScale = st.baseScale * scale, imgW = data.originalWidth * finalScale, imgH = data.originalHeight * finalScale;
+const isHoriz = splitDirection === 'horizontal';
+const slotW = isHoriz ? targetCw : targetCw / splitTargetCount;
+const slotH = isHoriz ? targetCh / splitTargetCount : targetCh;
+const finalScale = st.baseScale * scale, imgW = data.originalWidth * finalScale, imgH = data.originalHeight * finalScale;
 const nx = Math.min(0, Math.max(x, slotW - imgW)), ny = Math.min(0, Math.max(y, slotH - imgH));
 return { nx, ny };
 }
 function centerSplitImage(i) {const data = splitSelectedImages[i], st = splitStates[i]; if (!data || !st) return;
-const slotW = targetCw / splitTargetCount, slotH = targetCh;
+const isHoriz = splitDirection === 'horizontal';
+const slotW = isHoriz ? targetCw : targetCw / splitTargetCount;
+const slotH = isHoriz ? targetCh / splitTargetCount : targetCh;
 st.scale = 1; st.baseScale = Math.max(slotW / data.originalWidth, slotH / data.originalHeight);
 st.dx = (slotW - data.originalWidth * st.baseScale) / 2; st.dy = (slotH - data.originalHeight * st.baseScale) / 2;
 updateSplitSlotDOM(i);
 }
 function centerAllSplitImages() { splitSelectedImages.forEach((_, i) => centerSplitImage(i)); updateSlidersToSplitState(); }
+async function updateSplitThumbnail() {
+  if (!currentPreviewData || !currentPreviewData.isSplitData) return;
+  const isHoriz = splitDirection === 'horizontal';
+  const tw = 300, th = Math.round(tw * targetCh / (targetCw || tw));
+  const canvas = document.createElement('canvas'); canvas.width = tw; canvas.height = th;
+  const ctx = canvas.getContext('2d');
+  const segW = isHoriz ? tw : tw / splitTargetCount;
+  const segH = isHoriz ? th / splitTargetCount : th;
+  const ratio = tw / (targetCw || tw);
+  for (let i = 0; i < splitSelectedImages.length; i++) {
+    const imgData = splitSelectedImages[i], st = splitStates[i]; if (!imgData || !st) continue;
+    const img = new Image(); img.src = imgData.blobUrl;
+    await new Promise(r => { img.onload = r; if (img.complete && img.naturalWidth) r(); });
+    // baseScale が未計算なら自前でスロットにフィットするよう計算
+    let baseScale = st.baseScale;
+    if (!baseScale) baseScale = Math.max(segW / imgData.originalWidth, segH / imgData.originalHeight) / ratio;
+    const fs = baseScale * (st.scale || 1);
+    const iw = imgData.originalWidth * fs * ratio;
+    const ih = imgData.originalHeight * fs * ratio;
+    // baseScale 未計算なら中央配置で計算
+    const dx = st.baseScale ? st.dx * ratio : (segW - iw) / 2;
+    const dy = st.baseScale ? st.dy * ratio : (segH - ih) / 2;
+    const tc = document.createElement('canvas'); tc.width = segW; tc.height = segH;
+    const tctx = tc.getContext('2d'); tctx.fillStyle = '#fff'; tctx.fillRect(0, 0, segW, segH);
+    tctx.drawImage(img, dx, dy, iw, ih);
+    ctx.drawImage(tc, isHoriz ? 0 : i * segW, isHoriz ? i * segH : 0);
+  }
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.8));
+  if (!blob) return;
+  if (currentPreviewData.thumbUrl) URL.revokeObjectURL(currentPreviewData.thumbUrl);
+  currentPreviewData.thumbUrl = URL.createObjectURL(blob);
+  currentPreviewData.thumbBlob = blob;
+}
 function showSplitPreview(isNewSplit = true) {isPreviewLoading = true;
 isSplitPreviewActive = true;
 currentAspectKey = splitModePreservedAspect || 'free';
@@ -1127,8 +1300,25 @@ byId('previewImg0').style.display = 'none'; byId('previewImg1').style.display = 
 updateAspectBarVisibility(currentAspectKey);
 imagePreviewModal.style.display = 'flex'; void imagePreviewModal.offsetWidth; imagePreviewModal.style.opacity = '1';
 resizeContainerToAspect(currentAspectKey);
+if (isNewSplit) { splitStates.forEach(st => { if (st) { st.baseScale = 0; st.scale = 1; st.dx = 0; st.dy = 0; } }); }
 byId('previewMetaName').innerHTML = `分割モード (${splitTargetCount}分割)`; byId('previewMetaInfo').innerHTML = 'クリックで選択 / ドラッグで移動 / 拡大縮小・色調整';
-renderSplitContainer(); updateSlidersToSplitState();
+renderSplitContainer();
+if (isNewSplit) {
+    // onLoadFn が非同期で centerSplitImage を呼ぶが、念のため遅延後に全スロット再センタリング
+    setTimeout(() => { centerAllSplitImages(); }, 80);
+} else { updateSlidersToSplitState(); }
+// 退避したロゴがあれば復元
+if (window._pendingSplitLogos) {
+  const { logos, cw } = window._pendingSplitLogos;
+  window._pendingSplitLogos = null;
+  currentLogos = JSON.parse(JSON.stringify(logos));
+  if (cw && targetCw && cw !== targetCw) { const r = targetCw / cw; currentLogos.forEach(l => { l.x *= r; l.y *= r; }); }
+  activeLogoId = null;
+  showLogoLayer();
+  if (!logoModeActive) { logoModeActive = true; requestAnimationFrame(() => byId('logoToolbarArea').classList.add('logo-panel-open')); const lb = byId('logoToggleBtn'); if (lb) lb.classList.add('active'); }
+  if (typeof clampAllLogos === 'function') clampAllLogos();
+  else applyLogoStyles();
+}
 setTimeout(() => {isPreviewLoading = false;
 updateSavedState();
 if (isNewSplit) {hasUnsavedChanges = true;
@@ -1139,7 +1329,9 @@ btn.disabled = false;
 }, 150);
 }
 function recalcSplitBaseScales() {if (!isSplitPreviewActive) return;
-const slotW = targetCw / splitTargetCount, slotH = targetCh;
+const isHoriz = splitDirection === 'horizontal';
+const slotW = isHoriz ? targetCw : targetCw / splitTargetCount;
+const slotH = isHoriz ? targetCh / splitTargetCount : targetCh;
 splitSelectedImages.forEach((data, i) => {if (data && splitStates[i]) {if (!splitStates[i].baseScale) {centerSplitImage(i);
 } else {splitStates[i].baseScale = Math.max(slotW / data.originalWidth, slotH / data.originalHeight);
 const c = clampSplitPos(splitStates[i].dx, splitStates[i].dy, splitStates[i].scale, i);
@@ -1179,78 +1371,193 @@ function removeSplitImage(index) {
     markUnsaved();
 }
 function renderSplitContainer() {
-    const container = byId('splitContainer'); container.style.display = 'flex'; container.innerHTML = '';
-    const tArea = byId('splitToolbarArea'); tArea.style.display = 'flex'; tArea.innerHTML = '';
+    const container = byId('splitContainer');
+    const isHoriz = splitDirection === 'horizontal';
+    container.style.display = 'flex';
+    container.style.flexDirection = isHoriz ? 'column' : 'row';
+    container.style.transition = 'flex-direction 0s';
+    container.innerHTML = '';
+    const tArea = byId('splitToolbarArea');
+    tArea.style.display = 'flex';
+    tArea.style.flexDirection = isHoriz ? 'column' : 'row';
+    tArea.innerHTML = '';
+    tArea.style.display = 'none';
     splitSelectedImages.forEach((data, index) => {
         const state = splitStates[index];
-        const tSlot = document.createElement('div'); tSlot.style.flex = '1 1 0'; tSlot.style.minWidth = '0'; tSlot.style.display = 'flex'; tSlot.style.justifyContent = 'space-between'; tSlot.style.alignItems = 'center'; tSlot.style.padding = '0 6px 6px 6px'; tSlot.style.boxSizing = 'border-box';
-        const leftControls = document.createElement('div');
-        leftControls.style.display = 'flex'; leftControls.style.gap = '8px'; leftControls.style.alignItems = 'center';
-        
-        // ▼ 削除ボタンの生成 ▼
-        const deleteBtn = document.createElement('div'); 
-        deleteBtn.className = 'split-toolbar-btn'; 
-        deleteBtn.innerHTML = '<div class="custom-tooltip">画像を削除</div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'; 
-        deleteBtn.style.background = 'rgba(0,0,0,0.65)'; 
-        deleteBtn.style.borderRadius = '50%'; 
-        deleteBtn.style.width = '20px'; 
-        deleteBtn.style.height = '20px'; 
-        deleteBtn.style.display = 'flex'; 
-        deleteBtn.style.alignItems = 'center'; 
-        deleteBtn.style.justifyContent = 'center'; 
-        deleteBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'; 
-        
-        // 2分割の場合は無効化、3分割以上の場合は有効化
+
+        // スロット本体
+        const slot = document.createElement('div');
+        slot.style.flex = '1 1 0'; slot.style.minWidth = '0'; slot.style.height = '100%';
+        slot.style.position = 'relative'; slot.style.overflow = 'hidden'; slot.style.boxSizing = 'border-box';
+        if (index === activeSplitIndex) { slot.style.outline = '3px solid var(--accent)'; slot.style.outlineOffset = '-3px'; slot.style.zIndex = '2'; } else { slot.style.outline = 'none'; slot.style.zIndex = '1'; }
+
+        // 画像
+        const img = document.createElement('img'); img.id = `split-img-${index}`;
+        img.style.position = 'absolute'; img.style.transformOrigin = '50% 50%';
+        const onLoadFn = () => {
+            img.onload = null;
+            if (!state.baseScale) centerSplitImage(index);
+            else updateSplitSlotDOM(index);
+        };
+        img.onload = onLoadFn;
+
+        // ── 右上オーバーレイボタン群 ──
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:absolute;top:6px;right:6px;z-index:10;display:flex;gap:5px;align-items:center;pointer-events:auto;';
+
+        // 削除ボタン
+        const deleteBtn = document.createElement('div');
+        deleteBtn.title = splitTargetCount <= 2 ? '最低2枚必要です' : '画像を削除';
+        deleteBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+        deleteBtn.style.cssText = `width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,0.35);transition:opacity 0.15s,transform 0.1s;flex-shrink:0;`;
         if (splitTargetCount <= 2) {
-            deleteBtn.style.opacity = '0.3';
+            deleteBtn.style.background = 'rgba(60,60,60,0.55)';
+            deleteBtn.style.color = 'rgba(255,255,255,0.3)';
             deleteBtn.style.cursor = 'not-allowed';
-            deleteBtn.querySelector('.custom-tooltip').textContent = '最低2枚必要です';
         } else {
+            deleteBtn.style.background = 'rgba(239,68,68,0.85)';
+            deleteBtn.style.color = '#fff';
             deleteBtn.style.cursor = 'pointer';
+            deleteBtn.onmouseenter = () => { deleteBtn.style.transform = 'scale(1.12)'; deleteBtn.style.background = 'rgba(220,38,38,0.95)'; };
+            deleteBtn.onmouseleave = () => { deleteBtn.style.transform = 'scale(1)'; deleteBtn.style.background = 'rgba(239,68,68,0.85)'; };
             deleteBtn.onclick = (e) => { e.stopPropagation(); removeSplitImage(index); };
         }
-        
-        leftControls.appendChild(deleteBtn);
-        // ▲ 削除ボタンの生成 終わり ▲
-        
-        const rightControls = document.createElement('div');
-        rightControls.style.display = 'flex'; rightControls.style.gap = '8px'; rightControls.style.alignItems = 'center';
-        const closeBtn = document.createElement('div'); closeBtn.className = 'split-toolbar-btn'; closeBtn.innerHTML = '<div class="custom-tooltip">画像を差し替え</div><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>'; closeBtn.style.background = 'rgba(0,0,0,0.65)'; closeBtn.style.color = '#fff'; closeBtn.style.borderRadius = '50%'; closeBtn.style.width = '20px'; closeBtn.style.height = '20px'; closeBtn.style.fontSize = '12px'; closeBtn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'; closeBtn.style.display = 'flex'; closeBtn.style.alignItems = 'center'; closeBtn.style.justifyContent = 'center'; closeBtn.style.cursor = 'pointer';
-        closeBtn.onclick = async (e) => {
+
+        // 差し替えボタン
+        const replaceBtn = document.createElement('div');
+        replaceBtn.title = '画像を差し替え';
+        replaceBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>';
+        replaceBtn.style.cssText = 'width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.35);transition:opacity 0.15s,transform 0.1s;flex-shrink:0;';
+        replaceBtn.onmouseenter = () => { replaceBtn.style.transform = 'scale(1.12)'; replaceBtn.style.background = 'rgba(0,0,0,0.8)'; };
+        replaceBtn.onmouseleave = () => { replaceBtn.style.transform = 'scale(1)'; replaceBtn.style.background = 'rgba(0,0,0,0.6)'; };
+        replaceBtn.onclick = async (e) => {
             e.stopPropagation();
             const confirm = await showCustomDialog({ title: '画像の差し替え', message: 'この画像を差し替えますか？', okText: 'はい', cancelText: 'いいえ', type: 'confirm' });
             if (!confirm) return;
-            backupSplitState = {images: [...splitSelectedImages],states: JSON.parse(JSON.stringify(splitStates)),count: splitTargetCount};
+            backupSplitState = { images: [...splitSelectedImages], states: JSON.parse(JSON.stringify(splitStates)), count: splitTargetCount };
             reselectingSplitIndex = index;
             closeImagePreview(true);
             isSelectingForSplit = true;
             showSplitMessage();
             renderAllThumbs();
         };
-        const handle = document.createElement('div'); handle.className = 'split-toolbar-btn'; handle.innerHTML = '<div class="custom-tooltip">ドラッグで入れ替え</div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>'; handle.style.background = 'var(--bg)'; handle.style.color = 'var(--text)'; handle.style.border = '1px solid var(--border)'; handle.style.borderRadius = '4px'; handle.style.padding = '4px'; handle.draggable = true;
-        rightControls.appendChild(closeBtn);
-        rightControls.appendChild(handle);
-        tSlot.appendChild(leftControls);
-        tSlot.appendChild(rightControls);
-        tArea.appendChild(tSlot);
-        const slot = document.createElement('div'); slot.style.flex = '1 1 0'; slot.style.minWidth = '0'; slot.style.height = '100%'; slot.style.position = 'relative'; slot.style.overflow = 'hidden'; slot.style.boxSizing = 'border-box';
-        if (index === activeSplitIndex) { slot.style.outline = '3px solid var(--accent)'; slot.style.outlineOffset = '-3px'; slot.style.zIndex = '2'; } else { slot.style.outline = 'none'; slot.style.zIndex = '1'; }
-        const img = document.createElement('img'); img.id = `split-img-${index}`;
-        img.style.position = 'absolute'; img.style.transformOrigin = '50% 50%';
-        const onLoadFn = () => {img.onload = null; if (!state.baseScale) centerSplitImage(index); else updateSplitSlotDOM(index); };
-        img.onload = onLoadFn;
-        handle.ondragstart = (e) => { e.dataTransfer.setData('text/plain', index); slot.style.opacity = '0.5'; tSlot.style.opacity = '0.5'; };
-        handle.ondragend = () => { slot.style.opacity = '1'; tSlot.style.opacity = '1'; };
-        slot.ondragover = (e) => e.preventDefault(); slot.ondragenter = (e) => { e.preventDefault(); slot.style.filter = 'brightness(0.8)'; }; slot.ondragleave = () => { slot.style.filter = 'none'; };
-        slot.ondrop = (e) => { e.preventDefault(); slot.style.filter = 'none'; const fromIdx = parseInt(e.dataTransfer.getData('text/plain')); if (!isNaN(fromIdx) && fromIdx !== index) { [splitSelectedImages[fromIdx], splitSelectedImages[index]] = [splitSelectedImages[index], splitSelectedImages[fromIdx]]; [splitStates[fromIdx], splitStates[index]] = [splitStates[index], splitStates[fromIdx]]; activeSplitIndex = index; renderSplitContainer(); updateSlidersToSplitState(); } };
-        tSlot.ondragover = (e) => e.preventDefault(); tSlot.ondrop = slot.ondrop;
+
+        // 入れ替えハンドル
+        const handle = document.createElement('div');
+        handle.title = 'ドラッグで入れ替え';
+        handle.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>';
+        handle.style.cssText = 'width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;display:flex;align-items:center;justify-content:center;cursor:grab;box-shadow:0 1px 4px rgba(0,0,0,0.35);transition:opacity 0.15s,transform 0.1s;flex-shrink:0;';
+        handle.draggable = true;
+        handle.onmouseenter = () => { handle.style.transform = 'scale(1.12)'; handle.style.background = 'rgba(0,0,0,0.8)'; };
+        handle.onmouseleave = () => { handle.style.transform = 'scale(1)'; handle.style.background = 'rgba(0,0,0,0.6)'; };
+
+        overlay.appendChild(handle);
+        overlay.appendChild(replaceBtn);
+        overlay.appendChild(deleteBtn);
+
+        // ドラッグ＆ドロップ
+        handle.ondragstart = (e) => {
+            e.dataTransfer.setData('text/plain', index);
+            window._splitSlotDragging = true;
+            slot.style.transition = 'opacity 0.15s, transform 0.15s';
+            slot.style.opacity = '0.45';
+            slot.style.transform = 'scale(0.95)';
+        };
+        handle.ondragend = () => {
+            window._splitSlotDragging = false;
+            // 全スロットのtransform/opacityを確実にリセット
+            const _cont = byId('splitContainer');
+            if (_cont) Array.from(_cont.children).filter(el => el.id !== 'overallGridOverlay').forEach(s => {
+                s.style.transition = 'opacity 0.2s, transform 0.2s';
+                s.style.opacity = '1';
+                s.style.transform = '';
+            });
+        };
+        slot.ondragover = (e) => { if (window._splitSlotDragging) e.preventDefault(); };
+        slot.ondragenter = (e) => {
+            if (!window._splitSlotDragging) return;
+            e.preventDefault();
+            slot.style.outline = '3px solid var(--accent)';
+            slot.style.outlineOffset = '-3px';
+        };
+        slot.ondragleave = () => {
+            if (!window._splitSlotDragging) return;
+            if (index !== activeSplitIndex) slot.style.outline = 'none';
+        };
+        slot.ondrop = (e) => {
+            if (!window._splitSlotDragging) return;
+            e.preventDefault();
+            slot.style.transform = 'scale(1)';
+            if (index !== activeSplitIndex) slot.style.outline = 'none';
+            const raw = e.dataTransfer.getData('text/plain');
+            const fromIdx = parseInt(raw);
+            if (isNaN(fromIdx) || fromIdx === index) return;
+
+            const container = byId('splitContainer');
+            const slots = Array.from(container.children).filter(el => el.id !== 'overallGridOverlay');
+            const fromSlot = slots[fromIdx];
+            const toSlot   = slots[index];
+            if (!fromSlot || !toSlot) return;
+
+            // フェーズ1: 両スロットを縮小して消す
+            [fromSlot, toSlot].forEach(s => {
+                s.style.transition = 'transform 0.18s cubic-bezier(0.4,0,1,1), opacity 0.18s ease';
+                s.style.transform = 'scale(0)';
+                s.style.opacity = '0';
+            });
+
+            setTimeout(() => {
+                // データ入れ替え
+                [splitSelectedImages[fromIdx], splitSelectedImages[index]] = [splitSelectedImages[index], splitSelectedImages[fromIdx]];
+                [splitStates[fromIdx], splitStates[index]] = [splitStates[index], splitStates[fromIdx]];
+                activeSplitIndex = index;
+                renderSplitContainer();
+
+                // フェーズ2: 新しいスロットをスケール0から拡大して登場（少しずらして）
+                const newSlots = Array.from(container.children).filter(el => el.id !== 'overallGridOverlay');
+                [newSlots[fromIdx], newSlots[index]].forEach((s, i) => {
+                    if (!s) return;
+                    const delay = i * 60;
+                    s.style.transition = 'none';
+                    s.style.transform = 'scale(0)';
+                    s.style.opacity = '0';
+                    requestAnimationFrame(() => requestAnimationFrame(() => {
+                        s.style.transition = `transform 0.32s cubic-bezier(0.34,1.4,0.64,1) ${delay}ms, opacity 0.22s ease ${delay}ms`;
+                        s.style.transform = 'scale(1)';
+                        s.style.opacity = '1';
+                    }));
+                });
+
+                setTimeout(() => {
+                    Array.from(container.children).filter(el => el.id !== 'overallGridOverlay').forEach(s => {
+                        s.style.transition = '';
+                        s.style.transform = '';
+                        s.style.opacity = '';
+                    });
+                    updateSlidersToSplitState();
+                    // 保存ボタンを直接有効化
+                    hasUnsavedChanges = true;
+                    document.querySelectorAll('.btn-manual-save').forEach(btn => {
+                        btn.classList.add('unsaved');
+                        btn.disabled = false;
+                        btn.removeAttribute('disabled');
+                        btn.style.opacity = '1';
+                        btn.style.pointerEvents = 'auto';
+                    });
+                }, 450);
+            }, 200);
+        };
+
+        // スロットクリックで選択
         const activateSlot = () => { if (activeSplitIndex !== index) { activeSplitIndex = index; updateActiveSplitSlotDOM(); updateSlidersToSplitState(); } };
-        slot.onmousedown = (e) => { if (!e.target.closest('div[draggable="true"]')) activateSlot(); };
-        tSlot.onmousedown = (e) => { if (e.target !== closeBtn && e.target !== deleteBtn && !e.target.closest('div[draggable="true"]')) activateSlot(); };
+        slot.onmousedown = (e) => { if (!e.target.closest('[draggable="true"]') && e.target !== deleteBtn && e.target !== replaceBtn && !deleteBtn.contains(e.target) && !replaceBtn.contains(e.target)) activateSlot(); };
+
         slot.appendChild(img);
+        slot.appendChild(overlay);
         container.appendChild(slot);
         img.src = data.blobUrl;
-        if (img.complete) onLoadFn();
+        if (img.complete && img.naturalWidth) { onLoadFn(); }
+        else if (img.complete) { img.decode ? img.decode().then(onLoadFn).catch(onLoadFn) : onLoadFn(); }
     });
 }
 function updateActiveSplitSlotDOM() {const container = byId('splitContainer'); if (!container) return;
@@ -1282,7 +1589,7 @@ byId('satLabel').textContent = st.sat + '%'; byId('conLabel').textContent = st.b
 if(byId('rotLabel')) byId('rotLabel').textContent = (st.rot || 0) + '°';
 byId('zoomLabel').textContent = Math.round(st.scale * 100) + '%'; updateFilterToggleBtns();
 }
-function disableSplitPreview() {isSplitPreviewActive = false;
+function disableSplitPreview() {isSplitPreviewActive = false; splitDirection = 'vertical'; splitStates = []; splitSelectedImages = [];
 const container = byId('splitContainer'); if (container) { container.style.display = 'none'; container.innerHTML = ''; }
 const tArea = byId('splitToolbarArea'); if (tArea) { tArea.style.display = 'none'; tArea.innerHTML = ''; }
 const btn = byId('splitModeBtn'); if (btn) btn.classList.remove('active');
@@ -1299,6 +1606,7 @@ if (currentAspectKey === 'free') currentAspectKey = '3:2';
 splitModePreservedAspect = currentAspectKey;
 }
 splitTargetCount = data.splitTargetCount;
+splitDirection = data.splitDirection || 'vertical';
 splitSelectedImages = [...data.splitSelectedImages];
 splitStates = JSON.parse(JSON.stringify(data.splitStates));
 currentPreviewData = data;
@@ -1331,6 +1639,7 @@ requestAnimationFrame(() => byId('logoToolbarArea').classList.add('logo-panel-op
 const lb = byId('logoToggleBtn'); if (lb) lb.classList.add('active');
 }
 clampAllLogos();
+applyLogoStyles();
 } else {if (logoModeActive) {logoModeActive = false;
 byId('logoToolbarArea').classList.remove('logo-panel-open');
 const lb = byId('logoToggleBtn'); if (lb) lb.classList.remove('active');
@@ -1412,7 +1721,7 @@ bar.style.flexWrap     = savedWrap;
 return minW + 20;
 }
 function resizeContainerToAspect(aspectKey) {let extraH = 190;
-if (isSplitPreviewActive) extraH += 40;
+// splitToolbarArea は非表示のため高さ加算不要
 if (logoModeActive) extraH += 90;
 const maxW = window.innerWidth - 160, maxH = window.innerHeight * 0.95 - extraH;
 let w, h;
@@ -1765,9 +2074,8 @@ function updateAspectBarVisibility(aspKey) {
   document.querySelectorAll("#aspectBar .asp-btn").forEach(btn => {
     if (btn.id === "splitModeBtn") {
       btn.style.display = "inline-block";
-      const canAddMore = !inSplit || splitTargetCount < 4;
-      btn.style.pointerEvents = canAddMore ? "auto" : "none";
-      btn.style.opacity = canAddMore ? "1" : "0.4";
+      btn.style.pointerEvents = "auto";
+      btn.style.opacity = "1";
     }
     else if (btn.id === "logoToggleBtn" || btn.id === "gridToggleBtn" || btn.id === "guideToggleBtn") {
       btn.style.display = "inline-block";
@@ -1777,7 +2085,7 @@ function updateAspectBarVisibility(aspKey) {
       btn.style.display = "inline-block";
     }
     else if (btn.classList.contains("slot-assign-btn")) {
-      btn.style.display = (!isPreset && !inSplit) ? "inline-block" : "none";
+      btn.style.display = "none";
     }
     else if (btn.classList.contains("preset-nav-btn")) {
       const showPresetNav = isPreset || (inSplit && ["thumb", "og", "special"].includes(splitModePreservedAspect));
@@ -2015,9 +2323,11 @@ async function assignCurrentToSlot(preset) {
   }
 }
 async function exportCroppedView(e) {document.activeElement.blur();
+if (isSplitPreviewActive) ensureSplitBaseScales();
 let hasBg = false;
 if (isSplitPreviewActive) {for(let i=0; i<splitTargetCount; i++) {const st = splitStates[i], d = splitSelectedImages[i];
-const cw = targetCw / splitTargetCount, ch = targetCh;
+const _isHoriz = splitDirection === 'horizontal';
+const cw = _isHoriz ? targetCw : targetCw / splitTargetCount, ch = _isHoriz ? targetCh / splitTargetCount : targetCh;
 const iw = d.originalWidth * st.baseScale * st.scale, ih = d.originalHeight * st.baseScale * st.scale;
 if(isBgVisible(st.dx, st.dy, iw, ih, st.rot||0, cw, ch)) { hasBg = true; break; }
 }
@@ -2032,17 +2342,21 @@ if (!confirm) return;
 if (isSplitPreviewActive && splitSelectedImages.length === splitTargetCount) {const useFolder = e && e.shiftKey && window.showDirectoryPicker; let dirHandle = null;
 if (useFolder) { try { dirHandle = await window.showDirectoryPicker({ startIn: 'desktop' }); } catch(err) { return; } }
 const expSize = EXPORT_SIZE[currentAspectKey] || { w: 1200, h: 800 }; let outW = expSize.w || 1200; let outH = expSize.h || Math.round(outW * (targetCh / targetCw));
-const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d'); const segWidth = outW / splitTargetCount; const exportRatio = outW / targetCw;
+const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d');
+const _isHE = splitDirection === 'horizontal';
+const segWidth = _isHE ? outW : outW / splitTargetCount;
+const segHeight = _isHE ? outH / splitTargetCount : outH;
+const exportRatio = outW / targetCw;
 await Promise.all(splitSelectedImages.map(async (imgData, i) => {const img = byId(`split-img-${i}`); if (!img) return; const st = splitStates[i], finalScale = st.baseScale * st.scale;
-const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = outH; const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0,0,segWidth,outH);
+const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = segHeight; const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0,0,segWidth,segHeight);
 const drawW = imgData.originalWidth * finalScale * exportRatio, drawH = imgData.originalHeight * finalScale * exportRatio, drawX = st.dx * exportRatio, drawY = st.dy * exportRatio;
 tCtx.filter = st.sat !== 100 ? `saturate(${st.sat}%)` : 'none';
 tCtx.save(); tCtx.translate(drawX + drawW/2, drawY + drawH/2); if(st.rot) tCtx.rotate(st.rot * Math.PI/180);
 tCtx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH); tCtx.restore(); tCtx.filter = 'none';
-applyImageAdjustments(tCtx, segWidth, outH, st.bri, st.sharp); ctx.drawImage(tempCanvas, i * segWidth, 0);
+applyImageAdjustments(tCtx, segWidth, segHeight, st.bri, st.sharp); ctx.drawImage(tempCanvas, _isHE ? 0 : i * segWidth, _isHE ? i * segHeight : 0);
 }));
 let exportLogos = null;
-if (imagePreviewModal.style.display === 'flex' && isInLogoMode() && currentLogos.length > 0) {exportLogos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: currentLogos };
+if (imagePreviewModal.style.display === 'flex' && currentLogos.length > 0) {exportLogos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: currentLogos };
 } else if (currentPreviewData._logos) {exportLogos = currentPreviewData._logos;
 }
 if (exportLogos && exportLogos.items && exportLogos.items.length > 0) {for (const lp of exportLogos.items) { if (lp.hidden) continue; const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete && lI.naturalWidth) r(); }); if (!lI.naturalWidth) continue; const eR = outW / targetCw, dw = lp.baseW * lp.scale * eR, dh = lp.baseH * lp.scale * eR; ctx.save(); ctx.translate(lp.x * eR, lp.y * eR); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore(); }
@@ -2066,21 +2380,39 @@ let renameToSafe = false;
 if (data.hasJapanese) { const jpChoice = await showCustomDialog({ title: '日本語ファイル名の確認', message: 'ファイル名に日本語が含まれています。\nWeb環境での不具合を防ぐため、数字に置き換えてもよろしいですか？\n\n現在のファイル名：' + data.originalName, okText: '置き換える', cancelText: 'そのまま保存', type: 'confirm' }); if (jpChoice === null) return; renameToSafe = !!jpChoice; }
 let targetUpscaleWidth = null;
 if (data.isSmall) {
-    const options = [{ label: 'オリジナルサイズのまま', value: 'original' }];
-    if (data.originalWidth < 400) options.push({ label: '幅400pxに拡大して書き出す', value: '400' });
-    if (data.originalWidth < 800) options.push({ label: '幅800pxに拡大して書き出す', value: '800' });
-    options.push({ label: '幅1200pxに拡大して書き出す', value: '1200' });
-
-    const sizeChoice = await showCustomDialog({
-        title: '幅1200px未満の画像です',
-        message: '書き出しサイズを選択してください。\n（拡大すると画質が粗くなる場合があります）',
-        okText: '決定',
-        cancelText: 'キャンセル',
-        type: 'select',
-        selectOptions: options
-    });
-    if (sizeChoice === null) return;
-    if (sizeChoice !== 'original') targetUpscaleWidth = parseInt(sizeChoice);
+    // 余白がない状態（画像がキャンバスをカバーしている）かチェック
+    const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
+    const _cw = targetCw || zoomContainer.clientWidth, _ch = targetCh || zoomContainer.clientHeight;
+    const noBg = !isBgVisible(imgX, imgY, imgW, imgH, rot, _cw, _ch);
+    if (noBg) {
+        // 余白なし＝拡大済み → 画質確認のみ
+        const ok = await showCustomDialog({
+            title: '画質の確認',
+            message: '幅1200px未満の画像を拡大しています。\n拡大すると画質が粗くなりますが、よろしいですか？',
+            okText: '書き出す',
+            cancelText: 'キャンセル',
+            type: 'confirm'
+        });
+        if (!ok) return;
+        // 現在のキャンバス構図を幅1200pxで書き出す
+        targetUpscaleWidth = 1200;
+    } else {
+        // 余白あり → 従来のサイズ選択ダイアログ
+        const options = [{ label: 'オリジナルサイズのまま', value: 'original' }];
+        if (data.originalWidth < 400) options.push({ label: '幅400pxに拡大して書き出す', value: '400' });
+        if (data.originalWidth < 800) options.push({ label: '幅800pxに拡大して書き出す', value: '800' });
+        options.push({ label: '幅1200pxに拡大して書き出す', value: '1200' });
+        const sizeChoice = await showCustomDialog({
+            title: '幅1200px未満の画像です',
+            message: '書き出しサイズを選択してください。\n（拡大すると画質が粗くなる場合があります）',
+            okText: '決定',
+            cancelText: 'キャンセル',
+            type: 'select',
+            selectOptions: options
+        });
+        if (sizeChoice === null) return;
+        if (sizeChoice !== 'original') targetUpscaleWidth = parseInt(sizeChoice);
+    }
 }
 let dirHandle = null; if (useFolder) { try { dirHandle = await window.showDirectoryPicker({ startIn: 'desktop' }); } catch(e) { return; } }
 const cw = targetCw || zoomContainer.clientWidth, ch = targetCh || zoomContainer.clientHeight;
@@ -2314,7 +2646,8 @@ function renderAllThumbs() {
         box.className = 'thumb-box';
         
         box.onclick = async () => {
-            // 分割モード（新規選択 or 差し替え）の場合
+            // D&D後のクリックイベントは無視
+            if (isInternalDragging) { isInternalDragging = false; return; }
             if (isSelectingForSplit) {
                 if (data.isSplitData) {
                     await showCustomDialog({ title: '選択できません', message: 'すでに分割されている画像は使用できません。', okText: '確認', type: 'alert' });
@@ -2375,6 +2708,7 @@ function renderAllThumbs() {
 
         box.draggable = true;
         box.ondragstart = (e) => { isInternalDragging = true; e.dataTransfer.setData('text/plain', i.toString()); };
+        box.ondragend = () => { isInternalDragging = false; };
 
         let imgStyle = data.isSmall ? `width:${Math.max(8, Math.round((data.originalWidth / 1200) * 100))}%; height:auto; max-height:100%; border-radius:3px;` : `width:100%; height:100%; object-fit:cover;`;
         const hasEdits = data._modeStates && Object.values(data._modeStates).some(ms => {
@@ -2392,29 +2726,47 @@ function renderAllThumbs() {
         let statusBadges = '';
         let hasBgWarning = false;
         if (data.isSplitData) {
-            if (data.splitStates && data.splitSelectedImages && data.splitTargetCount) {
-                const viewCw = data._viewCw || 1200, viewCh = data._viewCh || 800;
-                for (let si = 0; si < data.splitTargetCount; si++) {
+            // 現在編集中のデータはキャンバスで確認できるためスキップ
+            const isCurrentlyEditing = isSplitPreviewActive && (
+                data === currentPreviewData ||
+                (currentPreviewIndex >= 0 && processedImages[currentPreviewIndex] === data) ||
+                (data.splitSelectedImages && splitSelectedImages.length > 0 && data.splitSelectedImages[0] === splitSelectedImages[0])
+            );
+            if (!isCurrentlyEditing && data.splitStates && data.splitSelectedImages && data.splitTargetCount) {
+                const dir = data.splitDirection || 'vertical';
+                const count = data.splitTargetCount;
+                const viewCw = data._viewCw || 1200;
+                const viewCh = data._viewCh || 800;
+                for (let si = 0; si < count; si++) {
                     const st = data.splitStates[si], sd = data.splitSelectedImages[si];
                     if (!st || !sd || !st.baseScale) continue;
-                    const slotW = viewCw / data.splitTargetCount;
+                    const _isH = dir === 'horizontal';
+                    const slotW = _isH ? viewCw : viewCw / count;
+                    const slotH = _isH ? viewCh / count : viewCh;
                     const iw = sd.originalWidth * st.baseScale * st.scale;
                     const ih = sd.originalHeight * st.baseScale * st.scale;
-                    if (isBgVisible(st.dx, st.dy, iw, ih, st.rot || 0, slotW, viewCh)) { hasBgWarning = true; break; }
+                    if (isBgVisible(st.dx, st.dy, iw, ih, st.rot || 0, slotW, slotH)) { hasBgWarning = true; break; }
                 }
             }
         } else {
             const ms = data._modeStates?.[data._lastAspectKey || 'free'];
-            if (ms) hasBgWarning = isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot || 0, ms.cw, ms.ch);
+            if (ms && ms.imgW) {
+                hasBgWarning = isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot || 0, ms.cw, ms.ch);
+                // isSmall でも余白なし（拡大済み）なら余白バッジは出さない
+                if (data.isSmall && !hasBgWarning) hasBgWarning = false;
+                else if (data.isSmall) hasBgWarning = true;
+            } else if (data.isSmall) {
+                hasBgWarning = true; // 未編集の isSmall は必ず余白あり
+            }
         }
 
-        if (data.isSmall || data.hasJapanese) {
-            statusBadges += `<div style="position:absolute; top:4px; left:4px; display:flex; flex-direction:column; gap:4px; z-index:15; pointer-events:none; align-items:flex-start">`;
+        if (data.isSmall || data.hasJapanese || hasBgWarning) {
+            statusBadges += `<div style="position:absolute; top:4px; right:4px; display:flex; flex-direction:column; gap:3px; z-index:15; pointer-events:none; align-items:flex-end">`;
             if (data.isSmall) statusBadges += `<span style="background:var(--danger); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">1200px未満</span>`;
             if (data.hasJapanese) statusBadges += `<span style="background:var(--warn); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">日本語</span>`;
+            if (hasBgWarning) statusBadges += `<span style="background:#ef4444; color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">余白</span>`;
             statusBadges += `</div>`;
         }
-        if (hasBgWarning) statusBadges += `<div style="position:absolute; top:4px; right:4px; z-index:15; pointer-events:none"><span style="background:#8b5cf6; color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">余白</span></div>`;
 
         const splitSelIdx = (isSelectingForSplit || reselectingSplitIndex !== -1)
             ? splitSelectedImages.findIndex(s => s === data || (s.originalName && data.originalName && s.originalName === data.originalName && s.blobUrl === data.blobUrl))
@@ -2485,8 +2837,11 @@ await saveAppState();
 showToast('画像を削除しました。'); // ← この1行を追加
 }
 function ensureSplitBaseScales() {if (!splitSelectedImages.length || !targetCw || !targetCh) return;
+const isHoriz = splitDirection === 'horizontal';
 splitSelectedImages.forEach((data, i) => {const st = splitStates[i]; if (!st || st.baseScale) return;
-const slotW = targetCw / splitTargetCount, slotH = targetCh; st.baseScale = Math.max(slotW / data.originalWidth, slotH / data.originalHeight); st.scale = 1; st.dx = (slotW - data.originalWidth * st.baseScale) / 2; st.dy = (slotH - data.originalHeight * st.baseScale) / 2;
+const slotW = isHoriz ? targetCw : targetCw / splitTargetCount;
+const slotH = isHoriz ? targetCh / splitTargetCount : targetCh;
+st.baseScale = Math.max(slotW / data.originalWidth, slotH / data.originalHeight); st.scale = 1; st.dx = (slotW - data.originalWidth * st.baseScale) / 2; st.dy = (slotH - data.originalHeight * st.baseScale) / 2;
 });
 }
 async function closeImagePreview(skipCheck = false) {if (skipCheck !== true && typeof skipCheck !== 'boolean') skipCheck = false;
@@ -2603,10 +2958,12 @@ async function renderPresetCanvas(preset) {
         for (let i = 0; i < data.splitTargetCount; i++) {
           const st = data.splitStates[i], sd = data.splitSelectedImages[i];
           if (!st || !sd) continue;
-          const slotW = viewCw / data.splitTargetCount;
+          const _isH2 = data.splitDirection === 'horizontal';
+          const slotW = _isH2 ? viewCw : viewCw / data.splitTargetCount;
+          const slotH2 = _isH2 ? viewCh / data.splitTargetCount : viewCh;
           const iw = sd.originalWidth * st.baseScale * st.scale;
           const ih = sd.originalHeight * st.baseScale * st.scale;
-          if (isBgVisible(st.dx, st.dy, iw, ih, st.rot || 0, slotW, viewCh)) { hasBg = true; break; }
+          if (isBgVisible(st.dx, st.dy, iw, ih, st.rot || 0, slotW, slotH2)) { hasBg = true; break; }
         }
       }
     } else {
@@ -2616,13 +2973,13 @@ async function renderPresetCanvas(preset) {
       if (ms && ms.imgW) hasBg = isBgVisible(ms.imgX, ms.imgY, ms.imgW, ms.imgH, ms.rot || 0, ms.cw, ms.ch);
     }
     if (hasBg) {
-      if (!bgBadge) { bgBadge = document.createElement('div'); bgBadge.className = 'preset-bg-badge'; bgBadge.style.cssText = 'position:absolute;top:3px;right:3px;background:#8b5cf6;color:#fff;font-size:0.55rem;padding:1px 4px;border-radius:3px;font-weight:600;pointer-events:none;line-height:1.4;z-index:10;box-shadow:0 1px 3px rgba(0,0,0,0.2)'; const wrap = box.querySelector('.preset-canvas-wrap'); (wrap || box).appendChild(bgBadge); }
+      if (!bgBadge) { bgBadge = document.createElement('div'); bgBadge.className = 'preset-bg-badge'; bgBadge.style.cssText = 'position:absolute;top:3px;right:3px;background:#ef4444;color:#fff;font-size:0.55rem;padding:1px 4px;border-radius:3px;font-weight:600;pointer-events:none;line-height:1.4;z-index:10;box-shadow:0 1px 3px rgba(0,0,0,0.2)'; const wrap = box.querySelector('.preset-canvas-wrap'); (wrap || box).appendChild(bgBadge); }
       bgBadge.textContent = '余白';
     } else {
       if (bgBadge) bgBadge.remove();
     }
 
-    // 透明画像・分割バッジは非表示
+    // 透過・分割バッジは非表示
     const logosBadge = box.querySelector('.preset-logos-badge'); if (logosBadge) logosBadge.remove();
 
     // 調整済みカラーバー：保存済みの_modeStatesから判定（通常サムネイルと同じロジック）
@@ -2655,13 +3012,17 @@ const expSize = EXPORT_SIZE[effectiveAspect];
 const outW = expSize.w;
 const outH = expSize.h;
 const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH;
-const ctx = canvas.getContext('2d'), segWidth = outW / splitTargetCount, exportRatio = outW / targetCw;
+const ctx = canvas.getContext('2d');
+const isHorizExport = splitDirection === 'horizontal';
+const segWidth = isHorizExport ? outW : outW / splitTargetCount;
+const segHeight = isHorizExport ? outH / splitTargetCount : outH;
+const exportRatio = outW / targetCw;
 for (let i = 0; i < splitSelectedImages.length; i++) {const imgData = splitSelectedImages[i];
 const img = new Image(); img.src = imgData.blobUrl;
 await new Promise(r => { img.onload = r; if (img.complete) r(); });
 const st = splitStates[i], finalScale = st.baseScale * st.scale;
-const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = outH;
-const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0,0,segWidth,outH);
+const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = segHeight;
+const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0,0,segWidth,segHeight);
 const drawW = imgData.originalWidth * finalScale * exportRatio;
 const drawH = imgData.originalHeight * finalScale * exportRatio;
 const drawX = st.dx * exportRatio;
@@ -2673,10 +3034,12 @@ if(st.rot) tCtx.rotate(st.rot * Math.PI/180);
 tCtx.drawImage(img, -drawW/2, -drawH/2, drawW, drawH);
 tCtx.restore();
 tCtx.filter = 'none';
-applyImageAdjustments(tCtx, segWidth, outH, st.bri, st.sharp);
-ctx.drawImage(tempCanvas, i * segWidth, 0);
+applyImageAdjustments(tCtx, segWidth, segHeight, st.bri, st.sharp);
+const destX = isHorizExport ? 0 : i * segWidth;
+const destY = isHorizExport ? i * segHeight : 0;
+ctx.drawImage(tempCanvas, destX, destY);
 }
-if (logoModeActive && currentLogos.length > 0) {for (const lp of currentLogos) {if (lp.hidden) continue;
+if (currentLogos.length > 0) {for (const lp of currentLogos) {if (lp.hidden) continue;
 const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete) r(); });
 const eR = outW / targetCw;
 const dw = lp.baseW * lp.scale * eR;
@@ -2690,7 +3053,7 @@ cvs.width = 150; cvs.height = Math.round(outH * (150/outW));
 cvs.getContext('2d').drawImage(canvas, 0, 0, 150, cvs.height);
 cvs.toBlob(res, 'image/jpeg', 0.8);
 });
-const newData = {isSplitData: true,originalName: `${slotKey}_split.jpg`,exportName: `${slotKey}.jpg`,splitTargetCount,splitSelectedImages: [...splitSelectedImages],splitStates: JSON.parse(JSON.stringify(splitStates)),splitSelectedImagesData: splitSelectedImages.map(si => ({ previewBlob: si.previewBlob, originalWidth: si.originalWidth, originalHeight: si.originalHeight, originalName: si.originalName, exportName: si.exportName, isSmall: si.isSmall, hasJapanese: si.hasJapanese })),_lastAspectKey: slotKey,_modeStates: { [slotKey]: { cw: targetCw, ch: targetCh, logos: JSON.parse(JSON.stringify(currentLogos)) } },_viewCw: targetCw,_viewCh: targetCh,blobUrl: URL.createObjectURL(blob),thumbUrl: URL.createObjectURL(thumbBlob),blob: blob,previewBlob: blob,thumbBlob: thumbBlob,originalWidth: outW,originalHeight: outH,isSmall: false,hasJapanese: false,sizeStr: '-',lastUpdated: getFormattedDate()
+const newData = {isSplitData: true,originalName: `${slotKey}_split.jpg`,exportName: `${slotKey}.jpg`,splitTargetCount,splitDirection: splitDirection,splitSelectedImages: [...splitSelectedImages],splitStates: JSON.parse(JSON.stringify(splitStates)),splitSelectedImagesData: splitSelectedImages.map(si => ({ previewBlob: si.previewBlob, originalWidth: si.originalWidth, originalHeight: si.originalHeight, originalName: si.originalName, exportName: si.exportName, isSmall: si.isSmall, hasJapanese: si.hasJapanese })),_lastAspectKey: slotKey,_modeStates: { [slotKey]: { cw: targetCw, ch: targetCh, logos: JSON.parse(JSON.stringify(currentLogos)) } },_viewCw: targetCw,_viewCh: targetCh,blobUrl: URL.createObjectURL(blob),thumbUrl: URL.createObjectURL(thumbBlob),blob: blob,previewBlob: blob,thumbBlob: thumbBlob,originalWidth: outW,originalHeight: outH,isSmall: false,hasJapanese: false,sizeStr: '-',lastUpdated: getFormattedDate()
 };
 currentPreviewData = newData;
 assignedSlots[slotKey] = newData;
@@ -2707,7 +3070,7 @@ if (data.isSplitData) {data.splitStates = JSON.parse(JSON.stringify(splitStates)
 data._lastAspectKey = currentAspectKey;
 if (!data._modeStates) data._modeStates = {};
 if (!data._modeStates[currentAspectKey]) data._modeStates[currentAspectKey] = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight };
-if (isInLogoMode() && currentLogos.length > 0) {data._logos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: JSON.parse(JSON.stringify(currentLogos)) };
+if (currentLogos.length > 0) {data._logos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: JSON.parse(JSON.stringify(currentLogos)) };
 data._modeStates[currentAspectKey].logos = JSON.parse(JSON.stringify(currentLogos));
 } else {delete data._logos;
 if (data._modeStates[currentAspectKey]) delete data._modeStates[currentAspectKey].logos;
@@ -2716,7 +3079,7 @@ if (isSlot) { assignedSlots[currentAspectKey] = data; renderPresetCanvas(current
 } else {if (isSplitPreviewActive) return;
 if (!data._modeStates) data._modeStates = {};
 data._modeStates[currentAspectKey] = { sat: byId('satSlider').value, bri: byId('conSlider').value, sharp: byId('sharpSlider').value, rot: byId('rotSlider') ? byId('rotSlider').value : 0, cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, imgX, imgY, imgW, imgH, fitW };
-if (isInLogoMode() && currentLogos.length > 0) {data._logos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: JSON.parse(JSON.stringify(currentLogos)) };
+if (currentLogos.length > 0) {data._logos = { cw: targetCw || zoomContainer.clientWidth, ch: targetCh || zoomContainer.clientHeight, items: JSON.parse(JSON.stringify(currentLogos)) };
 data._modeStates[currentAspectKey].logos = JSON.parse(JSON.stringify(currentLogos));
 } else {delete data._logos;
 if (data._modeStates[currentAspectKey]) delete data._modeStates[currentAspectKey].logos;
@@ -3180,20 +3543,24 @@ exportZipBtn.addEventListener('click', async (e) => {
             const data = assignedSlots[preset]; if (!data) continue; let blobToSave = null;
             await new Promise(res => setTimeout(res, 10));
             if (data.isSplitData) {
-                const fixedExp = ['thumb','og','special'].includes(preset) ? EXPORT_SIZE[preset] : null; const outW = fixedExp ? fixedExp.w : data.originalWidth; const outH = fixedExp ? fixedExp.h : data.originalHeight; const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d'); const segWidth = outW / data.splitTargetCount; const exportRatio = outW / (data._viewCw || outW);
+                const fixedExp = ['thumb','og','special'].includes(preset) ? EXPORT_SIZE[preset] : null; const outW = fixedExp ? fixedExp.w : data.originalWidth; const outH = fixedExp ? fixedExp.h : data.originalHeight; const canvas = document.createElement('canvas'); canvas.width = outW; canvas.height = outH; const ctx = canvas.getContext('2d');
+                const _isHZ = data.splitDirection === 'horizontal';
+                const segWidth = _isHZ ? outW : outW / data.splitTargetCount;
+                const segHeight = _isHZ ? outH / data.splitTargetCount : outH;
+                const exportRatio = outW / (data._viewCw || outW);
                 await Promise.all(data.splitSelectedImages.map(async (imgData, i) => {
                     const img = new Image(); img.src = imgData.blobUrl;
                     await new Promise(res => { img.onload = res; if (img.complete) res(); });
                     const st = data.splitStates[i], finalScale = st.baseScale * st.scale;
-                    const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = outH;
-                    const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0, 0, segWidth, outH);
+                    const tempCanvas = document.createElement('canvas'); tempCanvas.width = segWidth; tempCanvas.height = segHeight;
+                    const tCtx = tempCanvas.getContext('2d'); tCtx.fillStyle = '#fff'; tCtx.fillRect(0, 0, segWidth, segHeight);
                     let drawW = imgData.originalWidth * finalScale * exportRatio; let drawH = imgData.originalHeight * finalScale * exportRatio; let drawX = st.dx * exportRatio; let drawY = st.dy * exportRatio;
-                    if (st.rot) {const θ = Math.abs(st.rot * Math.PI / 180); const cosT = Math.abs(Math.cos(θ)), sinT = Math.abs(Math.sin(θ)); const scaleForW = (segWidth * cosT + outH * sinT) / drawW; const scaleForH = (segWidth * sinT + outH * cosT) / drawH; const coverScale = Math.max(scaleForW, scaleForH, 1);
+                    if (st.rot) {const θ = Math.abs(st.rot * Math.PI / 180); const cosT = Math.abs(Math.cos(θ)), sinT = Math.abs(Math.sin(θ)); const scaleForW = (segWidth * cosT + segHeight * sinT) / drawW; const scaleForH = (segWidth * sinT + segHeight * cosT) / drawH; const coverScale = Math.max(scaleForW, scaleForH, 1);
                     if (coverScale > 1) {const extraW = drawW * (coverScale - 1); const extraH = drawH * (coverScale - 1); drawX -= extraW / 2; drawY -= extraH / 2; drawW *= coverScale; drawH *= coverScale; } }
-                    if (drawW >= segWidth) drawX = Math.min(0, Math.max(segWidth - drawW, drawX)); if (drawH >= outH) drawY = Math.min(0, Math.max(outH - drawH, drawY));
+                    if (drawW >= segWidth) drawX = Math.min(0, Math.max(segWidth - drawW, drawX)); if (drawH >= segHeight) drawY = Math.min(0, Math.max(segHeight - drawH, drawY));
                     tCtx.filter = st.sat !== 100 ? `saturate(${st.sat}%)` : 'none'; tCtx.save(); tCtx.translate(drawX + drawW / 2, drawY + drawH / 2); if (st.rot) tCtx.rotate(st.rot * Math.PI / 180);
                     tCtx.drawImage(img, -drawW / 2, -drawH / 2, drawW, drawH); tCtx.restore(); tCtx.filter = 'none';
-                    applyImageAdjustments(tCtx, segWidth, outH, st.bri, st.sharp); ctx.drawImage(tempCanvas, i * segWidth, 0);
+                    applyImageAdjustments(tCtx, segWidth, segHeight, st.bri, st.sharp); ctx.drawImage(tempCanvas, _isHZ ? 0 : i * segWidth, _isHZ ? i * segHeight : 0);
                 }));
                 const asp = data._lastAspectKey || 'free'; const zipSplitLogos = data._logos || (data._modeStates?.[asp]?.logos ? { cw: data._modeStates[asp].cw, items: data._modeStates[asp].logos } : null);
                 if (zipSplitLogos && zipSplitLogos.items && zipSplitLogos.items.length > 0) { const refCw = zipSplitLogos.cw || outW; for (const lp of zipSplitLogos.items) { if (lp.hidden) continue; const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete && lI.naturalWidth) r(); }); if (!lI.naturalWidth) continue; const eR = outW / refCw, dw = lp.baseW * lp.scale * eR, dh = lp.baseH * lp.scale * eR; ctx.save(); ctx.translate(lp.x * eR, lp.y * eR); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore(); } }
@@ -3250,26 +3617,24 @@ exportZipBtn.addEventListener('click', async (e) => {
     
     const isPresetMain = ['thumb', 'og', 'special'].includes(preset);
     if (isPresetMain) {
-        pBox.draggable = false;
-        pBox.addEventListener('dragstart', e => { e.preventDefault(); e.stopImmediatePropagation(); }, true);
-        pBox.addEventListener('mousedown', e => { e.currentTarget.draggable = false; });
-    } else {
-        pBox.addEventListener('dragstart', e => {
-            if (!assignedSlots[preset]) { e.preventDefault(); return; }
-            e.dataTransfer.setData('text/plain', 'slot:' + preset);
-            e.dataTransfer.effectAllowed = 'copy';
-            setTimeout(() => { pBox.style.opacity = '0.4'; }, 0);
-        });
+        // draggable を有効にして ondragstart の return false を解除
+        pBox.draggable = true;
+        pBox.ondragstart = null;
+        pBox.style.cursor = 'grab';
     }
+    pBox.addEventListener('dragstart', e => {
+        if (!assignedSlots[preset]) { e.preventDefault(); return; }
+        e.dataTransfer.setData('text/plain', 'slot:' + preset);
+        e.dataTransfer.effectAllowed = 'copy';
+        setTimeout(() => { pBox.style.opacity = '0.4'; }, 0);
+    });
     
     pBox.addEventListener('dragend', () => { pBox.style.opacity = '1'; });
-    if (preset !== 'special') {
     pBox.addEventListener('dragover', e => { e.preventDefault(); pBox.style.opacity = '0.6'; });
-    pBox.addEventListener('dragleave', () => { pBox.style.opacity = '1'; }); }
+    pBox.addEventListener('dragleave', () => { pBox.style.opacity = '1'; });
     
     pBox.addEventListener('drop', async e => {
         e.preventDefault(); e.stopPropagation(); pBox.style.opacity = '1';
-        if (preset === 'special') return;
         const raw = e.dataTransfer.getData('text/plain'); if (!raw) return;
         
         if (raw.startsWith('slot:')) {
@@ -3285,11 +3650,8 @@ exportZipBtn.addEventListener('click', async (e) => {
                 newData.exportName = preset + '.jpg';
             } else {
                 newData = { ...fromData, _modeStates: JSON.parse(JSON.stringify(fromData._modeStates || {})) };
-                // ★修正: 移動元の比率設定を、新しい比率のキーにコピーして引き継ぐ
-                const sourceKey = fromPreset;
-                if (newData._modeStates[sourceKey]) {
-                    newData._modeStates[preset] = JSON.parse(JSON.stringify(newData._modeStates[sourceKey]));
-                }
+                // 新しいスロットのアスペクト比で fitImage させるため preset キーの modeStates は削除
+                delete newData._modeStates[preset];
                 if (fromData._logos) newData._logos = JSON.parse(JSON.stringify(fromData._logos));
                 newData._lastAspectKey = preset;
             }
@@ -3312,18 +3674,13 @@ exportZipBtn.addEventListener('click', async (e) => {
                     newSlotData._lastAspectKey = preset;
                 } else {
                     newSlotData = { ...dropped, _modeStates: JSON.parse(JSON.stringify(dropped._modeStates || {})) };
-                    // ★修正: リストからドロップした際も、最後の編集状態をスロットのキーに引き継ぐ
-                    const sourceKey = dropped._lastAspectKey || 'free';
-                    if (newSlotData._modeStates[sourceKey]) {
-                        newSlotData._modeStates[preset] = JSON.parse(JSON.stringify(newSlotData._modeStates[sourceKey]));
-                    }
+                    // 新しいスロットのアスペクト比で fitImage させるため preset キーの modeStates は削除
+                    delete newSlotData._modeStates[preset];
                     if (dropped._logos) newSlotData._logos = JSON.parse(JSON.stringify(dropped._logos));
                     newSlotData._lastAspectKey = preset;
                 }
                 assignedSlots[preset] = newSlotData;
                 renderPresetCanvas(preset);
-                if (newSlotData.isSplitData) restoreSplitPreview(newSlotData, preset);
-                else showImagePreview(newSlotData, preset);
                 await saveAppState();
             }
         }
@@ -3355,13 +3712,13 @@ reader.readAsDataURL(file);
 }
 if (addedPngCount > 0) {localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos));
 renderLogoLibrary();
-showToast(`${addedPngCount}枚の透明画像をライブラリに追加しました`);
+showToast(`${addedPngCount}枚の透過をライブラリに追加しました`);
 }
 if (psdOrAiFile) {const ext = psdOrAiFile.name.split('.').pop().toLowerCase();
 if (ext === 'psd') {await parsePsdForLayers(psdOrAiFile);
 } else if (ext === 'ai' || ext === 'pdf') {await parseAiForLayers(psdOrAiFile);
 }
-} else if (addedPngCount === 0) {await showCustomDialog({ title: '非対応形式', message: '透明画像(PNG)・PSD・AI・PDF ファイルを選択してください。', okText: '閉じる', type: 'alert' });
+} else if (addedPngCount === 0) {await showCustomDialog({ title: '非対応形式', message: '透過(PNG)・PSD・AI・PDF ファイルを選択してください。', okText: '閉じる', type: 'alert' });
 }
 }
 function detectLogoThumbBg(imgEl, src) {const probe = new Image();
@@ -3387,7 +3744,7 @@ imgEl.title = '白背景のため黒表示';
 probe.src = src;
 }
 function renderLogoLibrary() {const strip = byId('logoLibStrip'); if (!strip) return; strip.innerHTML = '';
-if (savedLogos.length === 0) { strip.innerHTML = '<span style="font-size:0.65rem; color:var(--muted); margin:auto; pointer-events:none">透明画像を追加してください</span>'; return; }
+if (savedLogos.length === 0) { strip.innerHTML = '<span style="font-size:0.65rem; color:var(--muted); margin:auto; pointer-events:none">透過を追加してください</span>'; return; }
 savedLogos.forEach((src, idx) => {const wrap = document.createElement('div'); wrap.className = 'logo-lib-item';
 const img = document.createElement('img'); img.src = src; img.draggable = true; img.onclick = () => selectLogoForOverlay(src);
 img.ondragstart = (e) => { e.dataTransfer.setData('text/plain', 'logo:' + src); e.dataTransfer.effectAllowed = 'copy'; if (!logoModeActive) toggleLogoMode(); };
@@ -3488,7 +3845,7 @@ function removeSelectedLogo() {if (!activeLogoId) return;
 currentLogos = currentLogos.filter(l => l.id !== activeLogoId); activeLogoId = null; applyLogoStyles();
 markUnsaved(); updateLogoButtons();
 }
-async function clearAllLogos() {const confirmClear = await showCustomDialog({title: '透明画像の全消去',message: 'すべての透明画像を消去しますか？',okText: '消去する',okClass: 'btn btn-danger',cancelText: 'キャンセル',type: 'confirm'
+async function clearAllLogos() {const confirmClear = await showCustomDialog({title: '透過の全消去',message: 'すべての透過を消去しますか？',okText: '消去する',okClass: 'btn btn-danger',cancelText: 'キャンセル',type: 'confirm'
 });
 if(!confirmClear) return;
 currentLogos = []; activeLogoId = null; applyLogoStyles();
@@ -3758,7 +4115,7 @@ const metaEl = document.createElement('div'); metaEl.className = 'psd-layer-meta
 metaEl.textContent = w > 0 ? `${w}×${h}` : '空';
 const cropBtn = document.createElement('button');
 cropBtn.className = 'psd-crop-trigger-btn';
-cropBtn.title = 'この画像を切り抜いて透明画像ライブラリに登録';
+cropBtn.title = 'この画像を切り抜いて透過ライブラリに登録';
 cropBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>';
 if (!layer.canvas) { cropBtn.disabled = true; cropBtn.style.opacity = '0.3'; }
 cropBtn.addEventListener('click', (e) => { e.stopPropagation(); openLayerCropEditor(layer); });
@@ -3965,7 +4322,7 @@ localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos));
 renderLogoLibrary();
 closePsdCropModal();
 closePsdLayerModal();
-showToast(`✦ 切り抜き画像を透明画像ライブラリに登録しました（${ow}×${oh}px）`);
+showToast(`✦ 切り抜き画像を透過ライブラリに登録しました（${ow}×${oh}px）`);
 }
 function closePsdCropModal() {byId('psdCropModal').style.display = 'none';
 if (psdCrop._moveHandler) {window.removeEventListener('mousemove', psdCrop._moveHandler);
@@ -3993,7 +4350,7 @@ ${thumb
 </div>
 </div>`;
 }).join('');
-const confirmed = await showCustomDialog({title: '透明画像ライブラリに登録',message: `<div style="text-align:left">以下 ${selected.length} 件のレイヤーを透明画像ライブラリに登録しますか？ <span style="color:var(--muted)">登録後はプレビュー画面の「透明画像」モードから配置できます。</span><div style="margin-top:10px;max-height:220px;overflow-y:auto;padding-right:2px">${thumbsHtml}</div></div>`,okText: '登録する',cancelText: 'キャンセル',type: 'confirm'
+const confirmed = await showCustomDialog({title: '透過ライブラリに登録',message: `<div style="text-align:left">以下 ${selected.length} 件のレイヤーを透過ライブラリに登録しますか？ <span style="color:var(--muted)">登録後はプレビュー画面の「透過」モードから配置できます。</span><div style="margin-top:10px;max-height:220px;overflow-y:auto;padding-right:2px">${thumbsHtml}</div></div>`,okText: '登録する',cancelText: 'キャンセル',type: 'confirm'
 });
 if (!confirmed) return;
 let added = 0;
@@ -4014,7 +4371,7 @@ added++;
 if (added > 0) {localStorage.setItem('webLeonLogos', JSON.stringify(savedLogos));
 renderLogoLibrary();
 closePsdLayerModal();
-showToast(`✦ ${added}件のレイヤーを透明画像ライブラリに登録しました`);
+showToast(`✦ ${added}件のレイヤーを透過ライブラリに登録しました`);
 } else {await showCustomDialog({ title: '登録できませんでした', message: '有効なレイヤーデータがありませんでした。', okText: '閉じる', type: 'alert' });
 }
 }
@@ -4122,6 +4479,7 @@ async function performManualSave() {
             } else {
                 const success = await saveSplitToNormalImage();
                 if (!success) return;
+                if (success === 'new') { forceClearUnsaved(); updateSavedState(); renderAllThumbs(); return; }
             }
         } else {
             saveImageState();
@@ -4139,7 +4497,6 @@ async function performManualSave() {
         showToast('編集内容を保存しました。');
     } catch (err) {
         console.error("保存エラー:", err);
-        showToast('保存処理を完了しました'); 
         forceClearUnsaved();
         updateSavedState();
     }
@@ -4240,4 +4597,4 @@ function updateSavedState() {
     savedPreviewState = captureCurrentState();
     forceClearUnsaved();
 }
-</script> <div id="pngAddDialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:9600; align-items:center; justify-content:center; backdrop-filter:blur(6px)" onclick="if(event.target===this)closePngAddDialog()"><div style="background:var(--card); border-radius:var(--radius); width:90%; max-width:440px; box-shadow:0 20px 60px rgba(0,0,0,0.3); border:1px solid var(--border); overflow:hidden"><div style="padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center"><h3 style="margin:0; font-size:1rem; font-weight:500; color:var(--text)">透明画像ライブラリに追加</h3><button onclick="closePngAddDialog()" style="background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:20px"><div id="pngAddDrop" style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:36px 20px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--bg)" onclick="byId('pngAddFileInput').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--accent-soft)'" ondragleave="this.style.borderColor='var(--border)'; this.style.background='var(--bg)'" ondrop="event.preventDefault(); this.style.borderColor='var(--border)'; this.style.background='var(--bg)'; handlePngAddFiles(event.dataTransfer.files)"><div style="font-size:2rem; margin-bottom:10px; pointer-events:none">📂</div><div style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:6px; pointer-events:none">ここにファイルをドロップ</div><div style="font-size:0.78rem; color:var(--muted); margin-bottom:16px; pointer-events:none">またはクリックして選択</div><div style="display:inline-flex; gap:8px; pointer-events:none"><span style="font-size:0.7rem; background:#e0e7ff; color:#4338ca; padding:3px 8px; border-radius:4px; font-weight:500">PNG</span><span style="font-size:0.7rem; background:#fce7f3; color:#9d174d; padding:3px 8px; border-radius:4px; font-weight:500">PSD</span><span style="font-size:0.7rem; background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:4px; font-weight:500">AI</span><span style="font-size:0.7rem; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:4px; font-weight:500">PDF</span></div></div><p style="margin:10px 0 0; font-size:0.72rem; color:var(--muted); text-align:center; line-height:1.5">ファイル形式は自動判別。PSD・AI・PDFはレイヤー抽出画面へ移行します。<br>（※AIはPDF互換のみ）</p></div></div></div><div id="psdCropModal"><div class="psd-crop-wrap"><div style="padding:14px 20px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-shrink:0"><div><h3 style="margin:0 0 2px; font-size:1rem; font-weight:500; color:var(--text)">レイヤーを切り抜き</h3><p id="psdCropInfo" style="margin:0; font-size:0.78rem; color:var(--accent); font-weight:500; font-variant-numeric:tabular-nums">—</p></div><button onclick="closePsdCropModal()" style="background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:8px 14px; border-bottom:1px solid var(--border); display:flex; gap:6px; align-items:center; flex-shrink:0; background:var(--bg); flex-wrap:wrap"><span style="font-size:0.7rem;color:var(--muted);font-weight:500;white-space:nowrap">比率</span><button class="asp-btn psd-crop-asp-btn active" onclick="setCropAspect(null)">自由</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1" onclick="setCropAspect(1)">1:1</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.5" onclick="setCropAspect(1.5)">3:2</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.333" onclick="setCropAspect(4/3)">4:3</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.778" onclick="setCropAspect(16/9)">16:9</button><div style="width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0"></div><button class="asp-btn" onclick="resetCropRect()" title="全体を選択">全体</button></div><div style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px;background:#111;min-height:200px"><canvas id="psdCropCanvas" style="display:block;cursor:crosshair;touch-action:none"></canvas></div><div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; flex-wrap:wrap"><button class="btn btn-secondary" onclick="closePsdCropModal()">キャンセル</button><button class="btn" style="background:#8b5cf6;color:#fff" onclick="confirmPsdCrop()">この範囲を透明画像に登録</button></div></div></div><div id="psdLayerModal"><div class="psd-modal-wrap"><div class="psd-modal-head"><div><h3 id="psdLayerTitle" style="margin:0 0 3px; font-size:1.05rem; font-weight:500; color:var(--text)">PSDレイヤー選択</h3><p id="psdLayerInfo" style="margin:0; font-size:0.75rem; color:var(--muted)">読み込み中...</p></div><button class="psd-modal-close" onclick="closePsdLayerModal()">&times;</button></div><div class="psd-modal-toolbar"><button class="asp-btn" onclick="psdSelectAll(true)">全選択</button><button class="asp-btn" onclick="psdSelectAll(false)">全解除</button><button class="asp-btn" onclick="psdSelectVisible()">表示中のみ</button><span class="psd-sel-count" id="psdSelCount">0 / 0 レイヤー選択中</span></div><div class="psd-modal-body" id="psdLayerList"></div><div class="psd-modal-foot"><button class="btn btn-secondary" onclick="closePsdLayerModal()">キャンセル</button><button class="btn" style="background:#8b5cf6;color:#fff" onclick="registerLayersToPngLibrary()" title="選択したレイヤーを透明画像ライブラリに追加">📌 透明画像に登録</button></div></div></div><div id="qrDialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9900; align-items:center; justify-content:center; backdrop-filter:blur(6px)" onclick="if(event.target===this)closeQrDialog()"><div style="background:var(--card); border-radius:var(--radius); width:90%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.25); border:1px solid var(--border); overflow:hidden"><div style="padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center"><h3 style="margin:0; font-size:1rem; font-weight:500; color:var(--text)">QRコード生成</h3><button onclick="closeQrDialog()" style="background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:20px"><div style="display:flex; gap:8px"><input id="qrUrlInput" type="url" placeholder="https://example.com" style="flex:1; padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:inherit; font-size:0.85rem; outline:none; transition:border-color 0.2s; color:var(--text); background:var(--bg)" oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'" onkeydown="if(event.key==='Enter')generateQrCode()"><button onclick="generateQrCode()" style="padding:8px 18px; border-radius:var(--radius-sm); border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:0.85rem; font-weight:500; cursor:pointer; white-space:nowrap; transition:opacity 0.15s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 生成</button></div></div></div></div></body></html>
+</script> <div id="pngAddDialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:9600; align-items:center; justify-content:center; backdrop-filter:blur(6px)" onclick="if(event.target===this)closePngAddDialog()"><div style="background:var(--card); border-radius:var(--radius); width:90%; max-width:440px; box-shadow:0 20px 60px rgba(0,0,0,0.3); border:1px solid var(--border); overflow:hidden"><div style="padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center"><h3 style="margin:0; font-size:1rem; font-weight:500; color:var(--text)">透過ライブラリに追加</h3><button onclick="closePngAddDialog()" style="background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:20px"><div id="pngAddDrop" style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:36px 20px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--bg)" onclick="byId('pngAddFileInput').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--accent-soft)'" ondragleave="this.style.borderColor='var(--border)'; this.style.background='var(--bg)'" ondrop="event.preventDefault(); this.style.borderColor='var(--border)'; this.style.background='var(--bg)'; handlePngAddFiles(event.dataTransfer.files)"><div style="font-size:2rem; margin-bottom:10px; pointer-events:none">📂</div><div style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:6px; pointer-events:none">ここにファイルをドロップ</div><div style="font-size:0.78rem; color:var(--muted); margin-bottom:16px; pointer-events:none">またはクリックして選択</div><div style="display:inline-flex; gap:8px; pointer-events:none"><span style="font-size:0.7rem; background:#e0e7ff; color:#4338ca; padding:3px 8px; border-radius:4px; font-weight:500">PNG</span><span style="font-size:0.7rem; background:#fce7f3; color:#9d174d; padding:3px 8px; border-radius:4px; font-weight:500">PSD</span><span style="font-size:0.7rem; background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:4px; font-weight:500">AI</span><span style="font-size:0.7rem; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:4px; font-weight:500">PDF</span></div></div><p style="margin:10px 0 0; font-size:0.72rem; color:var(--muted); text-align:center; line-height:1.5">ファイル形式は自動判別。PSD・AI・PDFはレイヤー抽出画面へ移行します。<br>（※AIはPDF互換のみ）</p></div></div></div><div id="psdCropModal"><div class="psd-crop-wrap"><div style="padding:14px 20px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-shrink:0"><div><h3 style="margin:0 0 2px; font-size:1rem; font-weight:500; color:var(--text)">レイヤーを切り抜き</h3><p id="psdCropInfo" style="margin:0; font-size:0.78rem; color:var(--accent); font-weight:500; font-variant-numeric:tabular-nums">—</p></div><button onclick="closePsdCropModal()" style="background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:8px 14px; border-bottom:1px solid var(--border); display:flex; gap:6px; align-items:center; flex-shrink:0; background:var(--bg); flex-wrap:wrap"><span style="font-size:0.7rem;color:var(--muted);font-weight:500;white-space:nowrap">比率</span><button class="asp-btn psd-crop-asp-btn active" onclick="setCropAspect(null)">自由</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1" onclick="setCropAspect(1)">1:1</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.5" onclick="setCropAspect(1.5)">3:2</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.333" onclick="setCropAspect(4/3)">4:3</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.778" onclick="setCropAspect(16/9)">16:9</button><div style="width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0"></div><button class="asp-btn" onclick="resetCropRect()" title="全体を選択">全体</button></div><div style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px;background:#111;min-height:200px"><canvas id="psdCropCanvas" style="display:block;cursor:crosshair;touch-action:none"></canvas></div><div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; flex-wrap:wrap"><button class="btn btn-secondary" onclick="closePsdCropModal()">キャンセル</button><button class="btn" style="background:#8b5cf6;color:#fff" onclick="confirmPsdCrop()">この範囲を透過に登録</button></div></div></div><div id="psdLayerModal"><div class="psd-modal-wrap"><div class="psd-modal-head"><div><h3 id="psdLayerTitle" style="margin:0 0 3px; font-size:1.05rem; font-weight:500; color:var(--text)">PSDレイヤー選択</h3><p id="psdLayerInfo" style="margin:0; font-size:0.75rem; color:var(--muted)">読み込み中...</p></div><button class="psd-modal-close" onclick="closePsdLayerModal()">&times;</button></div><div class="psd-modal-toolbar"><button class="asp-btn" onclick="psdSelectAll(true)">全選択</button><button class="asp-btn" onclick="psdSelectAll(false)">全解除</button><button class="asp-btn" onclick="psdSelectVisible()">表示中のみ</button><span class="psd-sel-count" id="psdSelCount">0 / 0 レイヤー選択中</span></div><div class="psd-modal-body" id="psdLayerList"></div><div class="psd-modal-foot"><button class="btn btn-secondary" onclick="closePsdLayerModal()">キャンセル</button><button class="btn" style="background:#8b5cf6;color:#fff" onclick="registerLayersToPngLibrary()" title="選択したレイヤーを透過ライブラリに追加">📌 透過に登録</button></div></div></div><div id="qrDialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9900; align-items:center; justify-content:center; backdrop-filter:blur(6px)" onclick="if(event.target===this)closeQrDialog()"><div style="background:var(--card); border-radius:var(--radius); width:90%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.25); border:1px solid var(--border); overflow:hidden"><div style="padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center"><h3 style="margin:0; font-size:1rem; font-weight:500; color:var(--text)">QRコード生成</h3><button onclick="closeQrDialog()" style="background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:20px"><div style="display:flex; gap:8px"><input id="qrUrlInput" type="url" placeholder="https://example.com" style="flex:1; padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:inherit; font-size:0.85rem; outline:none; transition:border-color 0.2s; color:var(--text); background:var(--bg)" oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'" onkeydown="if(event.key==='Enter')generateQrCode()"><button onclick="generateQrCode()" style="padding:8px 18px; border-radius:var(--radius-sm); border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:0.85rem; font-weight:500; cursor:pointer; white-space:nowrap; transition:opacity 0.15s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 生成</button></div></div></div></div></body></html>
