@@ -4658,6 +4658,15 @@ async function performManualSave() {
                 if (success === 'new') { forceClearUnsaved(); updateSavedState(); renderAllThumbs(); return; }
             }
         } else {
+            // 余白チェック
+            if (!currentPreviewData.isSmall) {
+                const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
+                const cw = targetCw || zoomContainer.clientWidth, ch = targetCh || zoomContainer.clientHeight;
+                if (isBgVisible(imgX, imgY, imgW, imgH, rot, cw, ch)) {
+                    const confirmBg = await showCustomDialog({ title: '確認', message: '下地（余白）が見えた状態ですが、このまま保存しますか？', okText: '保存する', cancelText: 'キャンセル', type: 'confirm' });
+                    if (!confirmBg) return;
+                }
+            }
             saveImageState();
             const isSlot = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey);
             if (!isSlot) {
