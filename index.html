@@ -1749,7 +1749,9 @@ bar.style.flexWrap     = savedWrap;
 });
 return minW + 20;
 }
-function resizeContainerToAspect(aspectKey) {let extraH = 190;
+function resizeContainerToAspect(aspectKey) {
+const isSP = window.innerWidth <= 540;
+let extraH = isSP ? 320 : 190;
 // splitToolbarArea は非表示のため高さ加算不要
 if (logoModeActive) extraH += 90;
 const _navW = window.innerWidth <= 540 ? 60 : 160;
