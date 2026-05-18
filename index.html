@@ -70,18 +70,22 @@ async function updateMainThumbnail(data, aspKey) {
   .preview-card{padding:4px 4px 8px !important;}
   #toolbarContainer{padding:0 4px !important;gap:2px !important;margin-bottom:0 !important;padding-top:10px !important;}
   #aspectBar{margin-bottom:2px !important;}
-  #exportSingleBtn{margin-bottom:10px !important;}
   #filterBar{gap:3px 0 !important;margin-top:4px !important;flex-direction:column !important;}
   #filterBar > div{flex:none !important;width:100% !important;min-width:0 !important;flex-wrap:nowrap !important;}
   #filterBar > div > div{flex:1 1 0 !important;min-width:0 !important;}
-  #zoomBar{gap:6px !important;margin-top:0 !important;flex-wrap:wrap !important;}
-  #previewMetaName{font-size:0.75rem !important;}
+  #zoomBar{gap:4px !important;margin-top:0 !important;flex-wrap:wrap !important;align-items:center !important;}
+  #zoomCtrlRow{flex-shrink:0 !important;}
+  #zoomMetaRow{flex:1 !important;min-width:0 !important;text-align:right !important;justify-content:flex-end !important;}
+  #zoomBtnRow{width:100% !important;gap:4px !important;}
+  #resetAllBtn{flex:1 !important;text-align:center !important;}
+  #previewDeleteBtn,#clearSlotBtnPreview{flex:1 !important;text-align:center !important;}
+  #exportSingleBtn{flex:2 !important;text-align:center !important;}
+  #previewMetaName{font-size:0.75rem !important;text-align:right !important;}
+  #previewMetaInfo{text-align:right !important;}
   #logoToolbarArea:not(.logo-panel-open){display:none !important;}
-  #exportSingleBtn{flex:1 !important;text-align:center !important;}
-  #previewDeleteBtn,#clearSlotBtnPreview{padding:6px 10px !important;font-size:0.75rem !important;}
   .asp-btn{padding:3px 8px !important;font-size:0.68rem !important;}
   .btn-manual-save{padding:5px 12px !important;}
-}</style> </head><body><div id="progress"><div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px">処理中...</div><div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px"><div id="progressFileName" style="font-size:0.8rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px"></div><div id="progressCount" style="font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap"></div></div><div id="progressTimeLeft" style="font-size:0.75rem; color:var(--muted)"></div><div class="progress-container"><div class="progress-bar" id="progressBar"></div></div><button id="cancelLoadBtn" class="btn btn-secondary" style="margin-top: 14px; font-size: 0.75rem; padding: 6px 16px" onclick="cancelLoading()">キャンセル</button></div><div class="page-header"><div class="title-left"><h2>画像調整 &amp; 書き出しツール</h2><p>Image Resize &amp; Export — 幅1200px自動リサイズ / ZIP一括書き出し / PNG合成</p></div><div class="title-right"><div class="slot-modern-wrapper"><span class="slot-modern-label">Slot</span><select id="slotSelector" class="slot-modern-select"><option value="1">スロット 1</option><option value="2">スロット 2</option><option value="3">スロット 3</option><option value="4">スロット 4</option><option value="5">スロット 5</option><option value="6">スロット 6</option><option value="7">スロット 7</option><option value="8">スロット 8</option><option value="9">スロット 9</option><option value="10">スロット 10</option></select><button id="renameSlotBtn" class="slot-modern-btn" title="スロット名を変更"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button id="clearSlotBtn" class="slot-modern-btn danger" title="このスロットをクリア"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><button id="qrBtn" class="qr-btn" title="QRコードを生成" onclick="openQrDialog()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="4" width="4" height="4" rx="0.5"/><rect x="14" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="16" y="4" width="4" height="4" rx="0.5"/><rect x="2" y="14" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="16" width="4" height="4" rx="0.5"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="19" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="19" width="3" height="3" rx="0.5"/><rect x="19" y="19" width="3" height="3" rx="0.5"/></svg></button><button id="helpBtn" class="help-btn" title="説明を表示">💡</button></div></div><div class="section-card"><div class="upload-zone" id="dropZone"><div class="upload-btn-main">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div><input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div></div><div id="searchBarContainer" style="display:none; width:100%; margin-top:8px; margin-bottom:8px; padding:0 8px; z-index:10; position:relative"><div id="sbc-left"><div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin-top:-10px;position:relative;top:-10px"><div style="display:flex;align-items:center;gap:8px"><div style="position:relative; flex-shrink:0"><input type="text" id="searchInput" placeholder="ファイル名で検索..." style="padding:6px 12px 6px 30px; border-radius:100px; border:1px solid var(--border); font-size:0.8rem; outline:none; transition:border-color 0.2s; background:var(--card); color:var(--text); width:160px"><svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--muted)" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div></div><div id="lastUpdatedLabel" style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.02em; white-space:nowrap; flex-shrink:0"> 最終更新: <span id="globalLastUpdatedText">-</span></div></div></div><div id="sbc-presets"><div class="preset-box" id="presetBox-thumb" draggable="true" onclick="openInPreset('thumb')" title="Thumbnailプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-thumb" width="1200" height="600" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Thumbnail</span></div><div class="preset-box" id="presetBox-og" draggable="true" onclick="openInPreset('og')" title="OGプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-og" width="1200" height="630" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>OG</span></div><div class="preset-box" id="presetBox-special" draggable="true" onclick="openInPreset('special')" title="Specialプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-special" width="1200" height="675" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Special</span></div></div></div><div id="previewArea" style="display: none;"><div class="preview-drop-hint">ここにドロップして追加</div></div><div id="actionArea" style="display:none; margin-top:24px; padding-top:20px; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%; transition: opacity 0.2s">
+}</style> </head><body><div id="progress"><div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px">処理中...</div><div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px"><div id="progressFileName" style="font-size:0.8rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px"></div><div id="progressCount" style="font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap"></div></div><div id="progressTimeLeft" style="font-size:0.75rem; color:var(--muted)"></div><div class="progress-container"><div class="progress-bar" id="progressBar"></div></div><button id="cancelLoadBtn" class="btn btn-secondary" style="margin-top: 14px; font-size: 0.75rem; padding: 6px 16px" onclick="cancelLoading()">キャンセル</button></div><div class="page-header"><div class="title-left"><h2>画像調整 &amp; 書き出しツール</h2><p>Image Resize &amp; Export — 幅1200px自動リサイズ / ZIP一括書き出し / PNG合成</p></div><div class="title-right"><div class="slot-modern-wrapper"><span class="slot-modern-label">Slot</span><select id="slotSelector" class="slot-modern-select"><option value="1">スロット 1</option><option value="2">スロット 2</option><option value="3">スロット 3</option><option value="4">スロット 4</option><option value="5">スロット 5</option><option value="6">スロット 6</option><option value="7">スロット 7</option><option value="8">スロット 8</option><option value="9">スロット 9</option><option value="10">スロット 10</option></select><button id="renameSlotBtn" class="slot-modern-btn" title="スロット名を変更"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button id="clearSlotBtn" class="slot-modern-btn danger" title="このスロットをクリア"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><button id="qrBtn" class="qr-btn" title="QRコードを生成" onclick="openQrDialog()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="4" width="4" height="4" rx="0.5"/><rect x="14" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="16" y="4" width="4" height="4" rx="0.5"/><rect x="2" y="14" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="16" width="4" height="4" rx="0.5"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="19" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="19" width="3" height="3" rx="0.5"/><rect x="19" y="19" width="3" height="3" rx="0.5"/></svg></button><button id="helpBtn" class="help-btn" title="説明を表示">💡</button></div></div><div class="section-card"><div class="upload-zone" id="dropZone" style="display:none"><div class="upload-btn-main">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div><input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div></div><div id="searchBarContainer" style="display:none; width:100%; margin-top:8px; margin-bottom:8px; padding:0 8px; z-index:10; position:relative"><div id="sbc-left"><div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin-top:-10px;position:relative;top:-10px"><div style="display:flex;align-items:center;gap:8px"><div style="position:relative; flex-shrink:0"><input type="text" id="searchInput" placeholder="ファイル名で検索..." style="padding:6px 12px 6px 30px; border-radius:100px; border:1px solid var(--border); font-size:0.8rem; outline:none; transition:border-color 0.2s; background:var(--card); color:var(--text); width:160px"><svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--muted)" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div></div><div id="lastUpdatedLabel" style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.02em; white-space:nowrap; flex-shrink:0"> 最終更新: <span id="globalLastUpdatedText">-</span></div></div></div><div id="sbc-presets"><div class="preset-box" id="presetBox-thumb" draggable="true" onclick="openInPreset('thumb')" title="Thumbnailプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-thumb" width="1200" height="600" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Thumbnail</span></div><div class="preset-box" id="presetBox-og" draggable="true" onclick="openInPreset('og')" title="OGプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-og" width="1200" height="630" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>OG</span></div><div class="preset-box" id="presetBox-special" draggable="true" onclick="openInPreset('special')" title="Specialプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-special" width="1200" height="675" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Special</span></div></div></div><div id="previewArea" style="display: none;"><div class="preview-drop-hint">ここにドロップして追加</div></div><div id="actionArea" style="display:none; margin-top:24px; padding-top:20px; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%; transition: opacity 0.2s">
 <div style="display:flex; gap:10px; align-items:center; margin-left:auto"><input type="file" id="addFileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><input type="file" id="psdLayerFileInput" accept=".psd" style="display:none"><input type="file" id="aiLayerFileInput" accept=".ai" style="display:none"><button class="btn btn-secondary" onclick="byId('addFileInput').click()">画像追加</button><button class="btn btn-success" id="exportZipBtn">ZIP で書き出し</button></div></div><div class="instruction-text" id="instructionBox" style="margin-top:20px">
   <button class="close-inst-btn" id="closeInstBtn" title="閉じる">&times;</button>
   
@@ -158,8 +162,8 @@ async function updateMainThumbnail(data, aspKey) {
     <span class="version-label" style="font-size: 0.75rem;">Ver 1.0.1</span>
   </div>
 
-  <div id="customDialogModal"><div class="custom-dialog-card"><button class="custom-dialog-close" id="customDialogCloseBtn" title="閉じる（キャンセル）">&times;</button><h3 id="customDialogTitle" class="custom-dialog-title"></h3><div id="customDialogMessage" class="custom-dialog-message"></div><div class="custom-dialog-actions"><button id="customDialogCancelBtn" class="btn btn-secondary">キャンセル</button><button id="customDialogOkBtn" class="btn btn-success">OK</button></div></div></div><div id="splitDialogModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px)"><div class="custom-dialog-card"><button class="custom-dialog-close" onclick="closeSplitDialog()" title="閉じる（キャンセル）">&times;</button><h3 class="custom-dialog-title">画面の分割</h3><p class="custom-dialog-message">分割方向と分割数を選択してください。</p><div style="display:flex;flex-direction:column;gap:14px"><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">縦分割</span><span id="splitVerticalDisabledNote" style="font-size:0.7rem;color:var(--muted);display:none">（現在の分割中は変更できません）</span></div><div class="custom-dialog-actions" style="gap:8px" id="splitVerticalBtns"><button id="splitBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'vertical')">2分割</button><button id="splitBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'vertical')">3分割</button><button id="splitBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'vertical')">4分割</button></div></div><div style="height:1px;background:var(--border)"></div><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="18" height="8" rx="1"/><rect x="3" y="13" width="18" height="8" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">横分割</span></div><div class="custom-dialog-actions" style="gap:8px"><button id="splitHBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'horizontal')">2分割</button><button id="splitHBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'horizontal')">3分割</button><button id="splitHBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'horizontal')">4分割</button></div></div></div></div></div><div id="alertModal"><div class="modal-content"><h3 style="margin-top:0; font-size:1.1rem; font-weight:500; letter-spacing:-0.01em">確認が必要な画像があります</h3><div id="smallAlertContainer" class="alert-section"><h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:var(--danger)">幅1200px未満の画像</h4><div id="smallAlertList" class="alert-list"></div></div><div id="jpAlertContainer" class="alert-section japanese"><h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:#b45309">日本語ファイル名の画像</h4><div id="jpAlertList" class="alert-list"></div></div><div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top: 20px"><button class="btn btn-secondary" onclick="closeAlertModal()">確認して閉じる</button><button class="btn btn-success" onclick="downloadAlertImage()">アラート結果をJPGで保存</button></div></div></div><div id="imagePreviewModal"><div class="preview-modal-inner"><div class="nav-btn prev" onclick="changePreviewImage(-1)">❮</div><div class="preview-card" onclick="event.stopPropagation()"><span class="close-preview-top" onclick="closeImagePreview()">&times;</span><div id="toolbarContainer" style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 10px; margin-bottom: 0; padding: 0 max(8px, min(36px, 4vw)); box-sizing: border-box"><div style="display: flex; justify-content: center; align-items: center; width: 100%"><div id="aspectBar" style="display:flex; justify-content:center; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; width:100%"><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn" id="splitModeBtn" onclick="openSplitDialog()">分割</button><button class="asp-btn" id="logoToggleBtn" onclick="toggleLogoMode()">透過</button><button class="asp-btn" id="gridToggleBtn" onclick="toggleGrid()">グリッド</button>
-</div><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn ratio-btn" data-key="free" onclick="setAspect(this)">オリジナル</button><button class="asp-btn ratio-btn" data-key="1:1" onclick="setAspect(this)">1:1</button><button class="asp-btn ratio-btn" data-key="3:2" onclick="setAspect(this)">3:2</button><button class="asp-btn ratio-btn" data-key="4:3" onclick="setAspect(this)">4:3</button><button class="asp-btn ratio-btn" data-key="3:4" onclick="setAspect(this)">3:4</button><button class="asp-btn ratio-btn" data-key="2:3" onclick="setAspect(this)">2:3</button></div><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn slot-assign-btn" data-slot="thumb" onclick="assignCurrentToSlot('thumb')">Thumbnail</button><button class="asp-btn slot-assign-btn" data-slot="og" onclick="assignCurrentToSlot('og')">OG</button><button class="asp-btn slot-assign-btn" data-slot="special" onclick="assignCurrentToSlot('special')">Special</button><button class="asp-btn preset-nav-btn" data-key="thumb" onclick="handlePresetNavClick(this)" style="display:none">Thumbnail</button><button class="asp-btn preset-nav-btn" data-key="og" onclick="handlePresetNavClick(this)" style="display:none">OG</button><button class="asp-btn preset-nav-btn" data-key="special" onclick="handlePresetNavClick(this)" style="display:none">Special</button>
+  <div id="customDialogModal"><div class="custom-dialog-card"><button class="custom-dialog-close" id="customDialogCloseBtn" title="閉じる（キャンセル）">&times;</button><h3 id="customDialogTitle" class="custom-dialog-title"></h3><div id="customDialogMessage" class="custom-dialog-message"></div><div class="custom-dialog-actions"><button id="customDialogCancelBtn" class="btn btn-secondary">キャンセル</button><button id="customDialogOkBtn" class="btn btn-success">OK</button></div></div></div><div id="splitDialogModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px)"><div class="custom-dialog-card"><button class="custom-dialog-close" onclick="closeSplitDialog()" title="閉じる（キャンセル）">&times;</button><h3 class="custom-dialog-title">画面の分割</h3><p class="custom-dialog-message">分割方向と分割数を選択してください。</p><div style="display:flex;flex-direction:column;gap:14px"><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">縦分割</span><span id="splitVerticalDisabledNote" style="font-size:0.7rem;color:var(--muted);display:none">（現在の分割中は変更できません）</span></div><div class="custom-dialog-actions" style="gap:8px" id="splitVerticalBtns"><button id="splitBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'vertical')">2分割</button><button id="splitBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'vertical')">3分割</button><button id="splitBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'vertical')">4分割</button></div></div><div style="height:1px;background:var(--border)"></div><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="18" height="8" rx="1"/><rect x="3" y="13" width="18" height="8" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">横分割</span></div><div class="custom-dialog-actions" style="gap:8px"><button id="splitHBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'horizontal')">2分割</button><button id="splitHBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'horizontal')">3分割</button><button id="splitHBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'horizontal')">4分割</button></div></div></div></div></div><div id="alertModal"><div class="modal-content"><h3 style="margin-top:0; font-size:1.1rem; font-weight:500; letter-spacing:-0.01em">確認が必要な画像があります</h3><div id="smallAlertContainer" class="alert-section"><h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:var(--danger)">幅1200px未満の画像</h4><div id="smallAlertList" class="alert-list"></div></div><div id="jpAlertContainer" class="alert-section japanese"><h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:#b45309">日本語ファイル名の画像</h4><div id="jpAlertList" class="alert-list"></div></div><div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top: 20px"><button class="btn btn-secondary" onclick="closeAlertModal()">確認して閉じる</button><button class="btn btn-success" onclick="downloadAlertImage()">アラート結果をJPGで保存</button></div></div></div><div id="imagePreviewModal"><div class="preview-modal-inner"><div class="nav-btn prev" onclick="changePreviewImage(-1)">❮</div><div class="preview-card" onclick="event.stopPropagation()"><span class="close-preview-top" onclick="closeImagePreview()">&times;</span><div id="toolbarContainer" style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 10px; margin-bottom: 0; padding: 0 max(8px, min(36px, 4vw)); box-sizing: border-box"><div style="display: flex; justify-content: center; align-items: center; width: 100%"><div id="aspectBar" style="display:flex; justify-content:center; align-items:center; gap:6px; margin-bottom:0; flex-wrap:wrap; width:100%"><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn" id="splitModeBtn" onclick="openSplitDialog()">分割</button><button class="asp-btn" id="logoToggleBtn" onclick="toggleLogoMode()">透過</button><button class="asp-btn" id="gridToggleBtn" onclick="toggleGrid()">グリッド</button>
+</div><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn ratio-btn" data-key="free" onclick="setAspect(this)">オリジナル</button><button class="asp-btn ratio-btn" data-key="3:2" onclick="setAspect(this)">3:2</button><button class="asp-btn ratio-btn" data-key="4:3" onclick="setAspect(this)">4:3</button><button class="asp-btn ratio-btn" data-key="1:1" onclick="setAspect(this)">1:1</button><button class="asp-btn ratio-btn" data-key="3:4" onclick="setAspect(this)">3:4</button><button class="asp-btn ratio-btn" data-key="2:3" onclick="setAspect(this)">2:3</button></div><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn slot-assign-btn" data-slot="thumb" onclick="assignCurrentToSlot('thumb')">Thumbnail</button><button class="asp-btn slot-assign-btn" data-slot="og" onclick="assignCurrentToSlot('og')">OG</button><button class="asp-btn slot-assign-btn" data-slot="special" onclick="assignCurrentToSlot('special')">Special</button><button class="asp-btn preset-nav-btn" data-key="thumb" onclick="handlePresetNavClick(this)" style="display:none">Thumbnail</button><button class="asp-btn preset-nav-btn" data-key="og" onclick="handlePresetNavClick(this)" style="display:none">OG</button><button class="asp-btn preset-nav-btn" data-key="special" onclick="handlePresetNavClick(this)" style="display:none">Special</button>
 <button class="asp-btn btn-manual-save" onclick="performManualSave()" disabled>保存</button>
 <button class="asp-btn btn-clear-slot" onclick="clearCurrentSlot()" style="display:none; color: var(--danger);">クリア</button>
 </div></div></div><div id="specialSizeBar" style="display:none; justify-content:center; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap; width:100%"><button class="asp-btn" data-key="thumb" onclick="setAspect(this)">Thumbnail</button><button class="asp-btn" data-key="og" onclick="setAspect(this)">OG</button><button class="asp-btn" data-key="special" onclick="setAspect(this)">Special</button><button class="asp-btn btn-manual-save" onclick="performManualSave()" disabled>保存</button></div><div id="slotAssignBar" style="display:none"></div></div><div id="splitToolbarArea" style="display:none; align-items:center; flex-wrap:nowrap; transition: width 0.13s ease; margin-bottom:6px"></div><div id="logoToolbarArea" style="align-items:center; gap:10px; flex-wrap:wrap; background: var(--bg); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); width: 100%; transition: width 0.13s ease; display:flex"><div id="logoLibStrip" style="display:flex; gap:8px; overflow-x:auto; padding:4px; min-height:44px; flex:1; border: 1.5px dashed var(--border); border-radius: 6px; align-items: center; background: #fff"></div><input type="file" id="logoFileInput" accept="image/png" multiple style="display:none"><div style="display:flex; align-items:center; gap:8px; flex-shrink:0"><div style="position:relative" id="pngAddWrapper"><button id="pngAddBtn" onclick="openPngAddDialog()" style="padding:5px 12px; font-size:0.75rem; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--text); cursor:pointer; transition:all 0.15s; white-space:nowrap" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text)'">＋ 透過追加</button></div><input type="file" id="pngAddFileInput" accept=".png,.psd,.ai" multiple style="display:none"><div style="width:1px; height:20px; background:var(--border); flex-shrink:0"></div><div style="display:flex; align-items:center; gap:4px"><span style="font-size:0.7rem; color: var(--muted)">色</span><input type="color" id="logoColorPicker" value="#ffffff" title="選択中のPNGの色を変更" style="width: 26px; height: 26px; border: none; background: none; cursor: pointer; padding: 0"></div><button id="removeLogoBtn" onclick="removeSelectedLogo()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 100px; border: none; background: #e4e4e7; color: var(--text); cursor: pointer; transition: background 0.15s">選択消去</button><button id="clearAllLogosBtn" onclick="clearAllLogos()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 100px; border: none; background: var(--danger); color: white; cursor: pointer; transition: background 0.15s">全消去</button></div></div><div id="zoomContainer" style="position:relative; overflow:hidden; background:#ffffff; border-radius:0; cursor:grab; user-select:none; transition: width 0.13s ease, height 0.13s ease; margin-bottom:10px"><img id="previewImg0" class="preview-layer" src="" alt="拡大"><img id="previewImg1" class="preview-layer" src="" alt="拡大"><div id="logoLayer" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:40; overflow:hidden"></div><div id="splitContainer" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; z-index:30; background:transparent; flex-wrap:nowrap; transition:opacity 0.25s ease"></div><div id="overallGridOverlay" style="display:none; position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:50; background-size:50px 50px; background-image:linear-gradient(to right, rgba(0, 200, 255, 0.4) 1px, transparent 1px), linear-gradient(to bottom, rgba(0, 200, 255, 0.4) 1px, transparent 1px); background-position:calc(50% + 25px) calc(50% + 25px)"></div>
@@ -168,9 +172,7 @@ async function updateMainThumbnail(data, aspKey) {
 </div>
 <div id="guideOverlay400" style="display:none; position:absolute; top:33.3333%; left:33.3333%; width:33.3333%; height:33.3333%; pointer-events:none; z-index:45; border:2px dashed rgba(59, 130, 246, 0.8);">
     <div id="guideText400" style="position:absolute; top:-22px; left:-2px; color:rgba(59, 130, 246, 0.8); font-size:12px; font-weight:bold; letter-spacing:0.05em; font-family:inherit;">400px</div>
-</div></div><div id="filterBar" style="display:flex; justify-content:center; align-items:center; gap:8px 16px; margin-top:0; flex-wrap:wrap; width:100%; transition: width 0.13s ease"><div style="display:flex; align-items:center; gap:6px; flex: 1 1 380px; min-width: 260px"><div style="display:flex; align-items:center; gap:4px; flex:1; min-width:0"><span style="font-size:0.7rem; color:var(--muted); white-space:nowrap">彩度</span><input type="range" class="filter-slider" id="satSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()" style="flex:1; min-width:20px"><span id="satLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums">100%</span><button id="ftoggle-sat" onclick="toggleFilter('sat')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s">↺</button></div><div style="display:flex; align-items:center; gap:4px; flex:1; min-width:0"><span style="font-size:0.7rem; color:var(--muted); white-space:nowrap">明るさ</span><input type="range" class="filter-slider" id="conSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()" style="flex:1; min-width:20px"><span id="conLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums">100%</span><button id="ftoggle-bri" onclick="toggleFilter('bri')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s">↺</button></div></div><div style="display:flex; align-items:center; gap:6px; flex: 1 1 380px; min-width: 260px"><div style="display:flex; align-items:center; gap:4px; flex:1; min-width:0"><span style="font-size:0.7rem; color:var(--muted); white-space:nowrap">シャープ</span><input type="range" class="filter-slider" id="sharpSlider" min="0" max="100" value="0" step="1" oninput="applyPreviewFilters()" style="flex:1; min-width:20px"><span id="sharpLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums">0%</span><button id="ftoggle-sharp" onclick="toggleFilter('sharp')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s">↺</button></div><div style="display:flex; align-items:center; gap:4px; flex:1; min-width:0"><span style="font-size:0.7rem; color:var(--muted); white-space:nowrap">回転</span><input type="range" class="filter-slider" id="rotSlider" min="-90" max="90" value="0" step="1" oninput="applyPreviewFilters()" style="flex:1; min-width:20px"><span id="rotLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums">0°</span><button id="ftoggle-rot" onclick="toggleFilter('rot')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s">↺</button></div><button id="resetAllBtn" onclick="resetPreviewFilters()" style="padding:3px 10px; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:inherit; font-size:0.7rem; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'"></div></div><div id="zoomBar" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px; transition: width 0.13s ease"><div style="display:flex; align-items:center; gap:6px; flex-shrink:0"><button onclick="stepZoom(-0.25)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text)">−</button><span id="zoomLabel" style="font-size:0.8rem;font-weight:500;min-width:44px;text-align:center;color:var(--text)">100%</span><button onclick="stepZoom(0.25)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text)">＋</button><button onclick="resetZoom()" style="padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:0.75rem;color:var(--muted)">リセット</button><button id="resetAllBtn" onclick="resetPreviewFilters()" style="padding:3px 10px; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:inherit; font-size:0.7rem; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">全リセット</button></div><div style="display:flex; align-items:center; justify-content:center; gap:6px; flex:1; min-width:0; flex-wrap:wrap; text-align:center"><div style="display:flex; flex-direction:column; min-width:0; align-items:center; width:100%"><div id="previewMetaName" style="font-weight:500; font-size:0.85rem; letter-spacing:-0.01em; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%"></div><div id="previewMetaInfo" style="font-size:0.75rem; color:var(--muted); font-weight:300; white-space:nowrap"></div></div></div><button id="previewDeleteBtn" onclick="deleteImage(currentPreviewIndex)" style="padding:7px 14px;border-radius:100px;border:none;background:var(--danger);color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0">削除</button>
-<button id="clearSlotBtnPreview" onclick="clearCurrentSlot()" style="display:none; padding:7px 14px;border-radius:100px;border:none;background:var(--danger);color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0">クリア</button>
-<button id="exportSingleBtn" onclick="exportCroppedView(event)" style="padding:7px 14px;border-radius:100px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:0.8rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0">この画像を書き出す</button></div></div><div class="nav-btn next" onclick="changePreviewImage(1)">❯</div></div></div><svg style="display:none" aria-hidden="true"><defs><filter id="previewGamma" color-interpolation-filters="sRGB"><feComponentTransfer><feFuncR type="gamma" id="gfuncR" amplitude="1" exponent="1" offset="0"/><feFuncG type="gamma" id="gfuncG" amplitude="1" exponent="1" offset="0"/><feFuncB type="gamma" id="gfuncB" amplitude="1" exponent="1" offset="0"/></feComponentTransfer></filter><filter id="previewSharp" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%"><feConvolveMatrix id="sharpKernel" order="3" kernelMatrix="0 0 0 0 1 0 0 0 0" divisor="1" bias="0" preserveAlpha="false" edgeMode="duplicate"/></filter></defs></svg> <script>let globalLastUpdated = "-";
+</div></div><div id="filterBar" style="display:flex; justify-content:center; align-items:center; gap:8px 16px; margin-top:0; flex-wrap:wrap; width:100%; transition: width 0.13s ease"><div style="display:flex; align-items:center; gap:6px; flex: 1 1 380px; min-width: 260px"><div style="display:flex; align-items:center; gap:4px; flex:1; min-width:0"><span style="font-size:0.7rem; color:var(--muted); white-space:nowrap">彩度</span><input type="range" class="filter-slider" id="satSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()" style="flex:1; min-width:20px"><span id="satLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums">100%</span><button id="ftoggle-sat" onclick="toggleFilter('sat')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s">↺</button></div><div style="display:flex; align-items:center; gap:4px; flex:1; min-width:0"><span style="font-size:0.7rem; color:var(--muted); white-space:nowrap">明るさ</span><input type="range" class="filter-slider" id="conSlider" min="0" max="200" value="100" step="1" oninput="applyPreviewFilters()" style="flex:1; min-width:20px"><span id="conLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums">100%</span><button id="ftoggle-bri" onclick="toggleFilter('bri')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s">↺</button></div></div><div style="display:flex; align-items:center; gap:6px; flex: 1 1 380px; min-width: 260px"><div style="display:flex; align-items:center; gap:4px; flex:1; min-width:0"><span style="font-size:0.7rem; color:var(--muted); white-space:nowrap">シャープ</span><input type="range" class="filter-slider" id="sharpSlider" min="0" max="100" value="0" step="1" oninput="applyPreviewFilters()" style="flex:1; min-width:20px"><span id="sharpLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums">0%</span><button id="ftoggle-sharp" onclick="toggleFilter('sharp')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s">↺</button></div><div style="display:flex; align-items:center; gap:4px; flex:1; min-width:0"><span style="font-size:0.7rem; color:var(--muted); white-space:nowrap">回転</span><input type="range" class="filter-slider" id="rotSlider" min="-90" max="90" value="0" step="1" oninput="applyPreviewFilters()" style="flex:1; min-width:20px"><span id="rotLabel" style="font-size:0.7rem; font-weight:500; min-width:32px; text-align:right; color:var(--text); font-variant-numeric: tabular-nums">0°</span><button id="ftoggle-rot" onclick="toggleFilter('rot')" title="前回値を復元" style="width:18px;height:18px;border-radius:50%;border:none;background:none;cursor:pointer;padding:0;font-size:14px;line-height:1;color:var(--border);flex-shrink:0;transition:color 0.15s">↺</button></div></div></div><div id="zoomBar" style="display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:10px; transition: width 0.13s ease"><div id="zoomCtrlRow" style="display:flex; align-items:center; gap:6px; flex-shrink:0"><button onclick="stepZoom(-0.25)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text)">−</button><span id="zoomLabel" style="font-size:0.8rem;font-weight:500;min-width:44px;text-align:center;color:var(--text)">100%</span><button onclick="stepZoom(0.25)" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--text)">＋</button><button onclick="resetZoom()" style="padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:0.75rem;color:var(--muted)">リセット</button></div><div id="zoomMetaRow" style="display:flex; align-items:center; justify-content:center; gap:6px; flex:1; min-width:0; text-align:center"><div style="display:flex; flex-direction:column; min-width:0; align-items:center; width:100%"><div id="previewMetaName" style="font-weight:500; font-size:0.85rem; letter-spacing:-0.01em; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%"></div><div id="previewMetaInfo" style="font-size:0.75rem; color:var(--muted); font-weight:300; white-space:nowrap"></div></div></div><div id="zoomBtnRow" style="display:flex; align-items:center; gap:6px;"><button id="resetAllBtn" onclick="resetPreviewFilters()" style="padding:6px 10px; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:inherit; font-size:0.75rem; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">全リセット</button><button id="previewDeleteBtn" onclick="deleteImage(currentPreviewIndex)" style="padding:6px 10px;border-radius:100px;border:none;background:var(--danger);color:#fff;cursor:pointer;font-size:0.75rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0">削除</button><button id="clearSlotBtnPreview" onclick="clearCurrentSlot()" style="display:none; padding:6px 10px;border-radius:100px;border:none;background:var(--danger);color:#fff;cursor:pointer;font-size:0.75rem;font-weight:500;font-family:inherit;white-space:nowrap;flex-shrink:0">クリア</button><button id="exportSingleBtn" onclick="exportCroppedView(event)" style="padding:6px 10px;border-radius:100px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:0.75rem;font-weight:500;font-family:inherit;white-space:nowrap;flex:1;text-align:center">この画像を書き出す</button></div></div></div><div class="nav-btn next" onclick="changePreviewImage(1)">❯</div></div></div><svg style="display:none" aria-hidden="true"><defs><filter id="previewGamma" color-interpolation-filters="sRGB"><feComponentTransfer><feFuncR type="gamma" id="gfuncR" amplitude="1" exponent="1" offset="0"/><feFuncG type="gamma" id="gfuncG" amplitude="1" exponent="1" offset="0"/><feFuncB type="gamma" id="gfuncB" amplitude="1" exponent="1" offset="0"/></feComponentTransfer></filter><filter id="previewSharp" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%"><feConvolveMatrix id="sharpKernel" order="3" kernelMatrix="0 0 0 0 1 0 0 0 0" divisor="1" bias="0" preserveAlpha="false" edgeMode="duplicate"/></filter></defs></svg> <script>let globalLastUpdated = "-";
 let globalUpdateType = "edit";
 function refreshGlobalTimestamp(type) {if (type) globalUpdateType = type;
 globalLastUpdated = getFormattedDate();
@@ -500,12 +502,13 @@ processedImages = []; smallImages = []; japaneseImages = [];
 assignedSlots = { thumb: null, og: null, special: null, save1: null, save2: null, save3: null };
 previewArea.innerHTML = '<div class="preview-drop-hint">ここにドロップして追加</div>';
 byId('actionArea').style.display = 'none';
-byId('dropZone').style.display = 'block';
+byId('dropZone').style.display = 'none';
 if (!state) {globalLastUpdated = "-";
 globalUpdateType = "edit";
 updateSlotLabels();
 updateTimestampDisplay();
 renderAllPresetCanvases();
+byId('dropZone').style.display = 'block';
 updateActionAreaState();
 return;
 }
@@ -536,12 +539,25 @@ if (restored.isSplitData && restored.splitSelectedImagesData) {restored.splitSel
 assignedSlots[key] = restored;
 }
 });
-if (processedImages.length > 0 || Object.values(assignedSlots).some(v => v !== null)) {byId('actionArea').style.display = 'flex'; byId('dropZone').style.display = 'none';
+if (processedImages.length > 0 || Object.values(assignedSlots).some(v => v !== null)) {
+  // display:none のまま全サムネイルを構築し、完了後に一括表示（レイアウトシフト防止）
+  byId('actionArea').style.display = 'none';
+  byId('actionArea').style.opacity = '';
+  byId('dropZone').style.display = 'none';
+  renderAllThumbs();
+  renderAllPresetCanvases();
+  updateSlotLabels();
+  updateSlotActionBtns();
+  requestAnimationFrame(() => { byId('actionArea').style.display = 'flex'; });
+} else {
+  byId('actionArea').style.display = 'none';
+  byId('actionArea').style.opacity = '';
+  byId('dropZone').style.display = 'block';
+  renderAllThumbs();
+  renderAllPresetCanvases();
+  updateSlotLabels();
+  updateSlotActionBtns();
 }
-renderAllThumbs();
-renderAllPresetCanvases();
-updateSlotLabels();
-updateSlotActionBtns();
 }
 let isAppBooting = true;
 async function updateSlotLabels() {
@@ -1009,9 +1025,6 @@ for(let i=0; i<count; i++) {defs += `<filter id="splitGamma${i}" color-interpola
 svg.innerHTML = `<defs>${defs}</defs>`;
 }
 async function openSplitDialog() {if (isSelectingForSplit) return;
-if (isSplitPreviewActive && splitTargetCount >= 4 && splitDirection === 'horizontal') {showToast("最大4分割まで追加可能です");
-return;
-}
 const currentCount = isSplitPreviewActive ? splitTargetCount : 1;
 // ボタン有効判定:
 // 同方向 → 現在より多い分割数のみ有効
@@ -1794,11 +1807,11 @@ el.style.marginRight = 'auto';
 }
 if (isSplitPreviewActive) recalcSplitBaseScales();
 // SP: filterBarの各スライダーを1行ずつに強制
+const fb = byId('filterBar');
 if (window.innerWidth <= 540) {
-  // zoomContainer の下に間隔を追加
+  // SP: filterBar縦並び
   const zc = byId('zoomContainer');
-  if (zc) zc.style.marginBottom = '10px';
-  const fb = byId('filterBar');
+  if (zc) { zc.style.marginTop = '0'; zc.style.marginBottom = '10px'; }
   if (fb) {
     fb.style.flexDirection = 'column';
     fb.style.alignItems = 'stretch';
@@ -1824,75 +1837,102 @@ if (window.innerWidth <= 540) {
       });
     });
   }
-  // SP: zoomBar整理（1行: −/％/＋/リセット/全リセット ＋ ファイル名右寄せ ＋ 削除/書き出し）
-  const zb = byId('zoomBar');
-  if (zb) {
-    zb.style.flexWrap = 'wrap';
-    zb.style.gap = '6px';
-    // zoom操作グループ（−/％/＋/リセット/全リセット）
-    const zoomCtrl = zb.querySelector('div');
-    if (zoomCtrl) { zoomCtrl.style.flex = 'none'; zoomCtrl.style.flexWrap = 'nowrap'; }
-    // ファイル名エリアを右寄せ・flex:1
-    const metaDiv = zb.querySelector('div:nth-child(2)');
-    if (metaDiv) {
-      metaDiv.style.order = '2';
-      metaDiv.style.flex = '1';
-      metaDiv.style.minWidth = '0';
-      metaDiv.style.width = 'auto';
-      metaDiv.style.textAlign = 'right';
-      metaDiv.style.justifyContent = 'flex-end';
-    }
-    const mn = byId('previewMetaName');
-    const mi = byId('previewMetaInfo');
-    if (mn) { mn.style.overflow = 'hidden'; mn.style.textOverflow = 'ellipsis'; mn.style.whiteSpace = 'nowrap'; mn.style.maxWidth = '100%'; }
-    if (mi) { mi.style.whiteSpace = 'nowrap'; }
-    // 削除ボタン
-    const delBtn = byId('previewDeleteBtn');
-    if (delBtn) { delBtn.style.padding = '6px 12px'; delBtn.style.fontSize = '0.75rem'; delBtn.style.order = '3'; delBtn.style.flex = 'none'; }
-    const clrBtn = byId('clearSlotBtnPreview');
-    if (clrBtn) { clrBtn.style.order = '3'; clrBtn.style.flex = 'none'; }
-    // 書き出しボタン（フル幅・2行目）
-    const expBtn = byId('exportSingleBtn');
-    if (expBtn) { expBtn.style.flex = '1'; expBtn.style.width = '100%'; expBtn.style.order = '4'; expBtn.style.textAlign = 'center'; }
-  }
-  // SP: 保存ボタンを ratio 行（2:3の右）に移動
-  const saveBtn = document.querySelector('#aspectBar .btn-manual-save');
-  const ratioRow2 = document.querySelector('#aspectBar .ratio-btn')?.parentElement;
-  if (saveBtn && ratioRow2 && !ratioRow2.querySelector('.btn-manual-save')) {
-    ratioRow2.appendChild(saveBtn);
-  }
-  // SP: ファイル名エリアに上下マージン
-  const metaName = byId('previewMetaName');
-  if (metaName) metaName.style.margin = '6px 0 2px';
-  const aspectBar = byId('aspectBar');
-  if (aspectBar) {
-    aspectBar.style.flexDirection = 'column';
-    aspectBar.style.alignItems = 'center';
-    aspectBar.style.gap = '6px';
-    const divs = Array.from(aspectBar.children).filter(el => el.tagName === 'DIV');
-    const group1 = divs[0]; // 分割・透過・グリッド
-    const group2 = divs[1]; // オリジナル・1:1〜2:3
-    if (group1 && group2) {
-      // オリジナルボタンを group1 の末尾に移動
-      const originalBtn = group2.querySelector('[data-key="free"]');
-      if (originalBtn && !group1.querySelector('[data-key="free"]')) {
-        group1.appendChild(originalBtn);
-      }
-      // group1（1段目）スタイル
-      group1.style.display = 'flex';
-      group1.style.flexWrap = 'nowrap';
-      group1.style.justifyContent = 'center';
-      group1.style.width = '100%';
-      // group2（2段目: 1:1〜2:3）スタイル
-      group2.style.display = 'flex';
-      group2.style.flexWrap = 'wrap';
-      group2.style.justifyContent = 'center';
-      group2.style.width = '100%';
-      // 既存の改行要素を削除
-      group2.querySelectorAll('.sp-break').forEach(el => el.remove());
-    }
+} else {
+  // PC: filterBar を元のHTML通りに復元
+  const zc = byId('zoomContainer');
+  if (zc) { zc.style.marginTop = '0'; zc.style.marginBottom = '10px'; }
+  if (fb) {
+    // filterBar 本体: 元のHTML inline style に合わせて明示的に復元
+    fb.style.flexDirection = '';
+    fb.style.alignItems = 'center';
+    fb.style.justifyContent = 'center';
+    fb.style.gap = '8px 16px';
+    fb.style.marginTop = '0';
+    fb.style.flexWrap = 'wrap';
+    Array.from(fb.children).forEach(group => {
+      // group div: flex:1 1 380px; min-width:260px; display:flex; align-items:center; gap:6px
+      group.style.flex = '1 1 380px';
+      group.style.minWidth = '260px';
+      group.style.width = '';
+      group.style.display = 'flex';
+      group.style.flexDirection = '';
+      group.style.alignItems = 'center';
+      group.style.gap = '6px';
+      Array.from(group.children).forEach(sliderRow => {
+        if (sliderRow.tagName === 'DIV') {
+          // inner div: flex:1; min-width:0; display:flex; align-items:center; gap:4px
+          sliderRow.style.flex = '1';
+          sliderRow.style.minWidth = '0';
+          sliderRow.style.width = '';
+          sliderRow.style.minHeight = '';
+          sliderRow.style.display = 'flex';
+          sliderRow.style.flexDirection = '';
+          sliderRow.style.alignItems = 'center';
+          sliderRow.style.gap = '4px';
+        }
+      });
+    });
   }
 }
+  // SP/PC: zoomBar レイアウト
+  const zb = byId('zoomBar');
+  const isSPLayout = window.innerWidth <= 540;
+  if (zb) {
+    const zoomCtrlRow = byId('zoomCtrlRow');
+    const zoomMetaRow = byId('zoomMetaRow');
+    const zoomBtnRow  = byId('zoomBtnRow');
+    const mn = byId('previewMetaName');
+    const mi = byId('previewMetaInfo');
+    if (isSPLayout) {
+      // SP: CSSのmedia queryが2段レイアウトを担う。JSはmetaDivの右寄せのみ対応
+      if (zoomMetaRow) { zoomMetaRow.style.textAlign = 'right'; zoomMetaRow.style.justifyContent = 'flex-end'; }
+      if (mn) { mn.style.textAlign = 'right'; }
+      if (mi) { mi.style.textAlign = 'right'; }
+    } else {
+      // PC: 1行レイアウト。zoomBtnRowをdisplay:contentsで解体しない代わりにzoomBar直下に並べる
+      // zoomBtnRowはwidth:100%を外してinline扱いにする
+      if (zoomBtnRow) { zoomBtnRow.style.width = ''; zoomBtnRow.style.flex = 'none'; }
+      if (zoomCtrlRow) { zoomCtrlRow.style.flex = 'none'; }
+      if (zoomMetaRow) { zoomMetaRow.style.flex = '1'; zoomMetaRow.style.minWidth = '0'; zoomMetaRow.style.textAlign = 'center'; zoomMetaRow.style.justifyContent = 'center'; }
+      if (mn) { mn.style.textAlign = 'center'; mn.style.margin = ''; }
+      if (mi) { mi.style.textAlign = 'center'; }
+
+    }
+  }
+  // SP: 保存ボタン・aspectBarはSP時のみ
+  if (window.innerWidth <= 540) {
+    const saveBtn = document.querySelector('#aspectBar .btn-manual-save');
+    const ratioRow2 = document.querySelector('#aspectBar .ratio-btn')?.parentElement;
+    if (saveBtn && ratioRow2 && !ratioRow2.querySelector('.btn-manual-save')) {
+      ratioRow2.appendChild(saveBtn);
+    }
+    const metaName = byId('previewMetaName');
+    if (metaName) metaName.style.margin = '6px 0 2px';
+    const aspectBar = byId('aspectBar');
+    if (aspectBar) {
+      aspectBar.style.flexDirection = 'column';
+      aspectBar.style.alignItems = 'center';
+      aspectBar.style.gap = '6px';
+      const divs = Array.from(aspectBar.children).filter(el => el.tagName === 'DIV');
+      const group1 = divs[0];
+      const group2 = divs[1];
+      if (group1 && group2) {
+        const originalBtn = group2.querySelector('[data-key="free"]');
+        if (originalBtn && !group1.querySelector('[data-key="free"]')) {
+          group1.appendChild(originalBtn);
+        }
+        group1.style.display = 'flex';
+        group1.style.flexWrap = 'nowrap';
+        group1.style.justifyContent = 'center';
+        group1.style.width = '100%';
+        group2.style.display = 'flex';
+        group2.style.flexWrap = 'wrap';
+        group2.style.justifyContent = 'center';
+        group2.style.width = '100%';
+        group2.querySelectorAll('.sp-break').forEach(el => el.remove());
+      }
+    }
+  }
 return { cw: w, ch: h };
 }
 function getSmallImageScale(iw, ih, cw, ch) {
@@ -2031,6 +2071,7 @@ function zoomAt(cx, cy, newW) {
         imgY = c.ny;
     }
     applyPos();
+    updateFilterToggleBtns();
 }
 function stepZoom(delta) {cancelAnimation('zoom');
 if (isSplitPreviewActive) {const st = splitStates[activeSplitIndex], oldScale = st.scale; st.scale = Math.max(1, Math.min(MAX_ZOOM, st.scale * (1 + delta)));
@@ -2038,7 +2079,7 @@ const slotW = targetCw / splitTargetCount, slotH = targetCh, cx = slotW / 2, cy 
 let nx = cx - ratio * (cx - st.dx), ny = cy - ratio * (cy - st.dy);
 const c = clampSplitPos(nx, ny, st.scale, activeSplitIndex); st.dx = c.nx; st.dy = c.ny;
 updateSplitSlotDOM(activeSplitIndex); byId('zoomLabel').textContent = Math.round(st.scale * 100) + '%';
-markUnsaved(); return;
+updateFilterToggleBtns(); markUnsaved(); return;
 }
 zoomAt(zoomContainer.clientWidth / 2, zoomContainer.clientHeight / 2, imgW * (1 + delta));
 }
@@ -2051,7 +2092,7 @@ if(cx < 0 || cx > slotW) cx = slotW / 2;
 const ratio = st.scale / oldScale; let nx = cx - ratio * (cx - st.dx), ny = cy - ratio * (cy - st.dy);
 const c = clampSplitPos(nx, ny, st.scale, activeSplitIndex); st.dx = c.nx; st.dy = c.ny;
 updateSplitSlotDOM(activeSplitIndex); byId('zoomLabel').textContent = Math.round(st.scale * 100) + '%';
-markUnsaved(); return;
+updateFilterToggleBtns(); markUnsaved(); return;
 }
 const rect = zoomContainer.getBoundingClientRect(), factor = e.deltaMode === 1 ? 40 : (e.deltaMode === 2 ? 600 : 1);
 zoomAt(e.clientX - rect.left, e.clientY - rect.top, imgW * (1 - (e.deltaY * factor) * 0.001));
@@ -2512,8 +2553,12 @@ return `${_p}${String(_c + 1).padStart(2, '0')}.jpg`;
 if (dirHandle) { try { const fh = await dirHandle.getFileHandle(filename, { create: true }); const w = await fh.createWritable(); await w.write(blob); await w.close(); } catch(err) { console.error(err); } } else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); } return;
 }
 const data = currentPreviewData; if (!data) return; const useFolder = e && e.shiftKey && window.showDirectoryPicker;
-let renameToSafe = false;
-if (data.hasJapanese) { const jpChoice = await showCustomDialog({ title: '日本語ファイル名の確認', message: 'ファイル名に日本語が含まれています。\nWeb環境での不具合を防ぐため、数字に置き換えてもよろしいですか？\n\n現在のファイル名：' + data.originalName, okText: '置き換える', cancelText: 'そのまま保存', type: 'confirm' }); if (jpChoice === null) return; renameToSafe = !!jpChoice; }
+// ファイル名の強制正規化: 全角数字→半角、日本語削除、空なら連番
+const _toHW = s => s.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+const _baseName = data.originalName.replace(/\.[^/.]+$/, '');
+const _normalizedBase = _toHW(_baseName).replace(/[^\x01-\x7E]/g, '').trim();
+const isSlotExport = ['thumb','og','special','save1','save2','save3'].includes(currentAspectKey);
+const renameToSafe = false;
 let targetUpscaleWidth = null;
 if (data.isSmall) {
     // 余白がない状態（画像がキャンバスをカバーしている）かチェック
@@ -2598,9 +2643,11 @@ if (imagePreviewModal.style.display === 'flex' && isInLogoMode() && currentLogos
 if (exportLogos && exportLogos.items && exportLogos.items.length > 0) {const refCw = exportLogos.cw || cw;
 for (const lp of exportLogos.items) { if (lp.hidden) continue; const lI = new Image(); await new Promise(r => { lI.onload = r; lI.onerror = r; lI.src = lp.colorizedSrc || lp.src; if (lI.complete && lI.naturalWidth) r(); }); if (!lI.naturalWidth) continue; const eR = outW / refCw, dw = lp.baseW * lp.scale * eR, dh = lp.baseH * lp.scale * eR; ctx.save(); ctx.translate(lp.x * eR, lp.y * eR); ctx.rotate(lp.angle * Math.PI / 180); ctx.drawImage(lI, -dw/2, -dh/2, dw, dh); ctx.restore(); }
 }
-const suffix = currentAspectKey === 'free' ? 'original' : currentAspectKey.replace(':', 'x');
-let safeBase; if (renameToSafe) safeBase = `01_${data.originalName.replace(/\.[^/.]+$/, '').replace(/ /g, '_').replace(/[^\x01-\x7E]/g, '')}`; else safeBase = data.exportName.replace(/\.jpg$/i, '');
-const filename = FIXED_FILENAME[currentAspectKey] || `${safeBase}_${suffix}.jpg`;
+// ファイル名確定: 正規化済みbase or 連番
+const _exportBase = _normalizedBase !== ''
+  ? _normalizedBase
+  : String(processedImages.indexOf(currentPreviewData) + 1 || 1);
+const filename = FIXED_FILENAME[currentAspectKey] || `${_exportBase}.jpg`;
 const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', 0.95));
 if (dirHandle) { try { const fh = await dirHandle.getFileHandle(filename, { create: true }); const w = await fh.createWritable(); await w.write(blob); await w.close(); } catch(err) { console.error(err); } } else { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); }
 }
@@ -2897,8 +2944,9 @@ function renderAllThumbs() {
             }
         }
 
-        if (data.isSmall || data.hasJapanese || hasBgWarning) {
+        if (data.isSplitData || data.isSmall || data.hasJapanese || hasBgWarning) {
             statusBadges += `<div style="position:absolute; top:4px; right:4px; display:flex; flex-direction:column; gap:3px; z-index:15; pointer-events:none; align-items:flex-end">`;
+            if (data.isSplitData) statusBadges += `<span style="background:var(--accent); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">${data.splitTargetCount || ''}分割</span>`;
             if (data.isSmall) statusBadges += `<span style="background:var(--danger); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">1200px未満</span>`;
             if (data.hasJapanese) statusBadges += `<span style="background:var(--warn); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">日本語</span>`;
             if (hasBgWarning) statusBadges += `<span style="background:#ef4444; color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">余白</span>`;
@@ -2964,11 +3012,12 @@ ro.observe(document.getElementById('previewArea'));
 async function deleteImage(index) {const data = processedImages[index]; if (!data) return;
 const confirmed = await showCustomDialog({ title: '画像の削除', message: 'この画像を削除してもよろしいでしょうか？', okText: '削除する', okClass: 'btn btn-danger', cancelText: 'キャンセル', type: 'confirm' });
 if (!confirmed) return;
+forceClearUnsaved();
 processedImages.splice(index, 1); smallImages = smallImages.filter(d => d !== data); japaneseImages = japaneseImages.filter(d => d !== data);
 refreshGlobalTimestamp('edit');
 const hasSlotData = assignedSlots.thumb || assignedSlots.og || assignedSlots.special;
 if (processedImages.length === 0 && !hasSlotData) { byId('actionArea').style.display = 'none'; dropZone.style.display = 'block'; previewArea.innerHTML = '<div class="preview-drop-hint">ここにドロップして追加</div>'; const sb = byId('searchBarContainer'); if (sb) sb.style.display = 'none'; } else renderAllThumbs();
-if (imagePreviewModal.style.display === 'flex') {if (currentPreviewData === data) { const isSpecialMode = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey); if (!isSpecialMode) { if (processedImages.length > 0) showImagePreview(Math.min(index, processedImages.length - 1), currentAspectKey); else closeImagePreview(); } } else currentPreviewIndex = processedImages.indexOf(currentPreviewData);
+if (imagePreviewModal.style.display === 'flex') {if (currentPreviewData === data) { const isSpecialMode = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey); if (!isSpecialMode) { if (processedImages.length > 0) showImagePreview(Math.min(index, processedImages.length - 1), currentAspectKey); else closeImagePreview(true); } } else currentPreviewIndex = processedImages.indexOf(currentPreviewData);
 }
 await saveAppState();
 showToast('画像を削除しました。'); // ← この1行を追加
@@ -3298,7 +3347,7 @@ const preRot = ms && ms.rot !== undefined ? parseInt(ms.rot, 10) : 0;
 nextImg.style.transition = 'none';
 nextImg.style.transform = `translate(-50%, -50%) rotate(${preRot}deg)`;
 nextImg.style.opacity = '0';
-const onLoad = () => {activeLayer = nextLayer; if (isInitialOpen) { imagePreviewModal.style.display = 'flex'; void imagePreviewModal.offsetWidth; imagePreviewModal.style.opacity = '1'; }
+const onLoad = () => {activeLayer = nextLayer; if (isInitialOpen) { imagePreviewModal.style.display = 'flex'; void imagePreviewModal.offsetWidth; /* opacity は fitImage 後に設定 */ const prog = byId('progress'); if (prog) { prog.style.display = 'block'; byId('statusText').innerText = ''; } }
 const isSlot = ['thumb','og','special','save1','save2','save3'].includes(aspKey);
 const legacyLogos = data._modeStates?.[aspKey]?.logos;
 const logosData = data._logos || (legacyLogos ? { cw: data._modeStates[aspKey].cw, ch: data._modeStates[aspKey].ch, items: legacyLogos } : null);
@@ -3334,6 +3383,7 @@ requestAnimationFrame(() => {
   requestAnimationFrame(() => {
     nextImg.style.opacity = '1';
     byId('previewMetaName').innerHTML = highlightJapanese(data.exportName); byId('previewMetaInfo').innerHTML = `${data.isSmall ? `<span class="highlight-red" style="font-weight:bold">${data.originalWidth}</span>` : data.originalWidth}×${data.originalHeight}px`;
+    if (isInitialOpen) { const prog = byId('progress'); if (prog) prog.style.display = 'none'; imagePreviewModal.style.opacity = '1'; }
     setTimeout(() => { isPreviewLoading = false; updateSavedState(); }, 150);
   });
 });
@@ -3410,11 +3460,17 @@ const filterMemory = { sat: 150, bri: 120, sharp: 30, rot: 15 }, filterDefaults 
 function toggleFilter(name) { cancelAnimation('filter'); const slider = byId(filterSliders[name]), current = parseInt(slider.value), def = filterDefaults[name], target = (current !== def) ? def : filterMemory[name]; if (current !== def) filterMemory[name] = current; const start = current; runAnimation('filter', 500, (ease) => { slider.value = Math.round(start + (target - start) * ease); applyPreviewFilters(); }); }
 function updateFilterToggleBtns() {
 let active;
-if (isSplitPreviewActive && splitStates[activeSplitIndex]) {
+if (isSplitPreviewActive) {
   const st = splitStates[activeSplitIndex];
-  active = {sat: Math.round(st.sat||100) !== 100, bri: Math.round(st.bri||100) !== 100, sharp: Math.round(st.sharp||0) !== 0, rot: Math.round(st.rot||0) !== 0};
+  if (st) {
+    active = {sat: Math.round(st.sat||100) !== 100, bri: Math.round(st.bri||100) !== 100, sharp: Math.round(st.sharp||0) !== 0, rot: Math.round(st.rot||0) !== 0, zoom: Math.round((st.scale||1) * 100) !== 100};
+  } else {
+    const anyChanged = splitStates.some(s => s && (Math.round(s.sat||100) !== 100 || Math.round(s.bri||100) !== 100 || Math.round(s.sharp||0) !== 0 || Math.round(s.rot||0) !== 0 || Math.round((s.scale||1)*100) !== 100));
+    active = {sat: anyChanged, bri: false, sharp: false, rot: false, zoom: false};
+  }
 } else {
-  active = {sat: parseInt(byId('satSlider').value) !== 100,bri: parseInt(byId('conSlider').value) !== 100,sharp: parseInt(byId('sharpSlider').value) !== 0,rot: parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) !== 0};
+  const zoomChanged = fitW > 0 ? Math.round(imgW / fitW * 100) !== 100 : false;
+  active = {sat: parseInt(byId('satSlider').value) !== 100, bri: parseInt(byId('conSlider').value) !== 100, sharp: parseInt(byId('sharpSlider').value) !== 0, rot: parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) !== 0, zoom: zoomChanged};
 }
 Object.entries(active).forEach(([name, on]) => {const btn = byId('ftoggle-' + name);
 if (btn) {btn.style.color = on ? 'var(--accent)' : 'var(--border)';
@@ -3422,7 +3478,7 @@ btn.title = on ? 'クリックでリセット' : 'クリックで前回値を復
 }
 });
 const resetAllBtn = byId('resetAllBtn');
-if (resetAllBtn) {const hasChanges = active.sat || active.bri || active.sharp || active.rot;
+if (resetAllBtn) {const hasChanges = active.sat || active.bri || active.sharp || active.rot || active.zoom;
 resetAllBtn.disabled = !hasChanges;
 if (!hasChanges) {resetAllBtn.style.opacity = '0.4';
 resetAllBtn.style.pointerEvents = 'none';
@@ -3431,7 +3487,7 @@ resetAllBtn.style.pointerEvents = 'auto';
 }
 }
 }
-function resetPreviewFiltersImmediate() { cancelAnimation('filter'); byId('satSlider').value = 100; byId('conSlider').value = 100; byId('sharpSlider').value = 0; if(byId('rotSlider')) byId('rotSlider').value = 0; applyPreviewFilters(); }
+function resetPreviewFiltersImmediate() { cancelAnimation('filter'); cancelAnimation('zoom'); byId('satSlider').value = 100; byId('conSlider').value = 100; byId('sharpSlider').value = 0; if(byId('rotSlider')) byId('rotSlider').value = 0; applyPreviewFilters(); if (!isSplitPreviewActive) fitImage(); }
 function resetPreviewFilters() {cancelAnimation('filter');
 cancelAnimation('zoom');
 isResetting = true;
@@ -3474,7 +3530,9 @@ const startW = imgW, startH = imgH, startX = imgX, startY = imgY;
 const cw = targetCw || zoomContainer.clientWidth, ch = targetCh || zoomContainer.clientHeight;
 const iw = img.naturalWidth, ih = img.naturalHeight;
 let targetW, targetH;
-if (currentAspectKey === 'free') { targetW = cw; targetH = ch; }
+const _smallScale = getSmallImageScale(iw, ih, cw, ch);
+if (_smallScale !== null) { targetW = Math.round(iw * _smallScale); targetH = Math.round(ih * _smallScale); }
+else if (currentAspectKey === 'free') { targetW = cw; targetH = ch; }
 else { const scale = Math.max(cw / iw, ch / ih); targetW = Math.round(iw * scale); targetH = Math.round(ih * scale); }
 const targetX = Math.round((cw - targetW) / 2), targetY = Math.round((ch - targetH) / 2);
 runAnimation('reset', 600, (ease) => {byId('satSlider').value = Math.round(startSat + (100 - startSat) * ease);
@@ -3485,6 +3543,7 @@ imgW = startW + (targetW - startW) * ease;
 imgH = startH + (targetH - startH) * ease;
 imgX = startX + (targetX - startX) * ease;
 imgY = startY + (targetY - startY) * ease;
+if (ease >= 1) { fitW = imgW; }
 applyPreviewFilters();
 });
 showToast('画像の変更箇所をリセットしました');
@@ -3536,9 +3595,7 @@ async function downloadAlertImage() { const a = document.createElement('a'); a.h
 
 exportZipBtn.addEventListener('click', async (e) => {
     const useFolder = e.shiftKey && window.showDirectoryPicker;
-    const exportFormatChoice = await showCustomDialog({ title: '書き出し形式の確認', message: 'ファイル名はどうしますか？\n（※全角文字は自動で連番に変換されます）', okText: '元の名前', cancelText: '連番を付加', type: 'confirm' });
-    if (exportFormatChoice === null) return; 
-    const renameRequested = !exportFormatChoice; 
+    const renameRequested = false;
 
     // 小さい画像リストアップと個別サイズの選択
     const smallItems = [];
@@ -3632,15 +3689,22 @@ exportZipBtn.addEventListener('click', async (e) => {
         
         for (let i = 0; i < processedImages.length; i++) {
             if (isLoadingCanceled) break;
-            const data = processedImages[i]; let blobToSave = data.blob; let finalName = data.exportName;
+            const data = processedImages[i]; let blobToSave = data.blob;
+            // ファイル名強制正規化（全角数字→半角、日本語削除、空なら連番）
+            const _toHW = s => s.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+            const _fnBase = data.originalName.replace(/\.[^/.]+$/, '');
+            const _fnNorm = _toHW(_fnBase).replace(/[^\x01-\x7E]/g, '').trim();
+            const _fnFinal = (_fnNorm !== '' ? _fnNorm : String(counter++)) + '.jpg';
+            const _needsNorm = /[^\x01-\x7E]/.test(_fnBase) || _fnNorm !== _fnBase;
+            let finalName = (_needsNorm || data.hasJapanese) ? _fnFinal : data.exportName;
             
             if (data.isSplitData) {
-                if (data.hasJapanese || renameRequested) { finalName = `${String(counter++).padStart(2, '0')}_${data.originalName.replace(/\.[^/.]+$/, "").replace(/ /g, "_").replace(/[^\x01-\x7E]/g, "")}.jpg`; }
+                if (data.hasJapanese || renameRequested) { finalName = _fnFinal; }
                 updateFileProgress(i, processedImages.length, finalName); await new Promise(res => setTimeout(res, 10));
                 if (useFolder) { const fh = await dirHandle.getFileHandle(finalName, { create: true }); const w = await fh.createWritable(); await w.write(data.blob); await w.close(); } else { zip.file(finalName, data.blob); }
                 continue;
             }
-            if (data.hasJapanese || renameRequested) { finalName = `${String(counter++).padStart(2, '0')}_${data.originalName.replace(/\.[^/.]+$/, "").replace(/ /g, "_").replace(/[^\x01-\x7E]/g, "")}.jpg`; }
+            if (data.hasJapanese || renameRequested) { finalName = _fnFinal; }
             updateFileProgress(i, processedImages.length, finalName); await new Promise(res => setTimeout(res, 10));
             
             let targetUpscaleWidth = null;
