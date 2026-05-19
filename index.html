@@ -3526,7 +3526,7 @@ saveAppState();
 }
 function renderAllPresetCanvases() { ['thumb','og','special','save1','save2','save3'].forEach(p => renderPresetCanvas(p)); }
 function openInPreset(preset) {let data = assignedSlots[preset];
-if (!data) {showCustomDialog({ title: '画像が未設定です', message: 'このスロットを使用するにはプレビューモードで設定してください。', okText: '確認', okClass: 'btn btn-secondary', type: 'alert' });
+if (!data) {showCustomDialog({ title: '画像が未設定です', message: 'ここにサムネイルをドラッグ&ドロップしてください。', okText: '確認', okClass: 'btn btn-secondary', type: 'alert' });
 return;
 }
 if (data.isSplitData) {restoreSplitPreview(data, preset);
