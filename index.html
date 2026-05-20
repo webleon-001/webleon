@@ -125,56 +125,78 @@ async function handleZoomInput(val) {
 async function handleJapaneseFilenames() {
     if (isLoadingCanceled || japaneseImages.length === 0) return;
     
-    // サムネイルとファイル名のリスト用HTMLを生成（全角文字部分は赤色でハイライト）
-    const previewHtml = japaneseImages.map(data => `
+    // サムネイルとファイル名のリスト用HTMLを生成（入力欄付き・赤字）
+    const previewHtml = japaneseImages.map((data, i) => {
+        const ext = data.originalName.match(/\.[^/.]+$/)?.[0] || '.jpg';
+        const base = data.originalName.replace(/\.[^/.]+$/, '');
+        return `
     <div style="display:flex;align-items:center;gap:10px;padding:7px 8px;background:var(--bg);border-radius:6px;border:1px solid var(--border);margin-bottom:5px;text-align:left;">
         <img src="${data.thumbUrl || data.blobUrl}" style="width:56px;height:38px;object-fit:cover;border-radius:4px;flex-shrink:0;border:1px solid var(--border);">
-        <span style="font-size:0.78rem;color:var(--text);word-break:break-all;line-height:1.4;">${highlightJapanese(data.originalName)}</span>
-    </div>`).join('');
+        <div style="flex:1;min-width:0;display:flex;align-items:center;gap:4px;">
+            <input id="rename-input-${i}" type="text" value="${base}"
+                style="flex:1;min-width:0;font-size:0.78rem;color:var(--danger);font-weight:500;padding:4px 7px;border:1px solid var(--border);border-radius:5px;outline:none;background:#fff;font-family:inherit;"
+                oninput="(function(el){var p=el.selectionStart,c=el.value.replace(/[^\x01-\x7E]/g,'');if(c!==el.value){el.value=c;el.setSelectionRange(Math.max(0,p-1),Math.max(0,p-1));}el.style.color='var(--text)';})(this)">
+            <span style="font-size:0.78rem;color:var(--muted);flex-shrink:0;">${ext}</span>
+        </div>
+    </div>`}).join('');
 
     const confirmRename = await showCustomDialog({
         title: 'ファイル名の確認',
-        message: `<div style="text-align:left; margin-bottom:10px; line-height:1.5;">ファイル名に全角文字が含まれています。全角文字を削除して半角数字に置き換えます。よろしいですか？</div>
+        message: `<div style="text-align:left; margin-bottom:10px; line-height:1.5;">ファイル名に全角文字が含まれています。修正して「書き換える」を押してください。<br><span style="color:var(--danger);font-weight:500;">※日本語・全角英数字は入力できません。</span></div>
                   <div style="margin-top:10px;max-height:220px;overflow-y:auto;padding-right:2px;">${previewHtml}</div>`,
         okText: '書き換える',
-        cancelText: 'そのまま',
+        cancelText: null,
+        noCloseBtn: true,
+        okDisabled: true,
+        inputValidator: () => japaneseImages.every((_, i) => {
+            const el = document.getElementById(`rename-input-${i}`);
+            return el && el.value.replace(/[^\x01-\x7E]/g, '').trim() !== '';
+        }),
         extraText: '一覧をJPGで保存',
         extraClass: 'btn btn-success',
-        onExtraClick: () => {
-            // JPG保存処理だけを実行（ダイアログは閉じない）
-            downloadAlertImage();
-        },
+        onExtraClick: () => { downloadAlertImage(); },
+        extra2Text: '自動で連番に書き換える',
+        extra2Class: 'btn btn-secondary',
         type: 'confirm'
     });
     
-    // 「書き換える」が選ばれた場合の処理
-    if (confirmRename === true) {
-        // 全角数字を半角数字に変換する関数
-        const _toHW = s => s.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
-        
-        japaneseImages.forEach(data => {
+    // 「自動で連番に書き換える」が選ばれた場合の処理
+    if (confirmRename === 'extra2') {
+        markSessionWork();
+        japaneseImages.forEach((data) => {
             const ext = data.originalName.match(/\.[^/.]+$/)?.[0] || '.jpg';
-            const base = data.originalName.replace(/\.[^/.]+$/, "");
-            
-            // 全角数字を半角数字にし、半角以外の文字（全角文字など）を削除
-            let newBase = _toHW(base).replace(/[^\x01-\x7E]/g, '').trim();
-            
-            // 全角文字をすべて消した結果、ファイル名が空になってしまった場合は連番を付与
-            if (newBase === '') {
-                newBase = String(processedImages.indexOf(data) + 1);
-            }
-            
+            let newBase = String(processedImages.indexOf(data) + 1);
             let newExportName = newBase + ext;
             let counter = 2;
-            
-            // すでに同じ名前のファイルが存在するかチェックし、存在すれば _2, _3 を付与
             while (processedImages.some(img => img !== data && (img.exportName === newExportName || img.originalName === newExportName))) {
                 newExportName = `${newBase}_${counter}${ext}`;
                 counter++;
             }
-            
             data.exportName = newExportName;
-            data.originalName = newExportName; // オリジナル名も上書きしてUI表示に反映
+            data.originalName = newExportName;
+            data.hasJapanese = false;
+        });
+    }
+    
+    // 「書き換える」が選ばれた場合の処理
+    if (confirmRename === true) {
+        markSessionWork();
+        const _toHW = s => s.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+        japaneseImages.forEach((data, i) => {
+            const inputEl = document.getElementById(`rename-input-${i}`);
+            const ext = data.originalName.match(/\.[^/.]+$/)?.[0] || '.jpg';
+            let newBase = inputEl
+                ? _toHW(inputEl.value.replace(/[^\x01-\x7E]/g, '')).trim()
+                : '';
+            if (newBase === '') newBase = String(processedImages.indexOf(data) + 1);
+            let newExportName = newBase + ext;
+            let counter = 2;
+            while (processedImages.some(img => img !== data && (img.exportName === newExportName || img.originalName === newExportName))) {
+                newExportName = `${newBase}_${counter}${ext}`;
+                counter++;
+            }
+            data.exportName = newExportName;
+            data.originalName = newExportName;
             data.hasJapanese = false;
         });
     }
@@ -182,7 +204,7 @@ async function handleJapaneseFilenames() {
     // 後続のアラート画面で「日本語ファイル名」の警告が二重に出ないようにリストをクリア
     japaneseImages = [];
 }
-</script><script src="https://cdn.jsdelivr.net/npm/heic-to@1.4.2/dist/iife/heic-to.js"></script> <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script> <script src="https://unpkg.com/ag-psd@14.3.2/dist/bundle.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> <style>@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');:root{--accent:#6366f1;--accent-soft:#eef2ff;--bg:#f5f5f7;--card:#ffffff;--border:#e4e4e7;--text:#18181b;--muted:#71717a;--danger:#ef4444;--danger-soft:#fef2f2;--warn:#f59e0b;--warn-soft:#fffbeb;--radius:14px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06)}*,*::before,*::after{box-sizing:border-box;user-select:none;-webkit-user-select:none}input,textarea,[contenteditable]{user-select:text;-webkit-user-select:text}body{font-family:'DM Sans','Noto Sans JP',sans-serif;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:32px 20px 60px;margin:0;min-height:100vh;color:var(--text)}.version-label{font-size:0.85rem;color:var(--muted);font-weight:500;letter-spacing:0.02em}.page-header{display:flex;justify-content:space-between;align-items:flex-end;width:100%;max-width:900px;margin-bottom:20px;gap:16px}@media (max-width:768px){.page-header{flex-direction:column;align-items:flex-start}}.title-left{display:flex;flex-direction:column;gap:4px}.title-left h2{font-size:1.5rem;font-weight:500;letter-spacing:-0.02em;margin:0;color:var(--text)}.title-left p{font-size:0.85rem;color:var(--muted);margin:0;font-weight:300}.title-right{display:flex;align-items:center;gap:10px}.slot-modern-wrapper{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:4px 6px 4px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);gap:4px;transition:border-color 0.2s}.slot-modern-wrapper:hover{border-color:#d4d4d8}.slot-modern-label{font-size:0.7rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;pointer-events:none}.slot-modern-select{appearance:none;background:transparent;border:none;font-family:inherit;font-size:0.8rem;font-weight:500;color:var(--text);padding:4px 24px 4px 6px;cursor:pointer;outline:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;background-size:14px;max-width:140px;text-overflow:ellipsis}.slot-modern-btn{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}.slot-modern-btn:hover{background:var(--bg);color:var(--text)}.slot-modern-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}.help-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0;transition:transform 0.15s;line-height:1;margin-left:4px}.help-btn:hover{transform:scale(1.1)}.qr-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);width:32px;height:32px;cursor:pointer;padding:5px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;color:var(--muted);box-shadow:0 2px 6px rgba(0,0,0,0.06)}.qr-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:scale(1.05)}.section-card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);width:100%;max-width:900px;text-align:center}.instruction-text{position:relative;max-width:700px;margin:16px auto;font-size:0.8rem;color:var(--muted);line-height:1.75;text-align:left;background:var(--bg);padding:14px 32px 14px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);font-weight:300}.close-inst-btn{position:absolute;top:8px;right:12px;font-size:1.2rem;background:none;border:none;color:var(--muted);cursor:pointer;padding:0;transition:color 0.15s}.close-inst-btn:hover{color:var(--text)}.upload-zone{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:100px 20px;background:var(--bg);cursor:pointer;transition:all 0.2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center}.upload-zone:hover{border-color:var(--accent);background:var(--accent-soft)}.upload-btn-main{background:var(--accent);padding:11px 24px;border-radius:100px;color:#fff;font-weight:500;font-size:0.9rem;display:inline-block;margin-bottom:12px;letter-spacing:-0.01em;cursor:pointer;transition:opacity 0.15s}.upload-btn-main:hover{opacity:0.85}.upload-format-text{font-size:0.72rem;color:var(--muted);font-weight:300;letter-spacing:0.04em;text-transform:uppercase}.btn{padding:10px 22px;cursor:pointer;border:none;border-radius:100px;font-family:inherit;font-weight:500;font-size:0.875rem;transition:all 0.15s;letter-spacing:-0.01em}.btn:hover{opacity:0.88;transform:translateY(-1px)}.btn-success{background:var(--accent);color:#fff}.btn-secondary{background:#e4e4e7;color:var(--muted)}.btn-secondary:hover{background:#d4d4d8;color:var(--text)}.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#dc2626}#previewArea{position:relative;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:12px;margin-top:14px;border-radius:var(--radius-sm);border:1.5px dashed transparent;transition:border-color 0.2s,background 0.2s,padding-left 0.35s ease;padding:8px}#previewArea.drag-over{border-color:var(--accent);background:var(--accent-soft)}.preview-drop-hint{display:none;width:100%;text-align:center;padding:20px;color:var(--accent);font-size:0.8rem;font-weight:500;pointer-events:none}#previewArea.drag-over .preview-drop-hint{display:block}.thumb-box{position:relative;flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0;text-align:center;cursor:pointer;transition:transform 0.15s;border-radius:12px}.thumb-delete-btn{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:#fff;border:2px solid #fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity 0.15s;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.2)}.thumb-box:hover .thumb-delete-btn{opacity:1}@media (max-width:600px){.thumb-box{flex:0 0 calc(33.333% - 8px)}}.preset-box{cursor:grab;text-align:center;transition:transform 0.15s;flex-shrink:0}.preset-box:hover{transform:translateY(-2px)}.preset-canvas-wrap{position:relative;display:block;line-height:0;overflow:hidden;border-radius:6px}.preset-canvas-wrap canvas{display:block;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);transition:opacity 0.2s;width:100%;height:auto}.preset-box:hover .preset-canvas-wrap canvas{border-color:var(--accent)}.preset-edited-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--accent);border-radius:0 0 6px 6px;pointer-events:none;z-index:6}.preset-box span{display:block;font-size:0.6rem;color:var(--muted);margin-top:3px;font-weight:500;letter-spacing:0.02em}.custom-tooltip{visibility:hidden;opacity:0;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:rgba(24,24,27,0.9);color:#fff;padding:6px 10px;border-radius:6px;font-size:0.7rem;font-weight:500;white-space:nowrap;z-index:100;pointer-events:none;transition:all 0.1s ease;box-shadow:0 4px 12px rgba(0,0,0,0.15);margin-bottom:6px}.custom-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:5px;border-style:solid;border-color:rgba(24,24,27,0.9) transparent transparent transparent}.thumb-box:hover .custom-tooltip{visibility:visible;opacity:1;transform:translateX(-50%) translateY(-4px)}.thumb-frame{width:100%;aspect-ratio:1 / 1;height:auto;border-radius:10px;border:2px solid transparent;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto;overflow:hidden;position:relative}.thumb-inner-img{display:block;object-fit:cover}.thumb-name{font-size:0.65rem;color:var(--text);font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:5px;line-height:1.3;text-align:center;width:100%}.thumb-dimensions{font-size:0.6rem;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;font-weight:300}#imagePreviewModal{display:none;opacity:0;transition:opacity 0.3s ease;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.preview-modal-inner{display:flex;align-items:center;justify-content:center;width:100%;height:100%}.preview-card{background:var(--card);padding:12px 8px 10px;border-radius:var(--radius);position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.4);display:inline-flex;flex-direction:column;align-items:stretch;transition:width 0.13s ease,height 0.13s ease;max-width:calc(100vw - 16px);box-sizing:border-box;overflow:hidden}.preview-layer{position:absolute;top:50%;left:50%;max-width:none;max-height:none;display:block;transform:translate(-50%,-50%);opacity:0;transition:opacity 0.13s ease;pointer-events:none}.nav-btn{position:fixed;top:50%;transform:translateY(-50%);width:48px;height:48px;flex-shrink:0;background:rgba(255,255,255,0.9);color:var(--text);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;user-select:none;transition:background 0.2s,box-shadow 0.2s;border:1px solid var(--border);z-index:5010}.nav-btn:hover{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.15)}.nav-btn.prev{left:4px}.nav-btn.next{right:4px}@media(min-width:600px){.nav-btn.prev{left:16px}.nav-btn.next{right:16px}}.close-preview-top{position:absolute;top:10px;right:14px;color:var(--muted);font-size:32px;cursor:pointer;line-height:1;font-weight:300;z-index:5020;opacity:0.6;transition:all 0.2s}.close-preview-top:hover{opacity:1;color:var(--text)}.close-preview-top:hover{opacity:1}.highlight-red{color:var(--danger)}#progress{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:360px;background:var(--card);z-index:6000;padding:20px 24px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.2);border-radius:var(--radius);border:1px solid var(--border)}.progress-container{width:100%;height:3px;background:var(--border);border-radius:100px;margin-top:14px;overflow:hidden;display:block}.progress-bar{height:100%;width:0%;background:var(--accent);transition:width 0.2s ease;border-radius:100px}#alertModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.modal-content{background:var(--card);padding:28px;border-radius:var(--radius);max-width:90%;width:750px;max-height:85vh;overflow-y:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border)}.alert-section{margin-bottom:20px;background:var(--danger-soft);padding:16px;border-radius:var(--radius-sm);border:1px solid #fecaca}.alert-section.japanese{background:var(--warn-soft);border-color:#fde68a}.alert-list{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;margin-top:10px}.asp-btn{padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-family:inherit;font-size:0.72rem;font-weight:400;cursor:pointer;transition:all 0.15s;white-space:nowrap}.asp-btn:hover{border-color:var(--accent);color:var(--accent)}.asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.asp-sep{width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px}.filter-slider{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--border);border-radius:100px;outline:none;cursor:pointer;transition:background 0.15s}.filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;transition:transform 0.1s;box-shadow:0 1px 4px rgba(99,102,241,0.3)}#customDialogModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.custom-dialog-card{position:relative;background:var(--card);padding:28px;border-radius:var(--radius);width:90%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border);text-align:center}.custom-dialog-close{position:absolute;top:12px;right:16px;font-size:1.5rem;color:var(--muted);background:none;border:none;cursor:pointer;transition:color 0.15s;line-height:1;padding:0}.custom-dialog-close:hover{color:var(--text)}.custom-dialog-title{font-size:1.15rem;font-weight:500;margin:0 0 14px;color:var(--text);letter-spacing:-0.01em}.custom-dialog-message{font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:24px;text-align:center;background:var(--bg);padding:14px;border-radius:var(--radius-sm);border:1px solid var(--border)}.custom-dialog-actions{display:flex;justify-content:center;gap:12px}.custom-dialog-actions .btn{white-space:nowrap}.dialog-overwrite-preview{display:block;width:100%;max-height:220px;margin:14px auto 0;border-radius:var(--radius-sm);border:1px solid #d4d4d8;background:#fff;object-fit:cover}#logoLibStrip::-webkit-scrollbar{height:6px}#logoLibStrip::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}.logo-lib-item{position:relative;flex-shrink:0}.logo-lib-item img{width:36px;height:36px;object-fit:contain;cursor:pointer;border:1px solid var(--border);border-radius:4px;padding:2px;background:#fff;transition:border-color 0.2s;display:block}.logo-lib-item img:hover{border-color:var(--accent)}.logo-lib-del{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--danger);color:#fff;border:1.5px solid #fff;font-size:9px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.15s}.logo-lib-item:hover .logo-lib-del{opacity:1}.logo-container{position:absolute;transform-origin:center;user-select:none;cursor:move;touch-action:none;pointer-events:auto}.logo-container.selected{outline:2px dashed var(--accent);outline-offset:2px}.logo-container img{width:100%;height:100%;display:block;pointer-events:none}.logo-handle{position:absolute;width:14px;height:14px;background:#fff;border:2px solid var(--accent);border-radius:50%;display:none;z-index:10;touch-action:none}.logo-container.selected .logo-handle{display:block}.logo-handle.tl{top:-7px;left:-7px;cursor:nwse-resize}.logo-handle.tr{top:-7px;right:-7px;cursor:nesw-resize}.logo-handle.bl{bottom:-7px;left:-7px;cursor:nesw-resize}.logo-handle.br{bottom:-7px;right:-7px;cursor:nwse-resize}.logo-rot-handle{position:absolute;width:26px;height:26px;background:transparent;display:none;z-index:9;touch-action:none;cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><path d='M10 2.5 A7.5 7.5 0 1 0 17.5 10' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round'/><polyline points='15,1 18,7 12,7' fill='none' stroke='%236366f1' stroke-width='2' stroke-linejoin='round'/></svg>") 10 10,crosshair}.logo-rot-handle.tl{top:-27px;left:-27px}.logo-rot-handle.tr{top:-27px;right:-27px}.logo-rot-handle.bl{bottom:-27px;left:-27px}.logo-rot-handle.br{bottom:-27px;right:-27px}.logo-container.selected .logo-rot-handle{display:block}input[type="color"]::-webkit-color-swatch-wrapper{padding:0}input[type="color"]::-webkit-color-swatch{border:1px solid var(--border);border-radius:4px}#logoLayer{transition:opacity 0.3s ease;opacity:0;pointer-events:none}#logoLayer.logo-layer-visible{opacity:1;pointer-events:none}@keyframes logoLibFadeIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}#logoLibStrip img{animation:logoLibFadeIn 0.25s ease forwards}#logoToolbarArea{overflow:hidden;max-height:0;opacity:0;margin-bottom:0 !important;pointer-events:none;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease,margin-bottom 0.3s ease}#logoToolbarArea.logo-panel-open{max-height:140px;opacity:1;margin-bottom:10px !important;pointer-events:auto}#logoToggleBtn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.logo-container.hidden-logo>img{opacity:0.2}.logo-container.hidden-logo{outline-style:dashed}@keyframes pulseRed{0%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}50%{background-color:#f87171;border-color:#f87171;color:white;box-shadow:0 0 10px rgba(239,68,68,0.8)}100%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}}.btn-manual-save{background-color:#10b981 !important;border-color:#10b981 !important;color:white !important;transition:all 0.5s ease}.btn-manual-save:disabled{background-color:#d1d5db !important;border-color:#d1d5db !important;color:#9ca3af !important;cursor:not-allowed !important;opacity:1 !important;transform:none !important;animation:none !important}.btn-manual-save.unsaved{background-color:#ef4444 !important;border-color:#ef4444 !important;animation:pulseRed 2s infinite ease-in-out}.thumb-updated{position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:1px 4px;border-radius:3px;z-index:25;pointer-events:none;font-family:'DM Sans',sans-serif}.thumb-frame .status-badge-container{top:22px !important}#psdLayerModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:8000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.psd-modal-wrap{background:var(--card);border-radius:var(--radius);width:90%;max-width:700px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);border:1px solid var(--border);overflow:hidden}.psd-modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}.psd-modal-close{background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1;transition:color 0.15s}.psd-modal-close:hover{color:var(--text)}.psd-modal-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;background:var(--bg)}.psd-modal-body{overflow-y:auto;flex:1;padding:6px}.psd-modal-foot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0}.psd-layer-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;transition:background 0.12s,border-color 0.12s;user-select:none}.psd-layer-item:hover{background:var(--bg);border-color:var(--border)}.psd-layer-item.selected{background:var(--accent-soft);border-color:#c7d2fe}.psd-layer-item.is-group{opacity:0.65;cursor:default}.psd-layer-check{width:16px;height:16px;flex-shrink:0;accent-color:var(--accent);cursor:pointer}.psd-layer-thumb{width:52px;height:38px;object-fit:contain;border-radius:4px;border:1px solid var(--border);background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/10px 10px;flex-shrink:0;display:block}.psd-layer-thumb.empty{background:var(--bg)}.psd-layer-name{font-size:0.82rem;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.psd-layer-meta{font-size:0.68rem;color:var(--muted);white-space:nowrap;flex-shrink:0}.psd-layer-hidden-badge{font-size:0.6rem;background:#e4e4e7;color:var(--muted);padding:1px 5px;border-radius:3px;flex-shrink:0}.psd-group-header{display:flex;align-items:center;gap:6px;padding:5px 10px 3px;font-size:0.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;border-top:1px solid var(--border);margin-top:4px}.psd-group-header:first-child{border-top:none;margin-top:0}.psd-sel-count{font-size:0.75rem;color:var(--muted);margin-left:auto}.psd-crop-trigger-btn{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all 0.15s}.psd-crop-trigger-btn:hover:not(:disabled){border-color:#ef4444;color:#ef4444;background:#f5f3ff}.psd-crop-trigger-btn:disabled{cursor:not-allowed}#psdCropModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9500;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.psd-crop-wrap{background:var(--card);border-radius:var(--radius);width:92%;max-width:860px;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.5);border:1px solid var(--border);overflow:hidden}#sbc-presets{gap:12px !important}#sbc-presets .preset-box{flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0}#sbc-presets .preset-box canvas{width:100%;height:auto}.psd-crop-asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}#searchBarContainer{display:flex;flex-direction:column;gap:8px}#sbc-left{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;width:100%}#sbc-left #searchInput{width:200px;max-width:calc(100vw - 200px)}#sbc-presets{display:flex;gap:12px;justify-content:flex-start;align-items:center;flex-wrap:nowrap;width:100%}#sbc-presets .preset-box{flex-shrink:0}#sbc-presets .preset-box canvas{width:100%;height:auto;display:block}@media (min-width:769px){#searchBarContainer{flex-direction:row;align-items:flex-end;justify-content:space-between;gap:0}#sbc-left{flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:14px;width:auto}#sbc-left #searchInput{width:220px;max-width:none}#sbc-presets{align-items:flex-end;width:auto}}@media(max-width:540px){
+</script><script src="https://cdn.jsdelivr.net/npm/heic-to@1.4.2/dist/iife/heic-to.js"></script> <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script> <script src="https://unpkg.com/ag-psd@14.3.2/dist/bundle.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script> <style>@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap');:root{--accent:#6366f1;--accent-soft:#eef2ff;--bg:#f5f5f7;--card:#ffffff;--border:#e4e4e7;--text:#18181b;--muted:#71717a;--danger:#ef4444;--danger-soft:#fef2f2;--warn:#f59e0b;--warn-soft:#fffbeb;--radius:14px;--radius-sm:8px;--shadow:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06)}*,*::before,*::after{box-sizing:border-box;user-select:none;-webkit-user-select:none}input,textarea,[contenteditable]{user-select:text;-webkit-user-select:text}body{font-family:'DM Sans','Noto Sans JP',sans-serif;background:var(--bg);display:flex;flex-direction:column;align-items:center;padding:32px 20px 60px;margin:0;min-height:100vh;color:var(--text)}.version-label{font-size:0.85rem;color:var(--muted);font-weight:500;letter-spacing:0.02em}.page-header{display:flex;justify-content:space-between;align-items:flex-end;width:100%;max-width:900px;margin-bottom:20px;gap:16px}@media (max-width:768px){.page-header{flex-direction:column;align-items:flex-start}}.title-left{display:flex;flex-direction:column;gap:4px}.title-left h2{font-size:1.5rem;font-weight:500;letter-spacing:-0.02em;margin:0;color:var(--text)}.title-left p{font-size:0.85rem;color:var(--muted);margin:0;font-weight:300}.title-right{display:flex;align-items:center;gap:10px}.slot-modern-wrapper{display:flex;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:100px;padding:4px 6px 4px 14px;box-shadow:0 2px 8px rgba(0,0,0,0.04);gap:4px;transition:border-color 0.2s}.slot-modern-wrapper:hover{border-color:#d4d4d8}.slot-modern-label{font-size:0.7rem;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.05em;pointer-events:none}.slot-modern-select{appearance:none;background:transparent;border:none;font-family:inherit;font-size:0.8rem;font-weight:500;color:var(--text);padding:4px 24px 4px 6px;cursor:pointer;outline:none;background-image:url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2371717a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center;background-size:14px;max-width:140px;text-overflow:ellipsis}.slot-modern-btn{display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all 0.15s}.slot-modern-btn:hover{background:var(--bg);color:var(--text)}.slot-modern-btn.danger:hover{background:var(--danger-soft);color:var(--danger)}.help-btn{background:none;border:none;font-size:1.4rem;cursor:pointer;padding:0;transition:transform 0.15s;line-height:1;margin-left:4px}.help-btn:hover{transform:scale(1.1)}.qr-btn{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);width:32px;height:32px;cursor:pointer;padding:5px;display:flex;align-items:center;justify-content:center;transition:all 0.15s;color:var(--muted);box-shadow:0 2px 6px rgba(0,0,0,0.06)}.qr-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);transform:scale(1.05)}.section-card{background:var(--card);padding:28px;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);width:100%;max-width:900px;text-align:center}.instruction-text{position:relative;max-width:700px;margin:16px auto;font-size:0.8rem;color:var(--muted);line-height:1.75;text-align:left;background:var(--bg);padding:14px 32px 14px 16px;border-radius:var(--radius-sm);border:1px solid var(--border);font-weight:300}.close-inst-btn{position:absolute;top:8px;right:12px;font-size:1.2rem;background:none;border:none;color:var(--muted);cursor:pointer;padding:0;transition:color 0.15s}.close-inst-btn:hover{color:var(--text)}.upload-zone{border:1.5px dashed var(--border);border-radius:var(--radius-sm);padding:100px 20px;background:var(--bg);cursor:pointer;transition:all 0.2s ease;display:flex;flex-direction:column;align-items:center;justify-content:center}.upload-zone:hover{border-color:var(--accent);background:var(--accent-soft)}.upload-btn-main{background:var(--accent);padding:11px 24px;border-radius:100px;color:#fff;font-weight:500;font-size:0.9rem;display:inline-block;margin-bottom:12px;letter-spacing:-0.01em;cursor:pointer;transition:opacity 0.15s}.upload-btn-main:hover{opacity:0.85}.upload-format-text{font-size:0.72rem;color:var(--muted);font-weight:300;letter-spacing:0.04em;text-transform:uppercase}.btn{padding:10px 22px;cursor:pointer;border:none;border-radius:100px;font-family:inherit;font-weight:500;font-size:0.875rem;transition:all 0.15s;letter-spacing:-0.01em}.btn:hover{opacity:0.88;transform:translateY(-1px)}.btn-success{background:var(--accent);color:#fff}.btn-secondary{background:#e4e4e7;color:var(--muted)}.btn-secondary:hover{background:#d4d4d8;color:var(--text)}.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#dc2626}#previewArea{position:relative;display:flex;flex-wrap:wrap;justify-content:flex-start;gap:12px;margin-top:14px;border-radius:var(--radius-sm);border:1.5px dashed transparent;transition:border-color 0.2s,background 0.2s,padding-left 0.35s ease;padding:8px}#previewArea.drag-over{border-color:var(--accent);background:var(--accent-soft)}.preview-drop-hint{display:none;width:100%;text-align:center;padding:20px;color:var(--accent);font-size:0.8rem;font-weight:500;pointer-events:none}#previewArea.drag-over .preview-drop-hint{display:block}.thumb-box{position:relative;flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0;text-align:center;cursor:pointer;transition:transform 0.15s;border-radius:12px}.thumb-delete-btn{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--danger);color:#fff;border:2px solid #fff;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transition:opacity 0.15s;z-index:10;box-shadow:0 1px 4px rgba(0,0,0,0.2)}.thumb-box:hover .thumb-delete-btn{opacity:1}@media (max-width:600px){.thumb-box{flex:0 0 calc(33.333% - 8px)}}.preset-box{cursor:grab;text-align:center;transition:transform 0.15s;flex-shrink:0}.preset-box:hover{transform:translateY(-2px)}.preset-canvas-wrap{position:relative;display:block;line-height:0;overflow:hidden;border-radius:6px}.preset-canvas-wrap canvas{display:block;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);transition:opacity 0.2s;width:100%;height:auto}.preset-box:hover .preset-canvas-wrap canvas{border-color:var(--accent)}.preset-edited-bar{position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--accent);border-radius:0 0 6px 6px;pointer-events:none;z-index:6}.preset-box span{display:block;font-size:0.6rem;color:var(--muted);margin-top:3px;font-weight:500;letter-spacing:0.02em}.custom-tooltip{visibility:hidden;opacity:0;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:rgba(24,24,27,0.9);color:#fff;padding:6px 10px;border-radius:6px;font-size:0.7rem;font-weight:500;white-space:nowrap;z-index:100;pointer-events:none;transition:all 0.1s ease;box-shadow:0 4px 12px rgba(0,0,0,0.15);margin-bottom:6px}.custom-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border-width:5px;border-style:solid;border-color:rgba(24,24,27,0.9) transparent transparent transparent}.thumb-box:hover .custom-tooltip{visibility:visible;opacity:1;transform:translateX(-50%) translateY(-4px)}.thumb-frame{width:100%;aspect-ratio:1 / 1;height:auto;border-radius:10px;border:2px solid transparent;background:var(--bg);display:flex;align-items:center;justify-content:center;margin:0 auto;overflow:hidden;position:relative}.thumb-inner-img{display:block;object-fit:cover}.thumb-name{font-size:0.65rem;color:var(--text);font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:5px;line-height:1.3;text-align:center;width:100%;cursor:text}.thumb-name-edit{display:none;width:100%;margin-top:5px;background:var(--bg);border:1px solid var(--accent);border-radius:4px;padding:2px 5px;font-family:inherit;font-size:0.65rem;color:var(--text);text-align:center;outline:none;box-sizing:border-box}.thumb-name-edit.is-error{border-color:var(--danger)}.thumb-name-tooltip{position:fixed;background:var(--danger);color:#fff;font-size:0.65rem;font-weight:500;padding:4px 10px;border-radius:4px;pointer-events:none;z-index:9999;white-space:nowrap;transform:translateX(-50%);opacity:0;transition:opacity 0.15s}.thumb-name-tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--danger)}.thumb-name-tooltip.visible{opacity:1}.thumb-dimensions{font-size:0.6rem;color:var(--muted);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3;font-weight:300}#imagePreviewModal{display:none;opacity:0;transition:opacity 0.3s ease;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.preview-modal-inner{display:flex;align-items:center;justify-content:center;width:100%;height:100%}.preview-card{background:var(--card);padding:12px 8px 10px;border-radius:var(--radius);position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.4);display:inline-flex;flex-direction:column;align-items:stretch;transition:width 0.13s ease,height 0.13s ease;max-width:calc(100vw - 16px);box-sizing:border-box;overflow:hidden}.preview-layer{position:absolute;top:50%;left:50%;max-width:none;max-height:none;display:block;transform:translate(-50%,-50%);opacity:0;transition:opacity 0.13s ease;pointer-events:none}.nav-btn{position:fixed;top:50%;transform:translateY(-50%);width:48px;height:48px;flex-shrink:0;background:rgba(255,255,255,0.9);color:var(--text);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;user-select:none;transition:background 0.2s,box-shadow 0.2s;border:1px solid var(--border);z-index:5010}.nav-btn:hover{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,0.15)}.nav-btn.prev{left:4px}.nav-btn.next{right:4px}@media(min-width:600px){.nav-btn.prev{left:16px}.nav-btn.next{right:16px}}.close-preview-top{position:absolute;top:10px;right:14px;color:var(--muted);font-size:32px;cursor:pointer;line-height:1;font-weight:300;z-index:5020;opacity:0.6;transition:all 0.2s}.close-preview-top:hover{opacity:1;color:var(--text)}.close-preview-top:hover{opacity:1}.highlight-red{color:var(--danger)}#progress{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:360px;background:var(--card);z-index:6000;padding:20px 24px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.2);border-radius:var(--radius);border:1px solid var(--border)}.progress-container{width:100%;height:3px;background:var(--border);border-radius:100px;margin-top:14px;overflow:hidden;display:block}.progress-bar{height:100%;width:0%;background:var(--accent);transition:width 0.2s ease;border-radius:100px}#alertModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:5000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.modal-content{background:var(--card);padding:28px;border-radius:var(--radius);max-width:90%;width:750px;max-height:85vh;overflow-y:auto;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border)}.alert-section{margin-bottom:20px;background:var(--danger-soft);padding:16px;border-radius:var(--radius-sm);border:1px solid #fecaca}.alert-section.japanese{background:var(--warn-soft);border-color:#fde68a}.alert-list{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;margin-top:10px}.asp-btn{padding:4px 10px;border-radius:100px;border:1px solid var(--border);background:var(--card);color:var(--muted);font-family:inherit;font-size:0.72rem;font-weight:400;cursor:pointer;transition:all 0.15s;white-space:nowrap}.asp-btn:hover{border-color:var(--accent);color:var(--accent)}.asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.asp-sep{width:1px;height:18px;background:var(--border);flex-shrink:0;margin:0 2px}.filter-slider{-webkit-appearance:none;appearance:none;width:100%;height:3px;background:var(--border);border-radius:100px;outline:none;cursor:pointer;transition:background 0.15s}.filter-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);cursor:pointer;transition:transform 0.1s;box-shadow:0 1px 4px rgba(99,102,241,0.3)}#customDialogModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.custom-dialog-card{position:relative;background:var(--card);padding:28px;border-radius:var(--radius);width:90%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.2);border:1px solid var(--border);text-align:center}.custom-dialog-close{position:absolute;top:12px;right:16px;font-size:1.5rem;color:var(--muted);background:none;border:none;cursor:pointer;transition:color 0.15s;line-height:1;padding:0}.custom-dialog-close:hover{color:var(--text)}.custom-dialog-title{font-size:1.15rem;font-weight:500;margin:0 0 14px;color:var(--text);letter-spacing:-0.01em}.custom-dialog-message{font-size:0.85rem;color:var(--muted);line-height:1.6;margin-bottom:24px;text-align:left;background:var(--bg);padding:14px;border-radius:var(--radius-sm);border:1px solid var(--border)}.custom-dialog-actions{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}.custom-dialog-actions .btn{white-space:nowrap}.dialog-overwrite-preview{display:block;width:100%;max-height:220px;margin:14px auto 0;border-radius:var(--radius-sm);border:1px solid #d4d4d8;background:#fff;object-fit:cover}#logoLibStrip::-webkit-scrollbar{height:6px}#logoLibStrip::-webkit-scrollbar-thumb{background:var(--border);border-radius:10px}.logo-lib-item{position:relative;flex-shrink:0}.logo-lib-item img{width:36px;height:36px;object-fit:contain;cursor:pointer;border:1px solid var(--border);border-radius:4px;padding:2px;background:#fff;transition:border-color 0.2s;display:block}.logo-lib-item img:hover{border-color:var(--accent)}.logo-lib-del{position:absolute;top:-5px;right:-5px;width:16px;height:16px;border-radius:50%;background:var(--danger);color:#fff;border:1.5px solid #fff;font-size:9px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,0.2);opacity:0;transition:opacity 0.15s}.logo-lib-item:hover .logo-lib-del{opacity:1}.logo-container{position:absolute;transform-origin:center;user-select:none;cursor:move;touch-action:none;pointer-events:auto}.logo-container.selected{outline:2px dashed var(--accent);outline-offset:2px}.logo-container img{width:100%;height:100%;display:block;pointer-events:none}.logo-handle{position:absolute;width:14px;height:14px;background:#fff;border:2px solid var(--accent);border-radius:50%;display:none;z-index:10;touch-action:none}.logo-container.selected .logo-handle{display:block}.logo-handle.tl{top:-7px;left:-7px;cursor:nwse-resize}.logo-handle.tr{top:-7px;right:-7px;cursor:nesw-resize}.logo-handle.bl{bottom:-7px;left:-7px;cursor:nesw-resize}.logo-handle.br{bottom:-7px;right:-7px;cursor:nwse-resize}.logo-rot-handle{position:absolute;width:26px;height:26px;background:transparent;display:none;z-index:9;touch-action:none;cursor:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'><path d='M10 2.5 A7.5 7.5 0 1 0 17.5 10' fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round'/><polyline points='15,1 18,7 12,7' fill='none' stroke='%236366f1' stroke-width='2' stroke-linejoin='round'/></svg>") 10 10,crosshair}.logo-rot-handle.tl{top:-27px;left:-27px}.logo-rot-handle.tr{top:-27px;right:-27px}.logo-rot-handle.bl{bottom:-27px;left:-27px}.logo-rot-handle.br{bottom:-27px;right:-27px}.logo-container.selected .logo-rot-handle{display:block}input[type="color"]::-webkit-color-swatch-wrapper{padding:0}input[type="color"]::-webkit-color-swatch{border:1px solid var(--border);border-radius:4px}#logoLayer{transition:opacity 0.3s ease;opacity:0;pointer-events:none}#logoLayer.logo-layer-visible{opacity:1;pointer-events:none}@keyframes logoLibFadeIn{from{opacity:0;transform:scale(0.85)}to{opacity:1;transform:scale(1)}}#logoLibStrip img{animation:logoLibFadeIn 0.25s ease forwards}#logoToolbarArea{overflow:hidden;max-height:0;opacity:0;margin-bottom:0 !important;pointer-events:none;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1),opacity 0.25s ease,margin-bottom 0.3s ease}#logoToolbarArea.logo-panel-open{max-height:140px;opacity:1;margin-bottom:10px !important;pointer-events:auto}#logoToggleBtn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}.logo-container.hidden-logo>img{opacity:0.2}.logo-container.hidden-logo{outline-style:dashed}@keyframes pulseRed{0%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}50%{background-color:#f87171;border-color:#f87171;color:white;box-shadow:0 0 10px rgba(239,68,68,0.8)}100%{background-color:#ef4444;border-color:#ef4444;color:white;box-shadow:0 0 0 rgba(239,68,68,0.4)}}.btn-manual-save{background-color:#10b981 !important;border-color:#10b981 !important;color:white !important;transition:all 0.5s ease}.btn-manual-save:disabled{background-color:#d1d5db !important;border-color:#d1d5db !important;color:#9ca3af !important;cursor:not-allowed !important;opacity:1 !important;transform:none !important;animation:none !important}.btn-manual-save.unsaved{background-color:#ef4444 !important;border-color:#ef4444 !important;animation:pulseRed 2s infinite ease-in-out}.thumb-updated{position:absolute;top:4px;left:4px;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:1px 4px;border-radius:3px;z-index:25;pointer-events:none;font-family:'DM Sans',sans-serif}.thumb-frame .status-badge-container{top:22px !important}#psdLayerModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:8000;align-items:center;justify-content:center;backdrop-filter:blur(6px)}.psd-modal-wrap{background:var(--card);border-radius:var(--radius);width:90%;max-width:700px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.3);border:1px solid var(--border);overflow:hidden}.psd-modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;flex-shrink:0}.psd-modal-close{background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1;transition:color 0.15s}.psd-modal-close:hover{color:var(--text)}.psd-modal-toolbar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-wrap:wrap;flex-shrink:0;background:var(--bg)}.psd-modal-body{overflow-y:auto;flex:1;padding:6px}.psd-modal-foot{padding:14px 18px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;flex-shrink:0}.psd-layer-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--radius-sm);border:1px solid transparent;cursor:pointer;transition:background 0.12s,border-color 0.12s;user-select:none}.psd-layer-item:hover{background:var(--bg);border-color:var(--border)}.psd-layer-item.selected{background:var(--accent-soft);border-color:#c7d2fe}.psd-layer-item.is-group{opacity:0.65;cursor:default}.psd-layer-check{width:16px;height:16px;flex-shrink:0;accent-color:var(--accent);cursor:pointer}.psd-layer-thumb{width:52px;height:38px;object-fit:contain;border-radius:4px;border:1px solid var(--border);background:repeating-conic-gradient(#ccc 0% 25%,#fff 0% 50%) 0 0/10px 10px;flex-shrink:0;display:block}.psd-layer-thumb.empty{background:var(--bg)}.psd-layer-name{font-size:0.82rem;font-weight:500;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.psd-layer-meta{font-size:0.68rem;color:var(--muted);white-space:nowrap;flex-shrink:0}.psd-layer-hidden-badge{font-size:0.6rem;background:#e4e4e7;color:var(--muted);padding:1px 5px;border-radius:3px;flex-shrink:0}.psd-group-header{display:flex;align-items:center;gap:6px;padding:5px 10px 3px;font-size:0.7rem;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;border-top:1px solid var(--border);margin-top:4px}.psd-group-header:first-child{border-top:none;margin-top:0}.psd-sel-count{font-size:0.75rem;color:var(--muted);margin-left:auto}.psd-crop-trigger-btn{flex-shrink:0;display:flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all 0.15s}.psd-crop-trigger-btn:hover:not(:disabled){border-color:#ef4444;color:#ef4444;background:#f5f3ff}.psd-crop-trigger-btn:disabled{cursor:not-allowed}#psdCropModal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9500;align-items:center;justify-content:center;backdrop-filter:blur(8px)}.psd-crop-wrap{background:var(--card);border-radius:var(--radius);width:92%;max-width:860px;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.5);border:1px solid var(--border);overflow:hidden}#sbc-presets{gap:12px !important}#sbc-presets .preset-box{flex:0 0 var(--thumb-w,calc(12.5% - 10.5px));min-width:0}#sbc-presets .preset-box canvas{width:100%;height:auto}.psd-crop-asp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}#searchBarContainer{display:flex;flex-direction:column;gap:8px}#sbc-left{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:10px;width:100%}#sbc-left #searchInput{width:200px;max-width:calc(100vw - 200px)}#sbc-presets{display:flex;gap:12px;justify-content:flex-start;align-items:center;flex-wrap:nowrap;width:100%}#sbc-presets .preset-box{flex-shrink:0}#sbc-presets .preset-box canvas{width:100%;height:auto;display:block}@media (min-width:769px){#searchBarContainer{flex-direction:row;align-items:flex-end;justify-content:space-between;gap:0}#sbc-left{flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:14px;width:auto}#sbc-left #searchInput{width:220px;max-width:none}#sbc-presets{align-items:flex-end;width:auto}}@media(max-width:540px){
   .preview-card{padding:4px 4px 8px !important;}
   #toolbarContainer{padding:0 4px !important;gap:2px !important;margin-bottom:0 !important;padding-top:10px !important;}
   #aspectBar{margin-bottom:2px !important;}
@@ -261,7 +283,7 @@ async function handleJapaneseFilenames() {
         <li><strong>ZIPで書き出し：</strong> 編集したすべての画像を1つのZIPファイルにまとめてダウンロードします。</li>
         <li><strong>フォルダに書き出し（Shift＋クリック）：</strong> Shiftキーを押しながら書き出しボタンを押すと、PC内のローカルフォルダを直接指定して保存できます（対応ブラウザのみ）。</li>
         <li>幅1200px未満の画像が含まれる場合、書き出し時に「そのままのサイズ」か「指定サイズ（1200pxなど）に拡大」するかを選択できます。</li>
-        <li>日本語のファイル名は、Web環境での文字化けやエラーを防ぐため、書き出し時に自動で連番の英数字に変換できます。</li>
+        <li>全角のファイル名は、Web環境での文字化けやエラーを防ぐため、書き出し時に自動で連番の英数字に変換できます。</li>
       </ul>
     </div>
 
@@ -284,7 +306,7 @@ async function handleJapaneseFilenames() {
     <span class="version-label" style="font-size: 0.75rem;">Ver 1.0.1</span>
   </div>
 
-  <div id="customDialogModal"><div class="custom-dialog-card"><button class="custom-dialog-close" id="customDialogCloseBtn" title="閉じる（キャンセル）">&times;</button><h3 id="customDialogTitle" class="custom-dialog-title"></h3><div id="customDialogMessage" class="custom-dialog-message"></div><div class="custom-dialog-actions"><button id="customDialogCancelBtn" class="btn btn-secondary">キャンセル</button><button id="customDialogOkBtn" class="btn btn-success">OK</button></div></div></div><div id="splitDialogModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px)"><div class="custom-dialog-card"><button class="custom-dialog-close" onclick="closeSplitDialog()" title="閉じる（キャンセル）">&times;</button><h3 class="custom-dialog-title">画面の分割</h3><p class="custom-dialog-message">分割方向と分割数を選択してください。</p><div style="display:flex;flex-direction:column;gap:14px"><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">縦分割</span><span id="splitVerticalDisabledNote" style="font-size:0.7rem;color:var(--muted);display:none">（現在の分割中は変更できません）</span></div><div class="custom-dialog-actions" style="gap:8px" id="splitVerticalBtns"><button id="splitBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'vertical')">2分割</button><button id="splitBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'vertical')">3分割</button><button id="splitBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'vertical')">4分割</button></div></div><div style="height:1px;background:var(--border)"></div><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="18" height="8" rx="1"/><rect x="3" y="13" width="18" height="8" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">横分割</span></div><div class="custom-dialog-actions" style="gap:8px"><button id="splitHBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'horizontal')">2分割</button><button id="splitHBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'horizontal')">3分割</button><button id="splitHBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'horizontal')">4分割</button></div></div></div></div></div><div id="alertModal"><div class="modal-content"><h3 style="margin-top:0; font-size:1.1rem; font-weight:500; letter-spacing:-0.01em">確認が必要な画像があります</h3><div id="smallAlertContainer" class="alert-section"><h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:var(--danger)">幅1200px未満の画像</h4><div id="smallAlertList" class="alert-list"></div></div><div id="jpAlertContainer" class="alert-section japanese"><h4 style="margin:0 0 10px; font-size:0.85rem; font-weight:500; color:#b45309">日本語ファイル名の画像</h4><div id="jpAlertList" class="alert-list"></div></div><div style="display:flex; gap:15px; justify-content:center; flex-wrap:wrap; margin-top: 20px"><button class="btn btn-secondary" onclick="closeAlertModal()">確認して閉じる</button><button class="btn btn-success" onclick="downloadAlertImage()">アラート結果をJPGで保存</button></div></div></div><div id="imagePreviewModal"><div class="preview-modal-inner"><div class="nav-btn prev" onclick="changePreviewImage(-1)">❮</div><div class="preview-card" onclick="event.stopPropagation()"><span class="close-preview-top" onclick="closeImagePreview()">&times;</span><div id="toolbarContainer" style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 10px; margin-bottom: 0; padding: 0 max(8px, min(36px, 4vw)); box-sizing: border-box"><div style="display: flex; justify-content: center; align-items: center; width: 100%"><div id="aspectBar" style="display:flex; justify-content:center; align-items:center; gap:6px; margin-bottom:0; flex-wrap:wrap; width:100%"><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn" id="splitModeBtn" onclick="openSplitDialog()">分割</button><button class="asp-btn" id="logoToggleBtn" onclick="toggleLogoMode()">透過</button><button class="asp-btn" id="gridToggleBtn" onclick="toggleGrid()">グリッド</button>
+  <div id="customDialogModal"><div class="custom-dialog-card"><button class="custom-dialog-close" id="customDialogCloseBtn" title="閉じる（キャンセル）">&times;</button><h3 id="customDialogTitle" class="custom-dialog-title"></h3><div id="customDialogMessage" class="custom-dialog-message"></div><div class="custom-dialog-actions"><button id="customDialogCancelBtn" class="btn btn-secondary">キャンセル</button><button id="customDialogOkBtn" class="btn btn-success">OK</button></div></div></div><div id="splitDialogModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px)"><div class="custom-dialog-card"><button class="custom-dialog-close" onclick="closeSplitDialog()" title="閉じる（キャンセル）">&times;</button><h3 class="custom-dialog-title">画面の分割</h3><p class="custom-dialog-message">分割方向と分割数を選択してください。</p><div style="display:flex;flex-direction:column;gap:14px"><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">縦分割</span><span id="splitVerticalDisabledNote" style="font-size:0.7rem;color:var(--muted);display:none">（現在の分割中は変更できません）</span></div><div class="custom-dialog-actions" style="gap:8px" id="splitVerticalBtns"><button id="splitBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'vertical')">2分割</button><button id="splitBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'vertical')">3分割</button><button id="splitBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'vertical')">4分割</button></div></div><div style="height:1px;background:var(--border)"></div><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="18" height="8" rx="1"/><rect x="3" y="13" width="18" height="8" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">横分割</span></div><div class="custom-dialog-actions" style="gap:8px"><button id="splitHBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'horizontal')">2分割</button><button id="splitHBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'horizontal')">3分割</button><button id="splitHBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'horizontal')">4分割</button></div></div></div></div></div><div id="alertModal"><div class="modal-content" style="width:380px"><h3 style="margin-top:0; font-size:1rem; font-weight:500; letter-spacing:-0.01em">確認が必要な画像があります</h3><div id="smallAlertContainer" class="alert-section"><h4 style="margin:0 0 6px; font-size:0.82rem; font-weight:500; color:var(--danger)">幅1200px未満の画像</h4><div id="smallAlertList" class="alert-list"></div><div id="resizeBtnArea" style="margin-top:12px;display:none;"><button class="btn btn-secondary" style="font-size:0.78rem;padding:6px 16px" onclick="openResizeDialog()">リサイズして書き出し</button></div></div><div id="jpAlertContainer" class="alert-section japanese"><h4 style="margin:0 0 10px; font-size:0.82rem; font-weight:500; color:#b45309">全角ファイル名の画像</h4><div id="jpAlertList" class="alert-list"></div></div><div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top: 16px"><button class="btn btn-secondary" onclick="closeAlertModal()">確認して閉じる</button><button class="btn btn-success" onclick="downloadAlertImage()">アラート結果をJPGで保存</button></div></div></div><div id="imagePreviewModal"><div class="preview-modal-inner"><div class="nav-btn prev" onclick="changePreviewImage(-1)">❮</div><div class="preview-card" onclick="event.stopPropagation()"><span class="close-preview-top" onclick="closeImagePreview()">&times;</span><div id="toolbarContainer" style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 10px; margin-bottom: 0; padding: 0 max(8px, min(36px, 4vw)); box-sizing: border-box"><div style="display: flex; justify-content: center; align-items: center; width: 100%"><div id="aspectBar" style="display:flex; justify-content:center; align-items:center; gap:6px; margin-bottom:0; flex-wrap:wrap; width:100%"><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn" id="splitModeBtn" onclick="openSplitDialog()">分割</button><button class="asp-btn" id="logoToggleBtn" onclick="toggleLogoMode()">透過</button><button class="asp-btn" id="gridToggleBtn" onclick="toggleGrid()">グリッド</button>
 </div><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn ratio-btn" data-key="free" onclick="setAspect(this)">オリジナル</button><button class="asp-btn ratio-btn" data-key="3:2" onclick="setAspect(this)">3:2</button><button class="asp-btn ratio-btn" data-key="4:3" onclick="setAspect(this)">4:3</button><button class="asp-btn ratio-btn" data-key="1:1" onclick="setAspect(this)">1:1</button><button class="asp-btn ratio-btn" data-key="3:4" onclick="setAspect(this)">3:4</button><button class="asp-btn ratio-btn" data-key="2:3" onclick="setAspect(this)">2:3</button></div><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn slot-assign-btn" data-slot="thumb" onclick="assignCurrentToSlot('thumb')">Thumbnail</button><button class="asp-btn slot-assign-btn" data-slot="og" onclick="assignCurrentToSlot('og')">OG</button><button class="asp-btn slot-assign-btn" data-slot="special" onclick="assignCurrentToSlot('special')">Special</button><button class="asp-btn preset-nav-btn" data-key="thumb" onclick="handlePresetNavClick(this)" style="display:none">Thumbnail</button><button class="asp-btn preset-nav-btn" data-key="og" onclick="handlePresetNavClick(this)" style="display:none">OG</button><button class="asp-btn preset-nav-btn" data-key="special" onclick="handlePresetNavClick(this)" style="display:none">Special</button>
 <button class="asp-btn btn-manual-save" onclick="performManualSave()" disabled>保存</button>
 <button class="asp-btn btn-clear-slot" onclick="clearCurrentSlot()" style="display:none; color: var(--danger);">クリア</button>
@@ -689,6 +711,8 @@ if (processedImages.length > 0 || Object.values(assignedSlots).some(v => v !== n
   updateSlotLabels();
   updateSlotActionBtns();
 }
+// スロット切替時: 既存データがあれば「作業済み」とみなす
+hasSessionWork = processedImages.length > 0 || Object.values(assignedSlots).some(v => v !== null);
 }
 let isAppBooting = true;
 async function updateSlotLabels() {
@@ -790,6 +814,15 @@ renameBtn.style.cursor  = isEmpty ? 'not-allowed' : '';
 clearBtn.style.cursor   = isEmpty ? 'not-allowed' : '';
 renameBtn.style.pointerEvents = isEmpty ? 'none' : '';
 clearBtn.style.pointerEvents  = isEmpty ? 'none' : '';
+// 分割ボタン: 画像が1枚以下のときは無効化
+const splitBtn = byId('splitModeBtn');
+if (splitBtn) {
+  const splitDisabled = processedImages.length <= 1;
+  splitBtn.disabled = splitDisabled;
+  splitBtn.style.opacity = splitDisabled ? '0.35' : '';
+  splitBtn.style.cursor = splitDisabled ? 'not-allowed' : '';
+  splitBtn.style.pointerEvents = splitDisabled ? 'none' : '';
+}
 }
 function showSlotFullWarning() {if (document.getElementById('slot-full-alert')) return;
 const alertDiv = document.createElement('div');
@@ -880,7 +913,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         await loadAppState("1");
         await showCustomDialog({
             title: 'SLOTに空きがありません',
-            message: '全てのSLOT（1〜10）にデータが保存されています。\nいずれかのSLOTを選択して「スロットをクリア」してから、再度お試しください。',
+            message: '全てのSLOT（1〜10）にデータが保存されています。いずれかのSLOTを削除後に再度お試しください。なお、ヒント💡最下部の「初期化」を押すと全SLOTを一括削除できます。',
             okText: '閉じる',
             type: 'alert'
         });
@@ -889,8 +922,64 @@ window.addEventListener('DOMContentLoaded', async () => {
     // 読み込みが完了したので、保存ブロックのガードを外す
     isStartupEmpty = false;
     
+    // 前回セッションで読み込みのみ行われた未保存スロットを起動時に自動削除
+    const _pendingClear = localStorage.getItem('pendingSlotClear');
+    if (_pendingClear) {
+        localStorage.removeItem('pendingSlotClear');
+        const _txCheck = db.transaction(STORE_NAME, 'readonly');
+        const _slotData = await new Promise(res => {
+            const req = _txCheck.objectStore(STORE_NAME).get('state_' + _pendingClear);
+            req.onsuccess = () => res(req.result);
+            req.onerror = () => res(null);
+        });
+        const _hasData = _slotData && _slotData.processedImages && _slotData.processedImages.length > 0;
+        if (_hasData) {
+            const _txDel = db.transaction(STORE_NAME, 'readwrite');
+            _txDel.objectStore(STORE_NAME).delete('state_' + _pendingClear);
+            await new Promise(res => { _txDel.oncomplete = res; _txDel.onerror = res; });
+            if (currentSlotId === _pendingClear) await loadAppState(currentSlotId);
+            await updateSlotLabels();
+        }
+    }
+
     renderLogoLibrary();
 });
+
+// 読み込み後に何も操作せずページを離れようとした場合：フラグのみセット（次回起動時に確認）
+window.addEventListener('beforeunload', () => {
+    if (processedImages.length > 0 && !hasSessionWork) {
+        localStorage.setItem('pendingSlotClear', currentSlotId);
+    }
+});
+
+// Ctrl+R / Cmd+R / F5 によるリロードをキャプチャして独自ダイアログを表示
+document.addEventListener('keydown', async (e) => {
+    const isReload = (e.key === 'r' || e.key === 'R') && (e.metaKey || e.ctrlKey) && !e.shiftKey;
+    const isF5 = e.key === 'F5' && !e.ctrlKey && !e.shiftKey;
+    if (!isReload && !isF5) return;
+
+    const needsWarn = (processedImages.length > 0 && !hasSessionWork) || hasUnsavedChanges;
+    if (!needsWarn) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const msg = hasUnsavedChanges
+        ? '保存されていない変更があります。リロードすると変更が失われます。続けますか？'
+        : '画像が読み込まれていますが、まだ保存や書き出しが行われていません。リロードしますか？';
+    const confirmed = await showCustomDialog({
+        title: 'リロードの確認',
+        message: msg,
+        okText: 'リロードする',
+        okClass: 'btn btn-danger',
+        cancelText: 'キャンセル',
+        type: 'confirm'
+    });
+    if (confirmed) {
+        hasSessionWork = true; // beforeunload でフラグが立たないようにする
+        window.location.reload();
+    }
+}, true); // capture phase: ブラウザのショートカット処理より前に実行
 byId('searchInput').addEventListener('input', (e) => applySearchFilter(e.target.value));
 function applySearchFilter(query) {query = (query || '').toLowerCase();
 const boxes = document.querySelectorAll('#previewArea .thumb-box');
@@ -922,6 +1011,12 @@ function showCustomDialog(options) {
       extraBtn = document.createElement('button');
       extraBtn.id = 'customDialogExtraBtn';
       modal.querySelector('.custom-dialog-actions').appendChild(extraBtn);
+    }
+    let extra2Btn = byId('customDialogExtra2Btn');
+    if (!extra2Btn) {
+      extra2Btn = document.createElement('button');
+      extra2Btn.id = 'customDialogExtra2Btn';
+      modal.querySelector('.custom-dialog-actions').insertBefore(extra2Btn, byId('customDialogOkBtn'));
     }
     
     // 入力欄の生成と追加
@@ -964,12 +1059,12 @@ function showCustomDialog(options) {
     multiSelectContainer.style.maxHeight = '250px';
 
     if (options.type === 'alert') {
-      cancelBtn.style.display = 'none'; extraBtn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'none';
+      cancelBtn.style.display = 'none'; extraBtn.style.display = 'none'; extra2Btn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'none';
     } else if (options.type === 'prompt') {
-      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; inputEl.style.display = 'block'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'none';
+      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; extra2Btn.style.display = 'none'; inputEl.style.display = 'block'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'none';
       inputEl.value = options.defaultValue || '';
     } else if (options.type === 'select') {
-      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'block'; multiSelectContainer.style.display = 'none';
+      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; extra2Btn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'block'; multiSelectContainer.style.display = 'none';
       selectEl.innerHTML = '';
       if (options.selectOptions) {
         options.selectOptions.forEach(opt => {
@@ -979,23 +1074,24 @@ function showCustomDialog(options) {
         });
       }
     } else if (options.type === 'multi-select') {
-      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'grid';
+      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; extraBtn.style.display = 'none'; extra2Btn.style.display = 'none'; inputEl.style.display = 'none'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'grid';
       
-      // グリッドレイアウトの設定：幅に応じて自動で並べる
-      multiSelectContainer.style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))';
-      multiSelectContainer.style.gap = '12px';
-      multiSelectContainer.style.maxHeight = 'none';
+      // グリッドレイアウトの設定：1列固定
+      multiSelectContainer.style.gridTemplateColumns = '1fr';
+      multiSelectContainer.style.gap = '8px';
+      multiSelectContainer.style.maxHeight = '360px';
+      multiSelectContainer.style.overflowY = 'auto';
       
       // ダイアログ全体のリサイズ設定
       card.style.display = 'flex';
       card.style.flexDirection = 'column';
-      card.style.resize = 'both';
+      card.style.resize = 'vertical';
       card.style.overflow = 'hidden';
       card.style.maxWidth = '94vw';
       card.style.maxHeight = '90vh';
-      card.style.minWidth = '420px';
-      card.style.minHeight = '400px';
-      card.style.width = '750px'; // デフォルト幅
+      card.style.minWidth = '360px';
+      card.style.minHeight = '200px';
+      card.style.width = '420px'; // デフォルト幅
       
       multiSelectContainer.style.flex = '1';
       multiSelectContainer.style.minHeight = '0';
@@ -1024,10 +1120,34 @@ function showCustomDialog(options) {
           });
       }
     } else {
-      cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; inputEl.style.display = 'none'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'none';
+      if (options.cancelText === null || options.cancelText === false) { cancelBtn.style.display = 'none'; } else { cancelBtn.style.display = 'inline-block'; cancelBtn.textContent = options.cancelText || 'キャンセル'; } inputEl.style.display = 'none'; selectEl.style.display = 'none'; multiSelectContainer.style.display = 'none';
       if (options.extraText) { extraBtn.style.display = 'inline-block'; extraBtn.textContent = options.extraText; extraBtn.className = options.extraClass || 'btn btn-success'; } else { extraBtn.style.display = 'none'; }
+      if (options.extra2Text) { extra2Btn.style.display = 'inline-block'; extra2Btn.textContent = options.extra2Text; extra2Btn.className = options.extra2Class || 'btn btn-secondary'; } else { extra2Btn.style.display = 'none'; }
     }
     
+    // 閉じるボタンの表示制御
+    let _inputValidatorFn = null;
+    closeBtn.style.display = options.noCloseBtn ? 'none' : '';
+    // OKボタンの初期無効化
+    if (options.okDisabled) {
+      okBtn.disabled = true;
+      okBtn.style.opacity = '0.45';
+      okBtn.style.pointerEvents = 'none';
+    } else {
+      okBtn.disabled = false;
+      okBtn.style.opacity = '';
+      okBtn.style.pointerEvents = '';
+    }
+    // 入力バリデーター（入力変化に応じてOKボタンの有効/無効を切り替える）
+    if (options.inputValidator) {
+      _inputValidatorFn = () => {
+        const valid = options.inputValidator();
+        okBtn.disabled = !valid;
+        okBtn.style.opacity = valid ? '1' : '0.45';
+        okBtn.style.pointerEvents = valid ? 'auto' : 'none';
+      };
+      msgEl.addEventListener('input', _inputValidatorFn);
+    }
     modal.style.display = 'flex';
     if (options.type === 'prompt') { setTimeout(() => { inputEl.focus(); inputEl.select(); }, 100); }
     
@@ -1035,7 +1155,8 @@ function showCustomDialog(options) {
     const cleanup = () => { 
         modal.style.display = 'none'; 
         inputEl.onkeydown = null; 
-        msgEl.removeEventListener('click', navClickHandler); 
+        msgEl.removeEventListener('click', navClickHandler);
+        if (_inputValidatorFn) { msgEl.removeEventListener('input', _inputValidatorFn); _inputValidatorFn = null; }
         card.style.width = ''; card.style.height = ''; 
     };
     
@@ -1045,37 +1166,58 @@ function showCustomDialog(options) {
     };
     msgEl.addEventListener('click', navClickHandler);
     
+    // アクションエリアの最右端の表示・有効なボタンをEnterで押す
+    const getRightmostBtn = () => {
+        const btns = Array.from(modal.querySelectorAll('.custom-dialog-actions button'));
+        const visible = btns.filter(b => b.style.display !== 'none' && !b.disabled && b.style.pointerEvents !== 'none');
+        return visible.length > 0 ? visible[visible.length - 1] : null;
+    };
+
     // Enterキーのイベント
     inputEl.onkeydown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            okBtn.click();
+            const btn = getRightmostBtn();
+            if (btn) btn.click();
         }
     };
-    
-    okBtn.onclick = () => { 
+
+    // 【復元】キャンセルの戻り値を正しく維持
+    const isValueExpected = options.type === 'prompt' || options.type === 'select' || options.type === 'multi-select';
+
+    // 入力欄以外のダイアログ全体でもEnterキーでOKボタンを押せるようにする
+    const _dialogKeyHandler = (e) => {
+        if (modal.style.display === 'none') return;
+        if (e.key !== 'Enter') return;
+        if (e.target === inputEl) return; // inputElは上のハンドラで処理済み
+        // ダイアログ内の SELECT / TEXTAREA のみスキップ（ダイアログ外のボタン等は除外しない）
+        if (modal.contains(e.target) && (e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) return;
+        e.preventDefault();
+        const btn = getRightmostBtn();
+        if (btn) btn.click();
+    };
+    document.addEventListener('keydown', _dialogKeyHandler);
+    const _origCleanup = cleanup;
+    const cleanup2 = () => { _origCleanup(); document.removeEventListener('keydown', _dialogKeyHandler); };
+    // cleanup を差し替え
+    cancelBtn.onclick = () => { cleanup2(); resolve(isValueExpected ? null : false); };
+    closeBtn.onclick  = () => { cleanup2(); resolve(isValueExpected ? null : null); };
+    extra2Btn.onclick = () => {
+        if (options.onExtra2Click) { options.onExtra2Click(); } else { cleanup2(); resolve('extra2'); }
+    };
+    extraBtn.onclick = () => {
+        if (options.onExtraClick) { options.onExtraClick(); } else { cleanup2(); resolve('extra'); }
+    };
+    okBtn.onclick = () => {
         if (options.type === 'multi-select') {
             const results = {};
             multiSelectContainer.querySelectorAll('select').forEach(sel => {
                 results[sel.dataset.idx] = sel.value;
             });
-            cleanup(); resolve(results);
+            cleanup2(); resolve(results);
         } else {
             const val = options.type === 'prompt' ? inputEl.value : (options.type === 'select' ? selectEl.value : true);
-            cleanup(); resolve(val);
-        }
-    };
-    
-    // 【復元】キャンセルの戻り値を正しく維持
-    const isValueExpected = options.type === 'prompt' || options.type === 'select' || options.type === 'multi-select';
-    cancelBtn.onclick = () => { cleanup(); resolve(isValueExpected ? null : false); };
-    closeBtn.onclick = () => { cleanup(); resolve(isValueExpected ? null : null); }; // closeの場合は常に処理中断
-    extraBtn.onclick = () => { 
-        if (options.onExtraClick) {
-            // 専用処理がある場合は cleanup() を呼ばない＝ダイアログが閉じない
-            options.onExtraClick(); 
-        } else {
-            cleanup(); resolve('extra'); 
+            cleanup2(); resolve(val);
         }
     };
   });
@@ -1164,35 +1306,39 @@ svg.innerHTML = `<defs>${defs}</defs>`;
 }
 async function openSplitDialog() {if (isSelectingForSplit) return;
 const currentCount = isSplitPreviewActive ? splitTargetCount : 1;
+const availableCount = processedImages.filter(d => !d.isSplitData).length;
 // ボタン有効判定:
 // 同方向 → 現在より多い分割数のみ有効
 // 逆方向 → 現在と同数以上を有効（多い場合は既存画像を維持して追加選択）
 // 未分割 → 全て有効
+// 共通 → 分割数がサムネイル枚数を超える場合は無効
 const vNote = byId('splitVerticalDisabledNote');
 if (vNote) vNote.style.display = 'none';
 [2,3,4].forEach((cnt, i) => {
   const b = byId(['splitBtn2','splitBtn3','splitBtn4'][i]);
   if (!b) return;
-  let dis = false;
-  if (isSplitPreviewActive) {
-    if (splitDirection === 'vertical') dis = cnt <= currentCount;   // 同方向: 現在以下は無効
-    else dis = cnt < currentCount;                                   // 逆方向: 現在未満を無効（同数・増加は有効）
+  let dis = cnt > availableCount; // 画像枚数不足
+  if (!dis && isSplitPreviewActive) {
+    if (splitDirection === 'vertical') dis = cnt <= currentCount;
+    else dis = cnt < currentCount;
   }
   b.disabled = dis;
   b.style.opacity = dis ? "0.3" : "1";
   b.style.cursor = dis ? "not-allowed" : "pointer";
+  b.style.pointerEvents = dis ? "none" : "";
 });
 [2,3,4].forEach((cnt, i) => {
   const b = byId(['splitHBtn2','splitHBtn3','splitHBtn4'][i]);
   if (!b) return;
-  let dis = false;
-  if (isSplitPreviewActive) {
-    if (splitDirection === 'horizontal') dis = cnt <= currentCount; // 同方向: 現在以下は無効
-    else dis = cnt < currentCount;                                   // 逆方向: 現在未満を無効（同数・増加は有効）
+  let dis = cnt > availableCount; // 画像枚数不足
+  if (!dis && isSplitPreviewActive) {
+    if (splitDirection === 'horizontal') dis = cnt <= currentCount;
+    else dis = cnt < currentCount;
   }
   b.disabled = dis;
   b.style.opacity = dis ? "0.3" : "1";
   b.style.cursor = dis ? "not-allowed" : "pointer";
+  b.style.pointerEvents = dis ? "none" : "";
 });
 byId('splitDialogModal').style.display = 'flex';
 }
@@ -1926,9 +2072,15 @@ return str;
 };
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 if (pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-let processedImages = [], smallImages = [], japaneseImages = [];
+let processedImages = [], smallImages = [], japaneseImages = [], individualUpscaleSizes = {};
 let loadedZipNames = new Set(); // 読み込んだZIPファイル名を追跡
 let isStartupEmpty = false;
+// セッション中に意味のある操作（保存・リネーム・書き出し等）が行われたか
+let hasSessionWork = false;
+function markSessionWork() {
+    hasSessionWork = true;
+    localStorage.removeItem('pendingSlotClear');
+}
 let assignedSlots = { thumb: null, og: null, special: null, save1: null, save2: null, save3: null };
 let currentPreviewData = null, _progressStartTime = 0, currentPreviewIndex = -1;
 const fileInput = byId('fileInput'), dropZone = byId('dropZone'), previewArea = byId('previewArea');
@@ -1951,6 +2103,43 @@ document.addEventListener('keyup', (e) => { if (e.key === 'Shift') { exportZipBt
 let imgW = 0, imgH = 0, imgX = 0, imgY = 0, fitW = 0;
 let isDragging = false, dragStartX = 0, dragStartY = 0, dragStartImgX = 0, dragStartImgY = 0;
 const MAX_ZOOM = 5;
+// 小画像の場合は現在のアスペクト設定に基づくエクスポートサイズをメタ情報に表示する
+function updatePreviewMetaDimensions() {
+  if (!currentPreviewData || isSplitPreviewActive) return;
+  const data = currentPreviewData;
+  const srcW = data.originalWidth, srcH = data.originalHeight;
+  const el = byId('previewMetaInfo');
+  if (!el) return;
+
+  if (srcW >= 1200) {
+    el.innerHTML = `${srcW}×${srcH}px`;
+    return;
+  }
+
+  // 小画像: imgW と targetCw から「1200px仮想キャンバス上の表示サイズ」をリアルタイム算出
+  if (imgW > 0 && targetCw > 0) {
+    const vW = Math.min(1200, Math.round(imgW * 1200 / targetCw));
+    const vH = Math.round(vW * srcH / srcW);
+    el.innerHTML = `<span class="highlight-red" style="font-weight:bold">${vW}</span>×${vH}px`;
+    return;
+  }
+
+  // フォールバック（imgW未設定時）: 保存済み状態があればエクスポートサイズ、なければ実サイズ
+  const hasSavedState = data._modeStates && data._modeStates[currentAspectKey];
+  if (!hasSavedState) {
+    el.innerHTML = `<span class="highlight-red" style="font-weight:bold">${srcW}</span>×${srcH}px`;
+    return;
+  }
+  const expSize = EXPORT_SIZE[currentAspectKey];
+  let outW, outH;
+  if (expSize && expSize.w && expSize.h) {
+    outW = expSize.w; outH = expSize.h;
+  } else {
+    outW = 1200; outH = Math.round(srcH * (1200 / srcW));
+  }
+  el.innerHTML = `<span class="highlight-red" style="font-weight:bold">${outW}</span>×${outH}px`;
+}
+
 function applyPos() {
   const img = getActiveImg(), cw = targetCw || zoomContainer.clientWidth, ch = targetCh || zoomContainer.clientHeight;
   const tx = imgX - cw / 2 + imgW / 2, ty = imgY - ch / 2 + imgH / 2;
@@ -1962,6 +2151,10 @@ function applyPos() {
   const isPresetPos = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey);
   if (isPresetPos) {
       renderPresetCanvas(currentAspectKey);
+  }
+  // 小画像: ズーム・移動に合わせてサイズ表示をリアルタイム更新
+  if (currentPreviewData && currentPreviewData.originalWidth < 1200) {
+      updatePreviewMetaDimensions();
   }
   markUnsaved();
 }
@@ -2163,7 +2356,7 @@ function getSmallImageScale(iw, ih, cw, ch) {
   // 'free' の場合は幅 1200px を基準として計算する
   const targetW = (exportSize && exportSize.w) ? exportSize.w : 1200;
   
-  if (!currentPreviewData || !currentPreviewData.isSmall) return null;
+  if (!currentPreviewData || currentPreviewData.originalWidth >= 1200) return null;
   const scale = cw / targetW;
   if (Math.round(iw * scale) >= cw) return null;
   return scale;
@@ -2606,6 +2799,7 @@ return;
 const _preImgX = imgX, _preImgY = imgY, _preImgW = imgW, _preImgH = imgH;
 const _preCw = targetCw || zoomContainer.clientWidth, _preCh = targetCh || zoomContainer.clientHeight;
 if (getActiveImg().naturalWidth) fitImage();
+updatePreviewMetaDimensions();
 if (isInLogoMode()) clampAllLogos();
 if (isSpecial && overwriteMode !== 'transit') {const d = { ...currentPreviewData, _modeStates: JSON.parse(JSON.stringify(currentPreviewData._modeStates || {})) };
 d._modeStates[targetKey] = { sat: byId('satSlider').value, bri: byId('conSlider').value, sharp: byId('sharpSlider').value, rot: byId('rotSlider') ? byId('rotSlider').value : 0, cw: _preCw, ch: _preCh, imgX: _preImgX, imgY: _preImgY, imgW: _preImgW, imgH: _preImgH, fitW };
@@ -2665,7 +2859,7 @@ async function assignCurrentToSlot(preset) {
 
   refreshGlobalTimestamp('edit');
   const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
-  if (!currentPreviewData.isSmall && isBgVisible(imgX, imgY, imgW, imgH, rot, targetCw || zoomContainer.clientWidth, targetCh || zoomContainer.clientHeight)) {
+  if (currentPreviewData.originalWidth >= 1200 && isBgVisible(imgX, imgY, imgW, imgH, rot, targetCw || zoomContainer.clientWidth, targetCh || zoomContainer.clientHeight)) {
     const confirmBg = await showCustomDialog({ title: '確認', message: '下地（余白）が見えた状態ですが、このままスロットに保存しますか？', okText: '保存する', cancelText: 'キャンセル', type: 'confirm' });
     if (!confirmBg) return;
   }
@@ -2719,6 +2913,7 @@ async function assignCurrentToSlot(preset) {
       if (btn) await setAspect(btn, true, false);
     }
   } else {
+    markSessionWork();
     showToast(`${displayName} スロットに保存しました`);
   }
 }
@@ -2732,7 +2927,7 @@ const iw = d.originalWidth * st.baseScale * st.scale, ih = d.originalHeight * st
 if(isBgVisible(st.dx, st.dy, iw, ih, st.rot||0, cw, ch)) { hasBg = true; break; }
 }
 } else {
-if (!currentPreviewData.isSmall) {
+if (currentPreviewData.originalWidth >= 1200) {
 hasBg = isBgVisible(imgX, imgY, imgW, imgH, parseInt(byId('rotSlider') ? byId('rotSlider').value : 0)||0, targetCw || zoomContainer.clientWidth, targetCh || zoomContainer.clientHeight);
 }
 }
@@ -2778,12 +2973,13 @@ if (dirHandle) { try { const fh = await dirHandle.getFileHandle(filename, { crea
 const data = currentPreviewData; if (!data) return; const useFolder = e && e.shiftKey && window.showDirectoryPicker;
 // ファイル名の強制正規化: 全角数字→半角、日本語削除、空なら連番
 const _toHW = s => s.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
-const _baseName = data.originalName.replace(/\.[^/.]+$/, '');
+const _srcName = data.exportName || data.originalName;
+const _baseName = _srcName.replace(/\.[^/.]+$/, '');
 const _normalizedBase = _toHW(_baseName).replace(/[^\x01-\x7E]/g, '').trim();
 const isSlotExport = ['thumb','og','special','save1','save2','save3'].includes(currentAspectKey);
 const renameToSafe = false;
 let targetUpscaleWidth = null;
-if (data.isSmall) {
+if (data.originalWidth < 1200) {
     // 余白がない状態（画像がキャンバスをカバーしている）かチェック
     const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
     const _cw = targetCw || zoomContainer.clientWidth, _ch = targetCh || zoomContainer.clientHeight;
@@ -2792,7 +2988,7 @@ if (data.isSmall) {
         // 余白なし＝拡大済み → 画質確認のみ
         const ok = await showCustomDialog({
             title: '画質の確認',
-            message: '幅1200px未満の画像を拡大しています。\n拡大すると画質が粗くなりますが、よろしいですか？',
+            message: '幅1200px未満の画像を拡大しています。\n拡大すると画質が粗くなる場合がありますが、よろしいですか？',
             okText: '書き出す',
             cancelText: 'キャンセル',
             type: 'confirm'
@@ -2806,6 +3002,11 @@ if (data.isSmall) {
         if (data.originalWidth < 400) options.push({ label: '幅400pxに拡大して書き出す', value: '400' });
         if (data.originalWidth < 800) options.push({ label: '幅800pxに拡大して書き出す', value: '800' });
         options.push({ label: '幅1200pxに拡大して書き出す', value: '1200' });
+        // 現在のキャンバス上の実効幅を計算して「調整した画像サイズ」として追加
+        const _adjW = (imgW && targetCw) ? Math.min(1200, Math.round(imgW * 1200 / targetCw)) : null;
+        if (_adjW && _adjW > data.originalWidth && _adjW < 1200) {
+            options.push({ label: `調整した画像サイズで書き出す（幅${_adjW}px）`, value: `adj_${_adjW}` });
+        }
         const sizeChoice = await showCustomDialog({
             title: '幅1200px未満の画像です',
             message: '書き出しサイズを選択してください。\n（拡大すると画質が粗くなる場合があります）',
@@ -2815,7 +3016,12 @@ if (data.isSmall) {
             selectOptions: options
         });
         if (sizeChoice === null) return;
-        if (sizeChoice !== 'original') targetUpscaleWidth = parseInt(sizeChoice);
+        if (sizeChoice === 'original') {
+            targetUpscaleWidth = null;
+        } else {
+            targetUpscaleWidth = parseInt(sizeChoice.replace('adj_', ''));
+        }
+        data._exportImageOnly = true;
     }
 }
 let dirHandle = null; if (useFolder) { try { dirHandle = await window.showDirectoryPicker({ startIn: 'desktop' }); } catch(e) { return; } }
@@ -2824,6 +3030,20 @@ const img = new Image(); img.src = data.blobUrl; await new Promise(res => { img.
 let outW, outH, expRatio;
 let finalDrawW, finalDrawH, finalDrawX, finalDrawY;
 if (currentAspectKey === 'free') {
+    if (data._exportImageOnly) {
+        // オリジナル or 調整サイズ: 余白を含まず画像のみを書き出す
+        if (targetUpscaleWidth && img.naturalWidth < targetUpscaleWidth) {
+            outW = targetUpscaleWidth;
+            outH = Math.round(img.naturalHeight * (targetUpscaleWidth / img.naturalWidth));
+        } else {
+            outW = img.naturalWidth;
+            outH = img.naturalHeight;
+            if (outW > 1200) { outH = Math.round(outH * (1200 / outW)); outW = 1200; }
+        }
+        expRatio = outW / img.naturalWidth;
+        finalDrawW = outW; finalDrawH = outH; finalDrawX = 0; finalDrawY = 0;
+        data._exportImageOnly = false; // 使い捨て
+    } else {
     if (targetUpscaleWidth && img.naturalWidth < targetUpscaleWidth) {
         outW = targetUpscaleWidth;
         outH = Math.round(img.naturalHeight * (targetUpscaleWidth / img.naturalWidth));
@@ -2834,6 +3054,8 @@ if (currentAspectKey === 'free') {
     }
     // ZOOMやパンが適用されている場合はキャンバスの構図を反映する
     if (imgW && cw && ch && (imgW !== img.naturalWidth || imgX !== 0 || imgY !== 0)) {
+        // 小画像のズーム書き出しは仮想1200pxキャンバス基準に合わせる
+        if (outW < 1200) outW = 1200;
         outH = Math.round(outW * ch / cw);
         expRatio = outW / cw;
         finalDrawW = imgW * expRatio; finalDrawH = imgH * expRatio;
@@ -2842,6 +3064,7 @@ if (currentAspectKey === 'free') {
         expRatio = outW / img.naturalWidth;
         finalDrawW = outW; finalDrawH = outH; finalDrawX = 0; finalDrawY = 0;
     }
+    } // end else (not exportImageOnly)
 } else {
     const preset = ASPECT_PRESETS[currentAspectKey] || { w: 1, h: 1 }, ratio = preset.w / preset.h;
     const exp = EXPORT_SIZE[currentAspectKey] || { w: 1200, h: Math.round(1200 / ratio) };
@@ -2980,10 +3203,11 @@ japaneseImages = backupJapanese;
 }
 byId('progress').style.display = 'none';
 await handleJapaneseFilenames();
-if (!isLoadingCanceled && (smallImages.length || japaneseImages.length)) { renderAlertList(); alertModal.style.display = 'flex'; }
+if (!isLoadingCanceled && (smallImages.length || japaneseImages.length)) { if (smallImages.length) { openResizeDialog(); } else { renderAlertList(); alertModal.style.display = 'flex'; } }
 refreshGlobalTimestamp('edit');
 renderAllThumbs();
 await saveAppState();
+if (!isLoadingCanceled) markSessionWork();
 }
 async function handleFiles(files) {if (!files || !files.length) return; isStartupEmpty = false; showProgressPanel('読み込み中...'); processedImages = []; smallImages = []; japaneseImages = []; previewArea.innerHTML = ''; loadedZipNames = new Set(); let allTasks = [];
 for (let i = 0; i < files.length; i++) {if (isLoadingCanceled) break;
@@ -3016,14 +3240,20 @@ processedImages = []; smallImages = []; japaneseImages = [];
 }
 byId('progress').style.display = 'none';
 await handleJapaneseFilenames();
-if (!isLoadingCanceled && (smallImages.length || japaneseImages.length)) { renderAlertList(); alertModal.style.display = 'flex'; }
+if (!isLoadingCanceled && (smallImages.length || japaneseImages.length)) { if (smallImages.length) { openResizeDialog(); } else { renderAlertList(); alertModal.style.display = 'flex'; } }
 refreshGlobalTimestamp('load');
 renderAllThumbs();
 await saveAppState();
+// 新規読み込み完了: まだ何も編集していない状態としてフラグを立てる
+if (!isLoadingCanceled && processedImages.length > 0) {
+    hasSessionWork = false;
+    localStorage.setItem('pendingSlotClear', currentSlotId);
+}
 }
 async function processSingleFile(file) {return new Promise((resolve) => {const img = new Image(), url = URL.createObjectURL(file);
 img.onload = async () => {if (isLoadingCanceled) { URL.revokeObjectURL(url); resolve(); return; }
 const isSmall = img.width < 1200, hasJapanese = /[^\x01-\x7E]/.test(file.name);
+const needsResizeDialog = img.width < 1200;
 const createBlob = async (maxW, q) => {if (isLoadingCanceled) return null;
 const w = Math.min(maxW, img.width), cvs = document.createElement('canvas');
 cvs.width = w; cvs.height = Math.round(img.height * (w / img.width));
@@ -3035,7 +3265,7 @@ const [exportBlob, previewBlob, thumbBlob] = await Promise.all([createBlob(1200,
 if (isLoadingCanceled || !exportBlob) { URL.revokeObjectURL(url); resolve(); return; }
 const data = {file, originalName: file.name,exportName: file.name.replace(/\.[^/.]+$/, "").replace(/ /g, "_") + ".jpg",blob: exportBlob, previewBlob, thumbBlob,blobUrl: URL.createObjectURL(previewBlob), thumbUrl: URL.createObjectURL(thumbBlob),originalWidth: img.width, originalHeight: img.height,isSmall, hasJapanese, sizeStr: formatBytes(file.size),lastUpdated: getFormattedDate()
 };
-processedImages.push(data); if (isSmall) smallImages.push(data); if (hasJapanese) japaneseImages.push(data);
+processedImages.push(data); if (needsResizeDialog) smallImages.push(data); if (hasJapanese) japaneseImages.push(data);
 URL.revokeObjectURL(url); resolve();
 };
 img.onerror = resolve; img.src = url;
@@ -3063,10 +3293,7 @@ function renderAllThumbs() {
                 }
 
                 // 重複チェック：すでに分割リストに含まれている画像は選択不可（ファイル名・サイズ・容量で比較）
-                const isDuplicate = splitSelectedImages.some(s =>
-                    s === data ||
-                    (s.originalName && data.originalName && s.originalName === data.originalName && s.originalWidth === data.originalWidth && s.originalHeight === data.originalHeight && s.previewBlob && data.previewBlob && s.previewBlob.size === data.previewBlob.size)
-                );
+                const isDuplicate = splitSelectedImages.some(s => s === data);
                 if (isDuplicate) {
                     await showCustomDialog({ 
                         title: '選択できません', 
@@ -3169,17 +3396,27 @@ function renderAllThumbs() {
             }
         }
 
-        if (data.isSplitData || data.isSmall || data.hasJapanese || hasBgWarning) {
+        // thumb-dimensions と同じ実効幅でバッジを判定する
+        const _badgeAspKey = data._lastAspectKey;
+        const _badgeMs = _badgeAspKey && data._modeStates && data._modeStates[_badgeAspKey];
+        const _effectiveW = (_badgeMs && _badgeMs.imgW && _badgeMs.cw)
+            ? Math.min(1200, Math.round(_badgeMs.imgW * 1200 / _badgeMs.cw))
+            : data.originalWidth;
+
+        if (data.isSplitData || (!data.isSplitData && _effectiveW < 1200) || data.hasJapanese || hasBgWarning) {
             statusBadges += `<div style="position:absolute; top:4px; right:4px; display:flex; flex-direction:column; gap:3px; z-index:15; pointer-events:none; align-items:flex-end">`;
             if (data.isSplitData) statusBadges += `<span style="background:var(--accent); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">${data.splitTargetCount || ''}分割</span>`;
-            if (data.isSmall) statusBadges += `<span style="background:var(--danger); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">1200px未満</span>`;
-            if (data.hasJapanese) statusBadges += `<span style="background:var(--warn); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">日本語</span>`;
+            if (!data.isSplitData && _effectiveW < 1200) {
+                const sizeLabel = _effectiveW < 400 ? '400px未満' : _effectiveW <= 800 ? '800px未満' : '1200px未満';
+                statusBadges += `<span style="background:var(--danger); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">${sizeLabel}</span>`;
+            }
+            if (data.hasJapanese) statusBadges += `<span style="background:var(--warn); color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">全角</span>`;
             if (hasBgWarning) statusBadges += `<span style="background:#ef4444; color:#fff; font-size:0.6rem; padding:2px 5px; border-radius:3px; font-weight:500; box-shadow:0 1px 3px rgba(0,0,0,0.2); letter-spacing:-0.02em; line-height:1.2">余白</span>`;
             statusBadges += `</div>`;
         }
 
         const splitSelIdx = (isSelectingForSplit || reselectingSplitIndex !== -1)
-            ? splitSelectedImages.findIndex(s => s === data || (s.originalName && data.originalName && s.originalName === data.originalName && s.originalWidth === data.originalWidth && s.originalHeight === data.originalHeight && s.previewBlob && data.previewBlob && s.previewBlob.size === data.previewBlob.size))
+            ? splitSelectedImages.findIndex(s => s === data)
             : -1;
         const splitBadge = splitSelIdx !== -1
             ? `<div style="position:absolute;bottom:5px;right:5px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:20;box-shadow:0 1px 6px rgba(0,0,0,0.35);pointer-events:none;letter-spacing:-0.02em">${splitSelIdx + 1}</div>`
@@ -3200,10 +3437,36 @@ function renderAllThumbs() {
                 ${splitBadge}
                 ${editedBar}
             </div>
-            <span class="thumb-name">
+            <span class="thumb-name" style="${data.hasJapanese ? 'color:var(--danger)' : ''}">
                 ${highlightJapanese(truncateName(data.exportName))}
             </span>
-            <span class="thumb-dimensions">${data.isSmall ? `<span class="highlight-red" style="font-weight:bold">${data.originalWidth}</span>` : data.originalWidth}x${data.originalHeight} px</span>`;
+            <input class="thumb-name-edit" type="text" value="${data.exportName.replace(/\.[^/.]+$/, '')}" data-ext="${data.exportName.match(/\.[^/.]+$/)?.[0] || '.jpg'}" spellcheck="false">
+            <span class="thumb-dimensions">${(() => {
+              if (data.originalWidth >= 1200) {
+                return `${data.originalWidth}x${data.originalHeight} px`;
+              }
+              // 小画像: 保存済みの編集状態がある場合のみエクスポートサイズを表示
+              const aspKey = data._lastAspectKey;
+              const ms = aspKey && data._modeStates && data._modeStates[aspKey];
+              if (!ms) {
+                // 未編集: 元サイズを赤字で表示
+                return `<span class="highlight-red" style="font-weight:bold">${data.originalWidth}</span>x${data.originalHeight} px`;
+              }
+              // 編集済み: キャンバス上の仮想サイズ（imgW * 1200 / cw）を表示
+              let outW, outH;
+              if (ms.imgW && ms.cw) {
+                outW = Math.min(1200, Math.round(ms.imgW * 1200 / ms.cw));
+                outH = Math.round(outW * data.originalHeight / data.originalWidth);
+              } else {
+                const expSize = EXPORT_SIZE[aspKey];
+                if (expSize && expSize.w && expSize.h) {
+                  outW = expSize.w; outH = expSize.h;
+                } else {
+                  outW = 1200; outH = Math.round(data.originalHeight * (1200 / data.originalWidth));
+                }
+              }
+              return `<span class="highlight-red" style="font-weight:bold">${outW}</span>x${outH} px`;
+            })()}</span>`;
 
         const delBtn = box.querySelector('.thumb-delete-btn');
         if (delBtn) {
@@ -3214,9 +3477,96 @@ function renderAllThumbs() {
                 });
             });
         }
+
+        // ── インラインファイル名編集 ──────────────────────
+        const nameSpan  = box.querySelector('.thumb-name');
+        const nameInput = box.querySelector('.thumb-name-edit');
+
+        // 全角ファイル名は最初から入力欄を表示
+        if (data.hasJapanese) {
+            nameSpan.style.display  = 'none';
+            nameInput.style.display = 'block';
+        }
+
+        // クリックで編集モード
+        nameSpan.addEventListener('click', (e) => {
+            e.stopPropagation();
+            nameSpan.style.display  = 'none';
+            nameInput.style.display = 'block';
+            nameInput.focus();
+            nameInput.select();
+        });
+        nameInput.addEventListener('click', (e) => e.stopPropagation());
+
+        const showThumbTooltip = (input, msg) => {
+            let tip = document.getElementById('thumbNameTooltip');
+            if (!tip) { tip = document.createElement('div'); tip.id = 'thumbNameTooltip'; tip.className = 'thumb-name-tooltip'; document.body.appendChild(tip); }
+            tip.textContent = msg;
+            const rect = input.getBoundingClientRect();
+            tip.style.left = (rect.left + rect.width / 2) + 'px';
+            tip.style.top  = (rect.top + window.scrollY - 36) + 'px';
+            tip.classList.add('visible');
+            clearTimeout(tip._timer);
+            tip._timer = setTimeout(() => tip.classList.remove('visible'), 2200);
+        };
+
+        const revertThumb = () => {
+            nameInput.value = data.exportName.replace(/\.[^/.]+$/, '');
+            nameInput.classList.remove('is-error');
+            nameInput.style.display = 'none';
+            nameSpan.style.display  = '';
+        };
+
+        const commitThumb = () => {
+            const newBase = nameInput.value.replace(/[^\x01-\x7E]/g, '').trim();
+            if (!newBase) { revertThumb(); return; }
+            const ext     = nameInput.dataset.ext || '.jpg';
+            const newName = newBase + ext;
+            const duplicate = processedImages.some(d => d !== data && (d.exportName === newName || d.originalName === newName));
+            if (duplicate) {
+                showThumbTooltip(nameInput, '既に使用されているファイル名です');
+                setTimeout(() => revertThumb(), 2200);
+                return;
+            }
+            data.exportName = newName;
+            data.hasJapanese = /[^\x01-\x7E]/.test(newName);
+            nameSpan.style.color   = data.hasJapanese ? 'var(--danger)' : '';
+            nameSpan.innerHTML     = highlightJapanese(truncateName(newName));
+            nameInput.style.display = 'none';
+            nameSpan.style.display  = '';
+            // ツールチップ更新
+            const tooltip = box.querySelector('.custom-tooltip');
+            if (tooltip) tooltip.textContent = newName;
+            // 入力値リセット
+            nameInput.value = newBase;
+        };
+
+        nameInput.addEventListener('blur', () => {
+            const newBase = nameInput.value.replace(/[^\x01-\x7E]/g, '').trim();
+            if (!newBase) { revertThumb(); return; }
+            const newName = newBase + (nameInput.dataset.ext || '.jpg');
+            const duplicate = processedImages.some(d => d !== data && (d.exportName === newName || d.originalName === newName));
+            if (duplicate) {
+                showThumbTooltip(nameInput, '既に使用されているファイル名です');
+                setTimeout(() => revertThumb(), 2200);
+            } else {
+                commitThumb();
+            }
+        });
+
+        nameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter')  { e.preventDefault(); nameInput.blur(); }
+            if (e.key === 'Escape') { e.stopPropagation(); revertThumb(); }
+            setTimeout(() => {
+                const cleaned = nameInput.value.replace(/[^\x01-\x7E]/g, '');
+                if (cleaned !== nameInput.value) nameInput.value = cleaned;
+            }, 0);
+        });
+        // ── ここまで ──────────────────────────────────────
         previewArea.appendChild(box);
     });
-    updatePreviewCentering(); 
+    updatePreviewCentering();
+    updateSlotActionBtns();
     updateActionAreaState();
     requestAnimationFrame(() => requestAnimationFrame(syncPresetWidths));
 }
@@ -3607,7 +3957,7 @@ requestAnimationFrame(() => {
   nextImg.style.transition = '';
   requestAnimationFrame(() => {
     nextImg.style.opacity = '1';
-    byId('previewMetaName').innerHTML = highlightJapanese(data.exportName); byId('previewMetaInfo').innerHTML = `${data.isSmall ? `<span class="highlight-red" style="font-weight:bold">${data.originalWidth}</span>` : data.originalWidth}×${data.originalHeight}px`;
+    byId('previewMetaName').innerHTML = highlightJapanese(data.exportName); updatePreviewMetaDimensions();
     if (isInitialOpen) { const prog = byId('progress'); if (prog) prog.style.display = 'none'; imagePreviewModal.style.opacity = '1'; }
     setTimeout(() => { isPreviewLoading = false; updateSavedState(); }, 150);
   });
@@ -3780,7 +4130,7 @@ async function generateAlertImageCanvas() {const canvas = document.createElement
 const effectiveCols = Math.min(cols, Math.max(sLen, jLen, 1));
 canvas.width = effectiveCols * itemW + padding * 2; canvas.height = padding * 2 + (smallRows > 0 ? 80 + smallRows * itemH : 0) + (jpRows > 0 ? 80 + jpRows * itemH + (smallRows > 0 ? 40 : 0) : 0);
 ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height); let currentY = padding;
-const drawSection = async (title, color, items, section) => {if (!items.length) return; ctx.fillStyle = color; ctx.font = 'bold 24px "Noto Sans JP", sans-serif'; ctx.fillText(title, padding, currentY + 25); currentY += 60;
+const drawSection = async (title, color, items, section) => {if (!items.length) return; ctx.fillStyle = color; ctx.font = 'bold 12px "Noto Sans JP", sans-serif'; ctx.fillText(title, padding, currentY + 16); currentY += 38;
 for (let i = 0; i < items.length; i++) {const item = items[i], x = padding + (i % cols) * itemW, y = currentY + Math.floor(i / cols) * itemH; const img = new Image(); img.src = item.blobUrl; await new Promise(res => img.onload = res);
 const scale = Math.min(120 / img.width, 120 / img.height), dw = img.width * scale, dh = img.height * scale, dx = x + (itemW - dw) / 2, dy = y + (120 - dh) / 2;
 ctx.strokeStyle = color; ctx.lineWidth = 2; ctx.strokeRect(dx - 2, dy - 2, dw + 4, dh + 4); ctx.drawImage(img, dx, dy, dw, dh);
@@ -3792,7 +4142,7 @@ let sx = (x + itemW / 2) - ((ww + hh) / 2); ctx.fillStyle = section === 'small' 
 ctx.fillText(wText, sx, y + 160); ctx.fillStyle = '#64748b'; ctx.font = '11px "Noto Sans JP", sans-serif'; ctx.fillText(hText, sx + ww, y + 160);
 } currentY += (Math.ceil(items.length / cols) * itemH) + 40;
 };
-await drawSection("幅1200px未満の画像一覧", "#e11d48", smallImages, 'small'); await drawSection("日本語ファイル名の画像一覧", "#d97706", japaneseImages, 'japanese');
+await drawSection("幅1200px未満の画像一覧", "#e11d48", smallImages, 'small'); await drawSection("全角ファイル名の画像一覧", "#d97706", japaneseImages, 'japanese');
 return canvas.toDataURL('image/jpeg', 0.9);
 }
 function renderAlertList() {const smallContainer = byId('smallAlertContainer'), jpContainer = byId('jpAlertContainer');
@@ -3804,7 +4154,11 @@ div.style.cssText = 'display:flex; align-items:center; gap:8px; background:#fff;
 div.innerHTML = `<img src="${data.thumbUrl}" style="width:36px; height:36px; object-fit:cover; border-radius:4px; border:1px solid #e4e4e7"><div style="min-width:0; flex:1"><div style="font-size:0.75rem; font-weight:500; color:#18181b; overflow:hidden; text-overflow:ellipsis; white-space:nowrap" title="${data.originalName}">${data.originalName}</div><div style="font-size:0.7rem; color:#ef4444; font-weight:bold">${data.originalWidth} × ${data.originalHeight} px</div></div>`;
 smallList.appendChild(div);
 });
+const resizeArea = byId('resizeBtnArea');
+if (resizeArea) resizeArea.style.display = 'flex';
 } else {smallContainer.style.display = 'none';
+const resizeArea = byId('resizeBtnArea');
+if (resizeArea) resizeArea.style.display = 'none';
 }
 if (japaneseImages.length > 0) {jpContainer.style.display = 'block';
 japaneseImages.forEach(data => {const div = document.createElement('div');
@@ -3815,6 +4169,103 @@ jpList.appendChild(div);
 } else {jpContainer.style.display = 'none';
 }
 }
+
+async function openResizeDialog() {
+  const items = smallImages.map((data, i) => ({
+    idx: `img_${processedImages.indexOf(data)}`,
+    name: data.exportName || data.originalName,
+    thumb: data.thumbUrl || data.blobUrl,
+    w: data.originalWidth
+  }));
+  const sizeChoice = await showCustomDialog({
+    title: '幅1200px未満の画像が含まれています',
+    message: '書き出すサイズを選択してください。<br><span style="color:#ef4444;font-weight:500">※拡大すると画質が粗くなる場合があります。</span>',
+    okText: '決定',
+    cancelText: null,
+    noCloseBtn: true,
+    type: 'multi-select',
+    items
+  });
+  if (sizeChoice === null) return;
+  individualUpscaleSizes = sizeChoice;
+
+  // リサイズが必要な画像があればプログレスを出して実際に処理する
+  const resizeTargets = smallImages.filter(data => {
+    const key = `img_${processedImages.indexOf(data)}`;
+    const chosen = sizeChoice[key];
+    return chosen && chosen !== 'original';
+  });
+
+  if (resizeTargets.length > 0) {
+    showProgressPanel('リサイズ中...');
+    for (let i = 0; i < resizeTargets.length; i++) {
+      const data = resizeTargets[i];
+      const key = `img_${processedImages.indexOf(data)}`;
+      const targetW = parseInt(sizeChoice[key]);
+      const targetH = Math.round(data.originalHeight * (targetW / data.originalWidth));
+
+      updateFileProgress(i, resizeTargets.length, data.exportName);
+      await new Promise(r => setTimeout(r, 10));
+
+      // 元画像を読み込んでリサイズ
+      const img = new Image();
+      img.src = data.blobUrl;
+      await new Promise(r => { img.onload = r; if (img.complete && img.naturalWidth) r(); });
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW; canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, targetW, targetH);
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+
+      // サムネイル用キャンバス
+      const thumbCanvas = document.createElement('canvas');
+      const thumbW = 100, thumbH = Math.round(targetH * (thumbW / targetW));
+      thumbCanvas.width = thumbW; thumbCanvas.height = thumbH;
+      thumbCanvas.getContext('2d').drawImage(canvas, 0, 0, thumbW, thumbH);
+
+      const [newBlob, newThumbBlob] = await Promise.all([
+        new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95)),
+        new Promise(r => thumbCanvas.toBlob(r, 'image/jpeg', 0.85))
+      ]);
+
+      // 古い URL を解放して新しいデータで上書き
+      if (data.blobUrl) URL.revokeObjectURL(data.blobUrl);
+      if (data.thumbUrl) URL.revokeObjectURL(data.thumbUrl);
+
+      data.blob        = newBlob;
+      data.previewBlob = newBlob;
+      data.thumbBlob   = newThumbBlob;
+      data.blobUrl     = URL.createObjectURL(newBlob);
+      data.thumbUrl    = URL.createObjectURL(newThumbBlob);
+      data.originalWidth  = targetW;
+      data.originalHeight = targetH;
+      data.isSmall     = targetW < 1200;   // 1200px 未満は小画像モード（ガイド表示対象）
+      data.sizeStr     = formatBytes(newBlob.size);
+      delete data._exportWidth;
+      delete data._exportHeight;
+      delete data._modeStates; // リサイズ後はmodeStatesをリセット
+    }
+    byId('progress').style.display = 'none';
+
+    // smallImages リストを更新（まだ小さい画像だけ残す）
+    smallImages = smallImages.filter(d => d.isSmall);
+  } else {
+    // オリジナルを選んだ画像はサイズ情報だけ記録
+    smallImages.forEach(data => {
+      const key = `img_${processedImages.indexOf(data)}`;
+      const chosen = sizeChoice[key];
+      if (chosen === 'original') {
+        data._exportWidth  = data.originalWidth;
+        data._exportHeight = data.originalHeight;
+      }
+    });
+  }
+
+  renderAllThumbs();
+  await saveAppState();
+}
 async function downloadAlertImage() { const a = document.createElement('a'); a.href = await generateAlertImageCanvas(); a.download = 'alert_summary.jpg'; a.click(); }
 
 
@@ -3822,36 +4273,7 @@ exportZipBtn.addEventListener('click', async (e) => {
     const useFolder = e.shiftKey && window.showDirectoryPicker;
     const renameRequested = false;
 
-    // 小さい画像リストアップと個別サイズの選択
-    const smallItems = [];
-    for (let i = 0; i < processedImages.length; i++) {
-        const data = processedImages[i]; 
-        if (data.isSplitData) continue;
-        if (data.isSmall) {
-            smallItems.push({ idx: `img_${i}`, name: data.exportName || data.originalName, thumb: data.thumbUrl || data.blobUrl, w: data.originalWidth });
-        }
-    }
-    for (const preset of ['thumb', 'og', 'special']) {
-        const data = assignedSlots[preset]; 
-        if (!data) continue;
-        if (!data.isSplitData && data.isSmall) {
-            smallItems.push({ idx: `slot_${preset}`, name: data.exportName || data.originalName, thumb: data.thumbUrl || data.blobUrl, w: data.originalWidth });
-        }
-    }
-
-    let individualUpscaleSizes = {};
-    if (smallItems.length > 0) {
-        const sizeChoice = await showCustomDialog({
-            title: '幅1200px未満の画像が含まれています',
-            message: 'それぞれの書き出しサイズを選択してください。',
-            okText: '決定',
-            cancelText: 'キャンセル',
-            type: 'multi-select',
-            items: smallItems
-        });
-        if (sizeChoice === null) return;
-        individualUpscaleSizes = sizeChoice; // { img_0: "1200", slot_thumb: "800", ... }
-    }
+    if (smallImages.length === 0) individualUpscaleSizes = {};
 
     let dirHandle = null; 
     if (useFolder) { 
@@ -4072,6 +4494,7 @@ exportZipBtn.addEventListener('click', async (e) => {
         if (isLoadingCanceled) {showToast('書き出しをキャンセルしました'); byId('progress').style.display = 'none'; return;}
         if (smallImages.length || japaneseImages.length) { const alertUrl = await generateAlertImageCanvas(); if (useFolder) { const fh = await dirHandle.getFileHandle("00_alert_summary.jpg", { create: true }), w = await fh.createWritable(); await w.write(await (await fetch(alertUrl)).blob()); await w.close(); } else zip.file("00_alert_summary.jpg", alertUrl.split(',')[1], {base64: true}); }
         if (!useFolder) { const a = document.createElement('a'); a.href = URL.createObjectURL(await zip.generateAsync({ type: "blob" })); const zipBaseName = loadedZipNames.size === 1 ? [...loadedZipNames][0].replace(/\.zip$/i, '') + '_fix' : 'webleon_images'; a.download = zipBaseName + '.zip'; a.click(); }
+        markSessionWork();
     } catch (err) { 
         console.error(err); 
         await showCustomDialog({ title: 'エラー', message: '書き出し中にエラーが発生しました。', okText: '閉じる', okClass: 'btn btn-danger', type: 'alert' }); 
@@ -4950,7 +5373,7 @@ async function performManualSave() {
             }
         } else {
             // 余白チェック
-            if (!currentPreviewData.isSmall) {
+            if (currentPreviewData.originalWidth >= 1200) {
                 const rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
                 const cw = targetCw || zoomContainer.clientWidth, ch = targetCh || zoomContainer.clientHeight;
                 if (isBgVisible(imgX, imgY, imgW, imgH, rot, cw, ch)) {
@@ -4959,6 +5382,16 @@ async function performManualSave() {
                 }
             }
             saveImageState();
+            // 小画像を余白なしで保存した場合は isSmall を解除する
+            if (currentPreviewData.isSmall) {
+                const _rot = parseInt(byId('rotSlider') ? byId('rotSlider').value : 0) || 0;
+                const _cw = targetCw || zoomContainer.clientWidth;
+                const _ch = targetCh || zoomContainer.clientHeight;
+                if (!isBgVisible(imgX, imgY, imgW, imgH, _rot, _cw, _ch)) {
+                    currentPreviewData.isSmall = false;
+                    smallImages = smallImages.filter(d => d !== currentPreviewData);
+                }
+            }
             const isSlot = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey);
             if (!isSlot) {
                 try {
@@ -4970,6 +5403,7 @@ async function performManualSave() {
         forceClearUnsaved();
         updateSavedState();
         renderAllThumbs();
+        markSessionWork();
         showToast('編集内容を保存しました。');
     } catch (err) {
         console.error("保存エラー:", err);
