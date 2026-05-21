@@ -230,6 +230,16 @@ async function handleJapaneseFilenames() {
     align-self: center !important;
 }
 
+/* ── 縦位置画像時: グリッドとオリジナルの間で改行 ── */
+#aspectBar.portrait-mode > div:first-child {
+  flex-basis: 100%;
+  justify-content: center;
+}
+#aspectBar.portrait-mode > div:nth-child(2) {
+  flex-basis: 100%;
+  justify-content: center;
+}
+
 /* ── 複数選択（ラバーバンド） ── */
 #thumbSelectionRect {
   position: absolute;
@@ -2900,6 +2910,9 @@ function updateAspectBarVisibility(aspKey) {
   if (!inSplit && currentPreviewData && currentPreviewData.originalWidth && currentPreviewData.originalHeight) {
     imgRatio = currentPreviewData.originalWidth / currentPreviewData.originalHeight;
   }
+
+  // 縦位置画像（ratio < 1）のとき portrait-mode クラスを付与して改行
+  if (aspectBarEl) aspectBarEl.classList.toggle('portrait-mode', !inSplit && imgRatio > 0 && imgRatio < 1);
 
   document.querySelectorAll("#aspectBar .asp-btn").forEach(btn => {
     if (btn.id === "splitModeBtn") {
