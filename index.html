@@ -1367,29 +1367,49 @@ function startPreviewRename(el) {
     input.focus();
     input.select();
 
-    const commit = () => {
+    const commit = (forceRevert) => {
         const newBase = input.value.replace(/[^\x01-\x7E]/g, '').trim();
-        if (newBase && newBase !== base) {
-            // 初回リネーム前の元ファイル名を保存
-            if (!data._preRenameOriginalName) data._preRenameOriginalName = currentName;
-            data.exportName = newBase + ext;
-            data.originalName = newBase + ext;
-            data.hasJapanese = false;
-            renderAllThumbs();
-            saveAppState();
-            markSessionWork();
-            // ファイル名変更後に全リセットボタンを有効化
-            const _rab = byId('resetAllBtn');
-            if (_rab) { _rab.disabled = false; _rab.style.opacity = '1'; _rab.style.pointerEvents = 'auto'; }
+        const newName = newBase + ext;
+        if (!forceRevert && newBase && newBase !== base) {
+            const isDuplicate = processedImages.some(d => d !== data && d.exportName === newName);
+            if (!isDuplicate) {
+                if (!data._preRenameOriginalName) data._preRenameOriginalName = currentName;
+                data.exportName = newName;
+                data.originalName = newName;
+                data.hasJapanese = false;
+                renderAllThumbs();
+                saveAppState();
+                markSessionWork();
+                const _rab = byId('resetAllBtn');
+                if (_rab) { _rab.disabled = false; _rab.style.opacity = '1'; _rab.style.pointerEvents = 'auto'; }
+            }
         }
         el.innerHTML = '';
         byId('previewMetaName').innerHTML = highlightJapanese(data.exportName || data.originalName);
     };
+
     input.addEventListener('keydown', e => {
-        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
-        if (e.key === 'Escape') { input.value = base; input.blur(); }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const newBase = input.value.replace(/[^\x01-\x7E]/g, '').trim();
+            const newName = newBase + ext;
+            if (newBase && newBase !== base && processedImages.some(d => d !== data && d.exportName === newName)) {
+                window.showNameTooltip(input, '既に使用されているファイル名です');
+                input.style.borderBottomColor = 'var(--danger)';
+                input.select();
+                return; // フォーカス維持
+            }
+            input.removeEventListener('blur', onBlur);
+            commit();
+        }
+        if (e.key === 'Escape') {
+            input.removeEventListener('blur', onBlur);
+            commit(true); // 元に戻して閉じる
+        }
     });
-    input.addEventListener('blur', commit);
+
+    const onBlur = () => commit(); // 他の場所クリック → 重複でも閉じて元に戻す
+    input.addEventListener('blur', onBlur);
 }
 
 function renameAllSequential(e) {
@@ -2319,6 +2339,19 @@ return str;
 };
 const pdfjsLib = window['pdfjs-dist/build/pdf'];
 if (pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+// グローバルなファイル名エラートゥールチップ（プレビュー・サムネイル共用）
+window.showNameTooltip = (input, msg) => {
+    let tip = document.getElementById('thumbNameTooltip');
+    if (!tip) { tip = document.createElement('div'); tip.id = 'thumbNameTooltip'; tip.className = 'thumb-name-tooltip'; document.body.appendChild(tip); }
+    tip.textContent = msg;
+    const rect = input.getBoundingClientRect();
+    tip.style.left = (rect.left + rect.width / 2) + 'px';
+    tip.style.top  = (rect.top + window.scrollY - 36) + 'px';
+    tip.classList.add('visible');
+    clearTimeout(tip._timer);
+    tip._timer = setTimeout(() => tip.classList.remove('visible'), 2200);
+};
+
 let processedImages = [], smallImages = [], japaneseImages = [], individualUpscaleSizes = {};
 let loadedZipNames = new Set(); // 読み込んだZIPファイル名を追跡
 let isStartupEmpty = false;
@@ -3750,17 +3783,7 @@ function renderAllThumbs() {
         });
         nameInput.addEventListener('click', (e) => e.stopPropagation());
 
-        const showThumbTooltip = (input, msg) => {
-            let tip = document.getElementById('thumbNameTooltip');
-            if (!tip) { tip = document.createElement('div'); tip.id = 'thumbNameTooltip'; tip.className = 'thumb-name-tooltip'; document.body.appendChild(tip); }
-            tip.textContent = msg;
-            const rect = input.getBoundingClientRect();
-            tip.style.left = (rect.left + rect.width / 2) + 'px';
-            tip.style.top  = (rect.top + window.scrollY - 36) + 'px';
-            tip.classList.add('visible');
-            clearTimeout(tip._timer);
-            tip._timer = setTimeout(() => tip.classList.remove('visible'), 2200);
-        };
+        const showThumbTooltip = window.showNameTooltip;
 
         const revertThumb = () => {
             nameInput.value = data.exportName.replace(/\.[^/.]+$/, '');
