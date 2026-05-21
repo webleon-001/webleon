@@ -229,69 +229,126 @@ async function handleJapaneseFilenames() {
     margin-right: auto !important;
     align-self: center !important;
 }
+
+/* ── SP: ファイル名連番・検索・ボタン縦並び ── */
+@media (max-width: 540px) {
+  #actionAreaLeft {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  #actionAreaLeft #seqRenameBtn {
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+    order: 2;
+  }
+  #actionAreaLeft .search-input-wrap {
+    width: 100%;
+    order: 1;
+  }
+  #actionAreaLeft .search-input-wrap input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  #actionAreaRight {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    margin-left: 0 !important;
+    position: static !important;
+    top: 0 !important;
+  }
+  #actionAreaRight .btn {
+    width: 100%;
+    text-align: center;
+    box-sizing: border-box;
+  }
+}
 </style> </head><body><div id="progress"><div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px">処理中...</div><div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px"><div id="progressFileName" style="font-size:0.8rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px"></div><div id="progressCount" style="font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap"></div></div><div id="progressTimeLeft" style="font-size:0.75rem; color:var(--muted)"></div><div class="progress-container"><div class="progress-bar" id="progressBar"></div></div><button id="cancelLoadBtn" class="btn btn-secondary" style="margin-top: 14px; font-size: 0.75rem; padding: 6px 16px" onclick="cancelLoading()">キャンセル</button></div><div class="page-header"><div class="title-left"><h2>画像調整 &amp; 書き出しツール</h2><p>Image Resize &amp; Export — 幅1200px自動リサイズ / ZIP一括書き出し / PNG合成</p></div><div class="title-right"><div class="slot-modern-wrapper"><span class="slot-modern-label">Slot</span><select id="slotSelector" class="slot-modern-select"><option value="1">スロット 1</option><option value="2">スロット 2</option><option value="3">スロット 3</option><option value="4">スロット 4</option><option value="5">スロット 5</option><option value="6">スロット 6</option><option value="7">スロット 7</option><option value="8">スロット 8</option><option value="9">スロット 9</option><option value="10">スロット 10</option></select><button id="renameSlotBtn" class="slot-modern-btn" title="スロット名を変更"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button id="clearSlotBtn" class="slot-modern-btn danger" title="このスロットをクリア"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><button id="qrBtn" class="qr-btn" title="QRコードを生成" onclick="openQrDialog()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="4" width="4" height="4" rx="0.5"/><rect x="14" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="16" y="4" width="4" height="4" rx="0.5"/><rect x="2" y="14" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="16" width="4" height="4" rx="0.5"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="19" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="19" width="3" height="3" rx="0.5"/><rect x="19" y="19" width="3" height="3" rx="0.5"/></svg></button><button id="helpBtn" class="help-btn" title="説明を表示">💡</button></div></div><div class="section-card"><div class="upload-zone" id="dropZone" style="display:none"><div class="upload-btn-main">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div><input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><div class="upload-format-text">JPG &nbsp;·&nbsp; PNG &nbsp;·&nbsp; WEBP &nbsp;·&nbsp; GIF &nbsp;·&nbsp; HEIC &nbsp;·&nbsp; TIFF &nbsp;·&nbsp; PDF &nbsp;·&nbsp; PSD &nbsp;·&nbsp; AI &nbsp;·&nbsp; ZIP</div></div><div id="searchBarContainer" style="display:none; width:100%; margin-top:8px; margin-bottom:8px; padding:0 8px; z-index:10; position:relative"><div id="sbc-left"><div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin-top:-10px;position:relative;top:-10px"><div style="display:flex;align-items:center;gap:8px"></div><div id="lastUpdatedLabel" style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.02em; white-space:nowrap; flex-shrink:0"> 最終更新: <span id="globalLastUpdatedText">-</span></div></div></div><div id="sbc-presets"><div class="preset-box" id="presetBox-thumb" draggable="true" onclick="openInPreset('thumb')" title="Thumbnailプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-thumb" width="1200" height="600" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Thumbnail</span></div><div class="preset-box" id="presetBox-og" draggable="true" onclick="openInPreset('og')" title="OGプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-og" width="1200" height="630" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>OG</span></div><div class="preset-box" id="presetBox-special" draggable="true" onclick="openInPreset('special')" title="Specialプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-special" width="1200" height="675" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Special</span></div></div></div><div id="previewArea" style="display: none;"><div class="preview-drop-hint">ここにドロップして追加</div></div><div id="actionArea" style="display:none; margin-top:20px; padding-top:0; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%; transition: opacity 0.2s">
-<button id="seqRenameBtn" onclick="renameAllSequential(event)" style="padding:6px 14px; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:inherit; font-size:0.78rem; cursor:pointer; white-space:nowrap; transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">ファイル名を連番</button>
-<div style="position:relative; flex-shrink:0"><input type="text" id="searchInput" placeholder="ファイル名で検索..." style="padding:6px 12px 6px 30px; border-radius:100px; border:1px solid var(--border); font-size:0.78rem; outline:none; transition:border-color 0.2s; background:var(--card); color:var(--text); width:160px"><svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--muted)" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
-<div style="display:flex; gap:10px; align-items:center; margin-left:auto; position:relative; top:-10px"><input type="file" id="addFileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><input type="file" id="psdLayerFileInput" accept=".psd" style="display:none"><input type="file" id="aiLayerFileInput" accept=".ai" style="display:none"><button class="btn btn-secondary" onclick="byId('addFileInput').click()">画像追加</button><button class="btn btn-success" id="exportZipBtn">ZIP で書き出し</button></div></div><div class="instruction-text" id="instructionBox" style="margin-top:20px">
+<div id="actionAreaLeft" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap"><button id="seqRenameBtn" onclick="renameAllSequential(event)" style="padding:6px 14px; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:inherit; font-size:0.78rem; cursor:pointer; white-space:nowrap; transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">ファイル名を連番</button>
+<div class="search-input-wrap" style="position:relative; flex-shrink:0"><input type="text" id="searchInput" placeholder="ファイル名で検索..." style="padding:6px 12px 6px 30px; border-radius:100px; border:1px solid var(--border); font-size:0.78rem; outline:none; transition:border-color 0.2s; background:var(--card); color:var(--text); width:160px"><svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--muted)" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div></div>
+<div id="actionAreaRight" style="display:flex; gap:10px; align-items:center; margin-left:auto; position:relative; top:-10px"><input type="file" id="addFileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><input type="file" id="psdLayerFileInput" accept=".psd" style="display:none"><input type="file" id="aiLayerFileInput" accept=".ai" style="display:none"><button class="btn btn-secondary" onclick="byId('addFileInput').click()">画像追加</button><button class="btn btn-success" id="exportZipBtn">ZIP で書き出し</button></div></div><div class="instruction-text" id="instructionBox" style="margin-top:20px">
   <button class="close-inst-btn" id="closeInstBtn" title="閉じる">&times;</button>
   
   <div style="display:flex; flex-direction:column; gap:16px;">
     <div>
       <strong style="color:var(--accent); font-size:0.9rem;">1. ツールの概要</strong><br>
-      本ツールは、ブラウザ上で動作する高機能な画像一括処理アプリケーションです。アップロードされた画像を自動で<strong>幅1200px</strong>に最適化（リサイズ）し、ブログやSNS向けの画像を素早く作成できます。また、透過（ロゴ）の合成、複数画像の分割配置、色調補正などの豊富な編集機能を備え、最終的にZIPファイルとして一括で書き出すことが可能です。すべての処理はブラウザ内で完結するため、外部サーバーに画像データが送信されることはなく、安全に利用できます。
+      ブラウザ上で完結する画像一括処理ツールです。読み込んだ画像を自動で<strong>幅1200px</strong>にリサイズし、色調補正・分割・ロゴ合成・プリセットキャンバス管理などの編集を行い、ZIPで一括書き出しできます。すべての処理はローカルで完結し、画像データが外部サーバーに送信されることはありません。
     </div>
 
     <div>
-      <strong style="color:var(--accent); font-size:0.9rem;">2. 詳細な使用方法</strong>
+      <strong style="color:var(--accent); font-size:0.9rem;">2. 使用方法</strong>
 
       <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">📥 ファイルの読み込み</h4>
       <ul style="margin:0 0 12px; padding-left:18px; display:flex; flex-direction:column; gap:3px;">
-        <li><strong>対応形式：</strong> JPG, PNG, WEBP, GIF, HEIC, TIFF, PDF, PSD, AI, ZIP</li>
-        <li>画面中央のアップロードゾーンにファイルをドラッグ＆ドロップ、またはクリックしてファイルを選択します。</li>
-        <li>ZIPファイルを読み込むと、中の画像データを自動で展開してリストに追加します。</li>
-        <li>PDF、PSD、AIファイルは自動的に解析・変換されて読み込まれます（※AIはPDF互換形式で保存されている必要があります）。</li>
+        <li><strong>対応形式：</strong> JPG / PNG / WEBP / GIF / HEIC / TIFF / PDF / PSD / AI / ZIP</li>
+        <li>アップロードゾーンへのドラッグ＆ドロップ、またはクリックによるファイル選択で読み込みます。画像追加後も「画像追加」ボタンでいつでも追記できます。</li>
+        <li>ZIPは中の画像を自動展開してリストに追加します。</li>
+        <li>PDF・PSD・AIはレイヤーを解析・変換して読み込みます（AIはPDF互換形式のみ対応）。</li>
       </ul>
 
       <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">🎨 画像の調整・編集</h4>
       <ul style="margin:0 0 12px; padding-left:18px; display:flex; flex-direction:column; gap:3px;">
-        <li><strong>アスペクト比（比率）の変更：</strong> オリジナル、1:1、3:2、4:3、3:4、2:3 から選択可能。元画像と同じ比率を選択した場合は、ボタンがクリック不可（無効化）になります。</li>
-        <li><strong>色調補正：</strong> 彩度、明るさ、シャープネス、回転をスライダーで細かく調整できます。</li>
-        <li><strong>拡大・縮小・移動：</strong> プレビュー画面上で画像をドラッグして位置を調整したり、マウスホイールで拡大縮小が可能です。</li>
-        <li><strong>ガイド機能：</strong> グリッド表示のほか、1200px未満の小さな画像向けに 800px / 400px の目安ガイドを表示できます。</li>
+        <li><strong>比率変更：</strong> オリジナル・3:2・4:3・1:1・3:4・2:3 から選択。元画像と同比率のボタンは自動で無効化されます。</li>
+        <li><strong>色調補正：</strong> 彩度・明るさ・シャープネス・回転をスライダーで調整。各スライダー横の ↺ ボタンで前回保存値に復元できます。</li>
+        <li><strong>ズーム・移動：</strong> プレビュー上でドラッグして位置調整、マウスホイールまたはズームボタンで拡大縮小（拡大のみ・最大500%）。ズーム入力欄に数値を直接入力することもできます。</li>
+        <li><strong>ファイル名編集：</strong> プレビュー中央のファイル名をクリックするとその場でリネームできます。</li>
+        <li><strong>ガイド：</strong> グリッドのほか、小さい画像向けに 800px・400px の基準ガイドを表示できます。</li>
+        <li><strong>保存：</strong> 編集後は「保存」ボタンで確定します。未保存の変更があるとボタンが赤く点滅します。</li>
       </ul>
 
       <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">🧩 分割モード（コラージュ）</h4>
       <ul style="margin:0 0 12px; padding-left:18px; display:flex; flex-direction:column; gap:3px;">
-        <li>プレビュー画面の「分割」ボタンから、2〜4枚の画像を1枚のキャンバスにまとめて配置できます。</li>
-        <li>各枠ごとに画像の拡大縮小・移動・色調補正が独立して行えます。</li>
+        <li>「分割」ボタンから縦・横それぞれ 2〜4 分割を選択。複数の画像を1枚のキャンバスにまとめられます。</li>
+        <li>各枠に画像をドラッグ＆ドロップして割り当て、枠ごとに拡大縮小・移動・色調補正が独立して行えます。</li>
       </ul>
 
-      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">✨ 透過（ロゴ）合成機能</h4>
+      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">✨ 透過（ロゴ）合成</h4>
       <ul style="margin:0 0 12px; padding-left:18px; display:flex; flex-direction:column; gap:3px;">
-        <li>「透過」ボタンを押すとロゴ専用のパネルが開きます。</li>
-        <li>PNG画像のほか、PSD・AI・PDFファイルから透過レイヤーを抽出してライブラリにストックできます。</li>
-        <li>配置したロゴはドラッグで移動、角のハンドルで回転・拡大縮小が可能です。また、ロゴの色を単色（白など）に変更することもできます。</li>
+        <li>「透過」ボタンでロゴパネルを開きます。PNG・PSD・AI・PDF からレイヤーを抽出してライブラリにストックできます。</li>
+        <li>配置したロゴはドラッグで移動、角のハンドルで拡大縮小・回転が可能。カラーピッカーでロゴを単色に変換することもできます。</li>
       </ul>
 
-      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">💾 スロット・プリセット機能</h4>
+      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">🖼️ プリセットキャンバス（Thumbnail / OG / Special）</h4>
       <ul style="margin:0 0 12px; padding-left:18px; display:flex; flex-direction:column; gap:3px;">
-        <li><strong>スロット（1〜10）：</strong> 現在の作業状態を丸ごと保存・切り替えできるワークスペース機能です。</li>
-        <li><strong>専用キャンバス保存：</strong> 「Thumbnail」「OG」「Special」などの専用スロットに、編集中に現在の状態を保持したままストックできます。</li>
-        <li>スロットが空の状態で保存した場合、そのままそのスロットの編集画面に「遷移するかどうか」を確認するダイアログが表示されます。</li>
+        <li>サムネイル一覧からプリセットキャンバスに画像を<strong>ドラッグ＆ドロップ</strong>すると、そのキャンバスが自動で開きます。</li>
+        <li>プリセット同士でも相互にドラッグ＆ドロップでコピーできます。</li>
+        <li>プリセットキャンバスをクリックすると、割り当て済みの画像が専用アスペクト比で開きます（未割り当ての場合はガイドダイアログが表示されます）。</li>
+        <li>編集中のプレビューから「Thumbnail」「OG」「Special」ボタンを押すと、現在の状態をそのままプリセットに保存できます。</li>
       </ul>
 
-      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">📦 書き出し機能</h4>
+      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">💾 スロット（1〜10）</h4>
       <ul style="margin:0 0 12px; padding-left:18px; display:flex; flex-direction:column; gap:3px;">
-        <li><strong>ZIPで書き出し：</strong> 編集したすべての画像を1つのZIPファイルにまとめてダウンロードします。</li>
-        <li><strong>フォルダに書き出し（Shift＋クリック）：</strong> Shiftキーを押しながら書き出しボタンを押すと、PC内のローカルフォルダを直接指定して保存できます（対応ブラウザのみ）。</li>
-        <li>幅1200px未満の画像が含まれる場合、書き出し時に「そのままのサイズ」か「指定サイズ（1200pxなど）に拡大」するかを選択できます。</li>
-        <li>全角のファイル名は、Web環境での文字化けやエラーを防ぐため、書き出し時に自動で連番の英数字に変換できます。</li>
+        <li>画面右上のスロットセレクターで、作業状態を丸ごと保存・切り替えできます。</li>
+        <li>鉛筆アイコンでスロット名を変更、ゴミ箱アイコンでそのスロットを初期化できます。</li>
+      </ul>
+
+      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">🔤 ファイル名管理</h4>
+      <ul style="margin:0 0 12px; padding-left:18px; display:flex; flex-direction:column; gap:3px;">
+        <li><strong>ファイル名で検索：</strong> 検索欄に入力するとリアルタイムでサムネイルを絞り込み表示します。</li>
+        <li><strong>ファイル名を連番：</strong> ボタンを押すと全画像のファイル名を 1.jpg, 2.jpg … と自動採番します。<strong>Shift＋クリック</strong>で元のファイル名にリセットします。</li>
+        <li>全角文字を含むファイル名は書き出し時に自動検出され、半角英数字への変換や連番への一括置換が可能です。</li>
+      </ul>
+
+      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">📦 書き出し</h4>
+      <ul style="margin:0 0 12px; padding-left:18px; display:flex; flex-direction:column; gap:3px;">
+        <li><strong>ZIP で書き出し：</strong> 編集済みの全画像を1つのZIPにまとめてダウンロードします。</li>
+        <li><strong>フォルダに書き出し（Shift＋クリック）：</strong> ローカルフォルダを直接指定して保存できます（対応ブラウザのみ）。</li>
+        <li><strong>この画像を書き出す：</strong> プレビュー中の1枚だけを単体で書き出します（Shift＋クリックでフォルダ保存）。</li>
+        <li>幅1200px未満の画像がある場合、書き出し前に「そのままのサイズ」か「拡大して書き出す」かを選択できます。</li>
+      </ul>
+
+      <h4 style="margin:10px 0 4px; font-size:0.85rem; color:#3f3f46;">📱 QRコード生成</h4>
+      <ul style="margin:0 0 12px; padding-left:18px; display:flex; flex-direction:column; gap:3px;">
+        <li>右上の QR アイコンから URL を入力してQRコードを生成・ダウンロードできます。</li>
       </ul>
     </div>
 
     <div>
       <strong style="color:var(--accent); font-size:0.9rem;">3. バージョン履歴</strong>
       <ul style="margin:6px 0 4px; padding-left:18px; display:flex; flex-direction:column; gap:3px; font-size:0.78rem; color:var(--muted);">
+        <li><strong>1.0.2:</strong> プリセットへのD&DでキャンバスをそのままOPEN、スロット切替トースト削除、SP時ボタン縦並び対応、ヒントを現仕様に更新。</li>
         <li><strong>1.0.1:</strong> UI/UX改善（バージョン表記位置変更）、比率ボタンの挙動修正、空スロット保存時の遷移確認ダイアログ追加。</li>
         <li><strong>1.0.0:</strong> バージョン管理基準を1.0.0にリセット。基本機能（1200pxリサイズ・ZIP書き出し・レイヤー抽出等）の安定版。</li>
       </ul>
@@ -305,7 +362,7 @@ async function handleJapaneseFilenames() {
 </div>
 
 </div> </div> <div style="width: 100%; max-width: 900px; text-align: left; margin-top: 8px; padding-left: 4px;">
-    <span class="version-label" style="font-size: 0.75rem;">Ver 1.0.1</span>
+    <span class="version-label" style="font-size: 0.75rem;">Ver 1.0.2</span>
   </div>
 
   <div id="customDialogModal"><div class="custom-dialog-card"><button class="custom-dialog-close" id="customDialogCloseBtn" title="閉じる（キャンセル）">&times;</button><h3 id="customDialogTitle" class="custom-dialog-title"></h3><div id="customDialogMessage" class="custom-dialog-message"></div><div class="custom-dialog-actions"><button id="customDialogCancelBtn" class="btn btn-secondary">キャンセル</button><button id="customDialogOkBtn" class="btn btn-success">OK</button></div></div></div><div id="splitDialogModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(6px)"><div class="custom-dialog-card"><button class="custom-dialog-close" onclick="closeSplitDialog()" title="閉じる（キャンセル）">&times;</button><h3 class="custom-dialog-title">画面の分割</h3><p class="custom-dialog-message">分割方向と分割数を選択してください。</p><div style="display:flex;flex-direction:column;gap:14px"><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="8" height="18" rx="1"/><rect x="13" y="3" width="8" height="18" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">縦分割</span><span id="splitVerticalDisabledNote" style="font-size:0.7rem;color:var(--muted);display:none">（現在の分割中は変更できません）</span></div><div class="custom-dialog-actions" style="gap:8px" id="splitVerticalBtns"><button id="splitBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'vertical')">2分割</button><button id="splitBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'vertical')">3分割</button><button id="splitBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'vertical')">4分割</button></div></div><div style="height:1px;background:var(--border)"></div><div style="display:flex;flex-direction:column;gap:8px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:2px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--muted)"><rect x="3" y="3" width="18" height="8" rx="1"/><rect x="3" y="13" width="18" height="8" rx="1"/></svg><span style="font-size:0.78rem;font-weight:500;color:var(--text)">横分割</span></div><div class="custom-dialog-actions" style="gap:8px"><button id="splitHBtn2" class="btn btn-secondary" onclick="startSplitMode(2,'horizontal')">2分割</button><button id="splitHBtn3" class="btn btn-secondary" onclick="startSplitMode(3,'horizontal')">3分割</button><button id="splitHBtn4" class="btn btn-secondary" onclick="startSplitMode(4,'horizontal')">4分割</button></div></div></div></div></div><div id="alertModal"><div class="modal-content" style="width:380px"><h3 style="margin-top:0; font-size:1rem; font-weight:500; letter-spacing:-0.01em">確認が必要な画像があります</h3><div id="smallAlertContainer" class="alert-section"><h4 style="margin:0 0 6px; font-size:0.82rem; font-weight:500; color:var(--danger)">幅1200px未満の画像</h4><div id="smallAlertList" class="alert-list"></div><div id="resizeBtnArea" style="margin-top:12px;display:none;"><button class="btn btn-secondary" style="font-size:0.78rem;padding:6px 16px" onclick="openResizeDialog()">リサイズして書き出し</button></div></div><div id="jpAlertContainer" class="alert-section japanese"><h4 style="margin:0 0 10px; font-size:0.82rem; font-weight:500; color:#b45309">全角ファイル名の画像</h4><div id="jpAlertList" class="alert-list"></div></div><div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top: 16px"><button class="btn btn-secondary" onclick="closeAlertModal()">確認して閉じる</button><button class="btn btn-success" onclick="downloadAlertImage()">アラート結果をJPGで保存</button></div></div></div><div id="imagePreviewModal"><div class="preview-modal-inner"><div class="nav-btn prev" onclick="changePreviewImage(-1)">❮</div><div class="preview-card" onclick="event.stopPropagation()"><span class="close-preview-top" onclick="closeImagePreview()">&times;</span><div id="toolbarContainer" style="display: flex; flex-direction: column; align-items: center; width: 100%; gap: 10px; margin-bottom: 0; padding: 0 max(8px, min(36px, 4vw)); box-sizing: border-box"><div style="display: flex; justify-content: center; align-items: center; width: 100%"><div id="aspectBar" style="display:flex; justify-content:center; align-items:center; gap:6px; margin-bottom:0; flex-wrap:wrap; width:100%"><div style="display:flex; justify-content:center; align-items:center; gap:6px; flex-wrap:wrap"><button class="asp-btn" id="splitModeBtn" onclick="openSplitDialog()">分割</button><button class="asp-btn" id="logoToggleBtn" onclick="toggleLogoMode()">透過</button><button class="asp-btn" id="gridToggleBtn" onclick="toggleGrid()">グリッド</button>
@@ -859,7 +916,6 @@ localStorage.setItem('lastUsedSlot', slotId);
 await saveAppState();
 await loadAppState(slotId);
 byId('progress').style.display = 'none';
-showToast(`スロット ${slotId} を読み込みました`);
 });
 byId('renameSlotBtn').addEventListener('click', async () => {
     const newName = await showCustomDialog({
@@ -4736,6 +4792,7 @@ exportZipBtn.addEventListener('click', async (e) => {
             assignedSlots[preset] = newData; 
             renderPresetCanvas(preset); 
             await saveAppState();
+            if (isPresetMain) openInPreset(preset);
             
         } else {
             const idx = parseInt(raw, 10);
@@ -4759,6 +4816,7 @@ exportZipBtn.addEventListener('click', async (e) => {
                 assignedSlots[preset] = newSlotData;
                 renderPresetCanvas(preset);
                 await saveAppState();
+                if (isPresetMain) openInPreset(preset);
             }
         }
     });
