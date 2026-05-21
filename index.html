@@ -3567,7 +3567,16 @@ function renderAllThumbs() {
     processedImages.forEach((data, i) => {
         const box = document.createElement('div');
         box.className = 'thumb-box';
-        
+
+        // 差し替えモード時の使用中判定（onclick・draggable・バッヂ共通で使用）
+        const _splitCheckImages = (reselectingSplitIndex !== -1 && backupSplitState)
+            ? backupSplitState.images
+            : splitSelectedImages;
+        const splitSelIdx = (isSelectingForSplit || reselectingSplitIndex !== -1)
+            ? _splitCheckImages.findIndex(s => s === data)
+            : -1;
+        const isUsedInSplit = splitSelIdx !== -1 && splitSelIdx !== reselectingSplitIndex;
+
         box.onclick = async () => {
             // D&D後のクリックイベントは無視
             if (isInternalDragging) { isInternalDragging = false; return; }
@@ -3577,8 +3586,11 @@ function renderAllThumbs() {
                     return;
                 }
 
-                // 重複チェック：すでに分割リストに含まれている画像は選択不可（ファイル名・サイズ・容量で比較）
-                const isDuplicate = splitSelectedImages.some(s => s === data);
+                // 重複チェック：差し替えモードの場合は backupSplitState から確認（配列はクリア済みのため）
+                const checkImages = (reselectingSplitIndex !== -1 && backupSplitState)
+                    ? backupSplitState.images
+                    : splitSelectedImages;
+                const isDuplicate = checkImages.some((s, i) => s === data && i !== reselectingSplitIndex);
                 if (isDuplicate) {
                     await showCustomDialog({ 
                         title: '選択できません', 
@@ -3591,8 +3603,15 @@ function renderAllThumbs() {
 
                 // 【差し替え（リセレクト）処理】
                 if (reselectingSplitIndex !== -1) {
+                    // closeImagePreview → disableSplitPreview で配列がクリアされているため
+                    // backupSplitState から分割データを復元してから差し替える
+                    if (backupSplitState) {
+                        splitSelectedImages = [...backupSplitState.images];
+                        splitStates = JSON.parse(JSON.stringify(backupSplitState.states));
+                        splitTargetCount = backupSplitState.count;
+                    }
                     splitSelectedImages[reselectingSplitIndex] = data;
-                    // 差し替え時はその枠の調整値をリセット
+                    // 差し替えたスロットの調整値のみリセット
                     splitStates[reselectingSplitIndex] = { scale: 1, baseScale: 0, dx: 0, dy: 0, sat: 100, bri: 100, sharp: 0, rot: 0 };
                     
                     reselectingSplitIndex = -1; 
@@ -3600,7 +3619,19 @@ function renderAllThumbs() {
                     backupSplitState = null;
                     hideSplitMessage(); 
                     renderAllThumbs(); 
-                    showSplitPreview(); 
+                    showSplitPreview(false);
+                    // showSplitPreview(false) は 150ms 後に updateSavedState() を呼んで
+                    // 差し替え後を「保存済み」にしてしまうため、その後に未保存フラグを立てる
+                    setTimeout(() => {
+                        hasUnsavedChanges = true;
+                        document.querySelectorAll('.btn-manual-save').forEach(btn => {
+                            btn.classList.add('unsaved');
+                            btn.disabled = false;
+                            btn.removeAttribute('disabled');
+                            btn.style.opacity = '1';
+                            btn.style.pointerEvents = 'auto';
+                        });
+                    }, 200);
                     return;
                 }
 
@@ -3626,7 +3657,10 @@ function renderAllThumbs() {
             if (data.isSplitData) restoreSplitPreview(data, key); else showImagePreview(data, key);
         };
 
-        box.draggable = true;
+        box.draggable = !isUsedInSplit;
+        if (isUsedInSplit) {
+            box.style.cursor = 'not-allowed';
+        }
         box.ondragstart = (e) => { isInternalDragging = true; e.dataTransfer.setData('text/plain', i.toString()); };
         box.ondragend = () => { isInternalDragging = false; };
 
@@ -3700,14 +3734,16 @@ function renderAllThumbs() {
             statusBadges += `</div>`;
         }
 
-        const splitSelIdx = (isSelectingForSplit || reselectingSplitIndex !== -1)
-            ? splitSelectedImages.findIndex(s => s === data)
-            : -1;
+        // 分割選択中のバッヂ（計算は forEach 先頭で実施済み）
         const splitBadge = splitSelIdx !== -1
-            ? `<div style="position:absolute;bottom:5px;right:5px;width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:20;box-shadow:0 1px 6px rgba(0,0,0,0.35);pointer-events:none;letter-spacing:-0.02em">${splitSelIdx + 1}</div>`
+            ? `<div style="position:absolute;bottom:5px;right:5px;width:22px;height:22px;border-radius:50%;background:${isUsedInSplit ? '#374151' : 'var(--accent)'};color:#fff;font-size:0.72rem;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:20;box-shadow:0 1px 6px rgba(0,0,0,0.35);pointer-events:none;letter-spacing:-0.02em">${splitSelIdx + 1}</div>`
             : '';
         const splitFrameStyle = splitSelIdx !== -1
-            ? 'border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft);'
+            ? `border-color:${isUsedInSplit ? '#6b7280' : 'var(--accent)'};box-shadow:0 0 0 2px ${isUsedInSplit ? 'rgba(107,114,128,0.2)' : 'var(--accent-soft)'};`
+            : '';
+        // 使用中サムネイルには半透明グレーオーバーレイを重ねて選択不可を示す
+        const usedOverlay = isUsedInSplit
+            ? `<div style="position:absolute;inset:0;border-radius:10px;background:rgba(0,0,0,0.42);z-index:18;pointer-events:none;display:flex;align-items:center;justify-content:center"><span style="color:#fff;font-size:0.58rem;font-weight:600;letter-spacing:0.02em;text-shadow:0 1px 3px rgba(0,0,0,0.5)">使用中</span></div>`
             : '';
 
         // 分割選択中（差し替え含む）は削除ボタンを表示しない
@@ -3716,9 +3752,10 @@ function renderAllThumbs() {
         box.innerHTML = `
             <div class="custom-tooltip">${data.exportName}</div>
             ${deleteBtnHtml}
-            <div class="thumb-frame" style="${splitFrameStyle}">
+            <div class="thumb-frame" style="${splitFrameStyle}${isUsedInSplit ? 'opacity:0.7;' : ''}">
                 ${statusBadges}
                 <img src="${data.thumbUrl}" class="thumb-inner-img" style="${imgStyle}">
+                ${usedOverlay}
                 ${splitBadge}
                 ${editedBar}
             </div>
