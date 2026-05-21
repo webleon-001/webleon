@@ -230,7 +230,57 @@ async function handleJapaneseFilenames() {
     align-self: center !important;
 }
 
-/* ── SP: ファイル名連番・検索・ボタン縦並び ── */
+/* ── 複数選択（ラバーバンド） ── */
+#thumbSelectionRect {
+  position: absolute;
+  border: 1.5px solid var(--accent);
+  background: rgba(99,102,241,0.08);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 20;
+  display: none;
+}
+.thumb-box.thumb-selected .thumb-frame {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.thumb-box.thumb-selected {
+  outline: none;
+}
+.thumb-box.thumb-selected .thumb-name {
+  color: var(--accent);
+}
+/* 一括削除フローティングバー */
+#bulkDeleteBar {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 8px 8px 8px 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  z-index: 4900;
+  transition: opacity 0.2s, transform 0.2s;
+  white-space: nowrap;
+}
+#bulkDeleteBar.visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+#bulkDeleteCount {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
 @media (max-width: 540px) {
   #actionAreaLeft {
     flex-direction: column;
@@ -3808,7 +3858,7 @@ if (processedImages.length === 0 && !hasSlotData) { byId('actionArea').style.dis
 if (imagePreviewModal.style.display === 'flex') {if (currentPreviewData === data) { const isSpecialMode = ['thumb', 'og', 'special', 'save1', 'save2', 'save3'].includes(currentAspectKey); if (!isSpecialMode) { if (processedImages.length > 0) showImagePreview(Math.min(index, processedImages.length - 1), currentAspectKey); else closeImagePreview(true); } } else currentPreviewIndex = processedImages.indexOf(currentPreviewData);
 }
 await saveAppState();
-showToast('画像を削除しました。'); // ← この1行を追加
+
 }
 function ensureSplitBaseScales() {if (!splitSelectedImages.length || !targetCw || !targetCh) return;
 const isHoriz = splitDirection === 'horizontal';
@@ -5778,4 +5828,243 @@ function updateSavedState() {
     savedPreviewState = captureCurrentState();
     forceClearUnsaved();
 }
+
+// ── 複数選択（ラバーバンド）& 一括削除 ──────────────────────────────
+(function() {
+    let thumbSelSet = new Set();   // 選択中インデックスのSet
+    let rbActive = false;          // ラバーバンド中か
+    let rbStartX = 0, rbStartY = 0; // previewArea相対座標の開始点
+    let rbMoved = false;           // ドラッグ距離が閾値を超えたか
+
+    // 選択矩形要素を生成してpreviewAreaに追加
+    const selRect = document.createElement('div');
+    selRect.id = 'thumbSelectionRect';
+
+    // フローティングバーをbodyに追加
+    const bar = document.createElement('div');
+    bar.id = 'bulkDeleteBar';
+    bar.innerHTML = `
+      <span id="bulkDeleteCount">0枚を選択中</span>
+      <button class="btn btn-secondary" style="font-size:0.78rem;padding:6px 14px" onclick="window._clearThumbSelection()">解除</button>
+      <button class="btn btn-danger" style="font-size:0.78rem;padding:6px 14px" onclick="window._deleteSelectedThumbs()">削除</button>
+    `;
+    document.body.appendChild(bar);
+
+    // 選択UIを更新
+    function syncSelectionUI() {
+        const boxes = previewArea.querySelectorAll('.thumb-box');
+        boxes.forEach((box, i) => {
+            box.classList.toggle('thumb-selected', thumbSelSet.has(i));
+        });
+        const count = thumbSelSet.size;
+        document.getElementById('bulkDeleteCount').textContent = count + '枚を選択中';
+        bar.classList.toggle('visible', count > 0);
+    }
+
+    // 選択クリア
+    window._clearThumbSelection = function() {
+        thumbSelSet.clear();
+        syncSelectionUI();
+    };
+
+    // 一括削除
+    window._deleteSelectedThumbs = async function() {
+        if (thumbSelSet.size === 0) return;
+        const n = thumbSelSet.size;
+        const confirmed = await showCustomDialog({
+            title: '一括削除の確認',
+            message: `選択した ${n} 枚の画像を削除してもよろしいですか？`,
+            okText: `${n}枚を削除`,
+            okClass: 'btn btn-danger',
+            cancelText: 'キャンセル',
+            type: 'confirm'
+        });
+        if (!confirmed) return;
+
+        // インデックスを降順に削除（配列ずれを防ぐため）
+        const indices = Array.from(thumbSelSet).sort((a, b) => b - a);
+        for (const idx of indices) {
+            const data = processedImages[idx];
+            if (!data) continue;
+            processedImages.splice(idx, 1);
+            smallImages = smallImages.filter(d => d !== data);
+            japaneseImages = japaneseImages.filter(d => d !== data);
+        }
+        thumbSelSet.clear();
+        forceClearUnsaved();
+        refreshGlobalTimestamp('edit');
+        markSessionWork();
+
+        const hasSlotData = assignedSlots.thumb || assignedSlots.og || assignedSlots.special;
+        if (processedImages.length === 0 && !hasSlotData) {
+            byId('actionArea').style.display = 'none';
+            dropZone.style.display = 'block';
+            previewArea.innerHTML = '<div class="preview-drop-hint">ここにドロップして追加</div>';
+            const sb = byId('searchBarContainer');
+            if (sb) sb.style.display = 'none';
+        } else {
+            renderAllThumbs();
+        }
+        // プレビューが開いていた場合は閉じる
+        if (imagePreviewModal.style.display === 'flex') closeImagePreview(true);
+        await saveAppState();
+        syncSelectionUI();
+
+    };
+
+    // renderAllThumbs後に選択状態を復元するためにフック
+    const _origRender = renderAllThumbs;
+    window.renderAllThumbs = function() {
+        _origRender.apply(this, arguments);
+        // previewAreaにselRectを再挿入（innerHTML置き換えで消えるため）
+        if (!previewArea.contains(selRect)) previewArea.appendChild(selRect);
+        // インデックスが配列範囲外になったものをクリア
+        thumbSelSet.forEach(i => { if (i >= processedImages.length) thumbSelSet.delete(i); });
+        syncSelectionUI();
+    };
+
+    // previewAreaが用意されたら selRect を挿入
+    function ensureSelRect() {
+        if (previewArea && !previewArea.contains(selRect)) previewArea.appendChild(selRect);
+    }
+
+    // thumb-box のインデックスを取得
+    function getThumbIndex(thumbBox) {
+        const boxes = Array.from(previewArea.querySelectorAll('.thumb-box'));
+        return boxes.indexOf(thumbBox);
+    }
+
+    // ── Shift+click: キャプチャフェーズでonclickを横取りしてトグル選択 ──
+    document.addEventListener('click', e => {
+        if (!e.shiftKey) return;
+        const thumbBox = e.target.closest('.thumb-box');
+        if (!thumbBox) return;
+        // Shift+clickはonclickに到達させない
+        e.stopPropagation();
+        e.preventDefault();
+        const idx = getThumbIndex(thumbBox);
+        if (idx < 0) return;
+        if (thumbSelSet.has(idx)) thumbSelSet.delete(idx);
+        else thumbSelSet.add(idx);
+        syncSelectionUI();
+    }, true /* capture */);
+
+    let rbShiftMode = false;   // Shift を押しながらドラッグ中か
+    let rbBaseSet = new Set(); // Shiftドラッグ開始時点の選択状態
+
+    // ── マウスイベント ─────────────────────────────────────
+    // documentレベルで受けることでpreviewArea外からのドラッグに対応
+    document.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+
+        const thumbBox = e.target.closest('.thumb-box');
+
+        // Shift+mousedown on thumb: トグル選択（clickイベントで処理するためここはスキップ）
+        if (e.shiftKey && thumbBox) return;
+
+        // ラバーバンドを開始しない条件:
+        // ・インタラクティブ要素（ボタン・入力・サムネイル・プリセット等）
+        // ・モーダルが開いている
+        if (e.target.closest('button, input, select, textarea, a, label')) return;
+        if (thumbBox) return;
+        if (e.target.closest('.preset-box, #bulkDeleteBar, [id$="Modal"], [id$="Dialog"]')) return;
+
+        ensureSelRect();
+        const rect = previewArea.getBoundingClientRect();
+        rbStartX = e.clientX - rect.left + previewArea.scrollLeft;
+        rbStartY = e.clientY - rect.top  + previewArea.scrollTop;
+        rbActive = true;
+        rbMoved = false;
+        // Shiftドラッグ: 現在の選択をベースとして保持
+        rbShiftMode = e.shiftKey;
+        rbBaseSet = rbShiftMode ? new Set(thumbSelSet) : new Set();
+        selRect.style.display = 'none';
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', e => {
+        if (!rbActive) return;
+        const rect = previewArea.getBoundingClientRect();
+        const curX = e.clientX - rect.left + previewArea.scrollLeft;
+        const curY = e.clientY - rect.top  + previewArea.scrollTop;
+        const dx = curX - rbStartX, dy = curY - rbStartY;
+
+        if (!rbMoved && Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+        rbMoved = true;
+
+        // 矩形座標（previewArea相対）
+        const x = Math.min(rbStartX, curX), y = Math.min(rbStartY, curY);
+        const w = Math.abs(dx), h = Math.abs(dy);
+
+        selRect.style.display = 'block';
+        selRect.style.left   = x + 'px';
+        selRect.style.top    = y + 'px';
+        selRect.style.width  = w + 'px';
+        selRect.style.height = h + 'px';
+
+        // ヒットテスト（viewport座標で比較）
+        const selL = rect.left + x - previewArea.scrollLeft;
+        const selT = rect.top  + y - previewArea.scrollTop;
+        const selR = selL + w, selB = selT + h;
+
+        const boxes = previewArea.querySelectorAll('.thumb-box');
+        boxes.forEach((box, i) => {
+            const br = box.getBoundingClientRect();
+            const hit = br.left < selR && br.right > selL &&
+                        br.top  < selB && br.bottom > selT;
+            // Shiftモード: ベース選択 ∪ 今回ヒット
+            if (rbShiftMode) {
+                if (hit || rbBaseSet.has(i)) thumbSelSet.add(i);
+                else thumbSelSet.delete(i);
+            } else {
+                if (hit) thumbSelSet.add(i); else thumbSelSet.delete(i);
+            }
+        });
+        syncSelectionUI();
+    });
+
+    let rbJustDragged = false; // ドラッグ直後のclickを無視するためのフラグ
+
+    document.addEventListener('mouseup', e => {
+        if (!rbActive) return;
+        rbActive = false;
+        selRect.style.display = 'none';
+        if (rbMoved) {
+            // ドラッグ完了 → 選択を維持。直後のclickは無視
+            rbJustDragged = true;
+            return;
+        }
+        // 移動なし（クリック）: 空白クリックで選択解除
+        if (!e.target.closest('.thumb-box') && !e.target.closest('#bulkDeleteBar')) {
+            thumbSelSet.clear();
+            syncSelectionUI();
+        }
+    });
+
+    // section-card 外（グレー背景）をクリックしたときも選択解除
+    document.addEventListener('click', e => {
+        if (rbJustDragged) { rbJustDragged = false; return; } // ドラッグ直後はスキップ
+        if (e.shiftKey) return;
+        if (thumbSelSet.size === 0) return;
+        if (e.target.closest('.section-card, #bulkDeleteBar, [id$="Modal"], [id$="Dialog"]')) return;
+        thumbSelSet.clear();
+        syncSelectionUI();
+    });
+
+    // Escキーで選択解除
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape' && thumbSelSet.size > 0) {
+            thumbSelSet.clear();
+            syncSelectionUI();
+        }
+    });
+
+    // 選択中のサムネイルをD&Dしようとした場合は選択解除して通常D&Dへ
+    previewArea.addEventListener('dragstart', e => {
+        if (thumbSelSet.size > 0 && e.target.closest('.thumb-box.thumb-selected')) {
+            thumbSelSet.clear();
+            syncSelectionUI();
+        }
+    });
+})();
 </script> <div id="pngAddDialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:9600; align-items:center; justify-content:center; backdrop-filter:blur(6px)" onclick="if(event.target===this)closePngAddDialog()"><div style="background:var(--card); border-radius:var(--radius); width:90%; max-width:440px; box-shadow:0 20px 60px rgba(0,0,0,0.3); border:1px solid var(--border); overflow:hidden"><div style="padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center"><h3 style="margin:0; font-size:1rem; font-weight:500; color:var(--text)">透過ライブラリに追加</h3><button onclick="closePngAddDialog()" style="background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:20px"><div id="pngAddDrop" style="border:2px dashed var(--border); border-radius:var(--radius-sm); padding:36px 20px; text-align:center; cursor:pointer; transition:all 0.2s; background:var(--bg)" onclick="byId('pngAddFileInput').click()" ondragover="event.preventDefault(); this.style.borderColor='var(--accent)'; this.style.background='var(--accent-soft)'" ondragleave="this.style.borderColor='var(--border)'; this.style.background='var(--bg)'" ondrop="event.preventDefault(); this.style.borderColor='var(--border)'; this.style.background='var(--bg)'; handlePngAddFiles(Array.from(event.dataTransfer.files))"><div style="font-size:2rem; margin-bottom:10px; pointer-events:none">📂</div><div style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:6px; pointer-events:none">複数ファイルをまとめてドロップ</div><div style="font-size:0.78rem; color:var(--muted); margin-bottom:16px; pointer-events:none">またはクリックして複数選択（Shift/Cmd）</div><div style="display:inline-flex; gap:8px; pointer-events:none"><span style="font-size:0.7rem; background:#e0e7ff; color:#4338ca; padding:3px 8px; border-radius:4px; font-weight:500">PNG</span><span style="font-size:0.7rem; background:#fce7f3; color:#9d174d; padding:3px 8px; border-radius:4px; font-weight:500">PSD</span><span style="font-size:0.7rem; background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:4px; font-weight:500">AI</span><span style="font-size:0.7rem; background:#fee2e2; color:#b91c1c; padding:3px 8px; border-radius:4px; font-weight:500">PDF</span></div></div><p style="margin:10px 0 0; font-size:0.72rem; color:var(--muted); text-align:center; line-height:1.5">ファイル形式は自動判別。PSD・AI・PDFはレイヤー抽出画面へ移行します。<br>（※AIはPDF互換のみ）</p></div></div></div><div id="psdCropModal"><div class="psd-crop-wrap"><div style="padding:14px 20px 12px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; flex-shrink:0"><div><h3 style="margin:0 0 2px; font-size:1rem; font-weight:500; color:var(--text)">レイヤーを切り抜き</h3><p id="psdCropInfo" style="margin:0; font-size:0.78rem; color:var(--accent); font-weight:500; font-variant-numeric:tabular-nums">—</p></div><button onclick="closePsdCropModal()" style="background:none;border:none;font-size:1.6rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:8px 14px; border-bottom:1px solid var(--border); display:flex; gap:6px; align-items:center; flex-shrink:0; background:var(--bg); flex-wrap:wrap"><span style="font-size:0.7rem;color:var(--muted);font-weight:500;white-space:nowrap">比率</span><button class="asp-btn psd-crop-asp-btn active" onclick="setCropAspect(null)">自由</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1" onclick="setCropAspect(1)">1:1</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.5" onclick="setCropAspect(1.5)">3:2</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.333" onclick="setCropAspect(4/3)">4:3</button><button class="asp-btn psd-crop-asp-btn" data-ratio="1.778" onclick="setCropAspect(16/9)">16:9</button><div style="width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0"></div><button class="asp-btn" onclick="resetCropRect()" title="全体を選択">全体</button></div><div style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:16px;background:#111;min-height:200px"><canvas id="psdCropCanvas" style="display:block;cursor:crosshair;touch-action:none"></canvas></div><div style="padding:12px 18px; border-top:1px solid var(--border); display:flex; gap:10px; justify-content:flex-end; flex-shrink:0; flex-wrap:wrap"><button class="btn btn-secondary" onclick="closePsdCropModal()">キャンセル</button><button class="btn" style="background:#8b5cf6;color:#fff" onclick="confirmPsdCrop()">この範囲を透過に登録</button></div></div></div><div id="psdLayerModal"><div class="psd-modal-wrap"><div class="psd-modal-head"><div><h3 id="psdLayerTitle" style="margin:0 0 3px; font-size:1.05rem; font-weight:500; color:var(--text)">PSDレイヤー選択</h3><p id="psdLayerInfo" style="margin:0; font-size:0.75rem; color:var(--muted)">読み込み中...</p></div><button class="psd-modal-close" onclick="closePsdLayerModal()">&times;</button></div><div class="psd-modal-toolbar"><button class="asp-btn" onclick="psdSelectAll(true)">全選択</button><button class="asp-btn" onclick="psdSelectAll(false)">全解除</button><button class="asp-btn" onclick="psdSelectVisible()">表示中のみ</button><span class="psd-sel-count" id="psdSelCount">0 / 0 レイヤー選択中</span></div><div class="psd-modal-body" id="psdLayerList"></div><div class="psd-modal-foot"><button class="btn btn-secondary" onclick="closePsdLayerModal()">キャンセル</button><button class="btn" style="background:#8b5cf6;color:#fff" onclick="registerLayersToPngLibrary()" title="選択したレイヤーを透過ライブラリに追加">📌 透過に登録</button></div></div></div><div id="qrDialog" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9900; align-items:center; justify-content:center; backdrop-filter:blur(6px)" onclick="if(event.target===this)closeQrDialog()"><div style="background:var(--card); border-radius:var(--radius); width:90%; max-width:420px; box-shadow:0 20px 60px rgba(0,0,0,0.25); border:1px solid var(--border); overflow:hidden"><div style="padding:16px 20px 14px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center"><h3 style="margin:0; font-size:1rem; font-weight:500; color:var(--text)">QRコード生成</h3><button onclick="closeQrDialog()" style="background:none;border:none;font-size:1.5rem;color:var(--muted);cursor:pointer;padding:0;line-height:1">&times;</button></div><div style="padding:20px"><div style="display:flex; gap:8px"><input id="qrUrlInput" type="url" placeholder="https://example.com" style="flex:1; padding:8px 12px; border-radius:var(--radius-sm); border:1px solid var(--border); font-family:inherit; font-size:16px; outline:none; transition:border-color 0.2s; color:var(--text); background:var(--bg)" oninput="this.style.borderColor=this.value?'var(--accent)':'var(--border)'" onkeydown="if(event.key==='Enter')generateQrCode()"><button onclick="generateQrCode()" style="padding:8px 18px; border-radius:var(--radius-sm); border:none; background:var(--accent); color:#fff; font-family:inherit; font-size:0.85rem; font-weight:500; cursor:pointer; white-space:nowrap; transition:opacity 0.15s" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">📥 生成</button></div></div></div></div></body></html>
