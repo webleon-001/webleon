@@ -325,7 +325,7 @@ async function handleJapaneseFilenames() {
     box-sizing: border-box;
   }
 }
-</style> </head><body><div id="progress"><div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px">処理中...</div><div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px"><div id="progressFileName" style="font-size:0.8rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px"></div><div id="progressCount" style="font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap"></div></div><div id="progressTimeLeft" style="font-size:0.75rem; color:var(--muted)"></div><div class="progress-container"><div class="progress-bar" id="progressBar"></div></div><button id="cancelLoadBtn" class="btn btn-secondary" style="margin-top: 14px; font-size: 0.75rem; padding: 6px 16px" onclick="cancelLoading()">キャンセル</button></div><div class="page-header"><div class="title-left"><h2>画像調整 &amp; 書き出しツール</h2><p>幅1200px自動リサイズ / ZIP一括書き出し / PNG合成</p></div><div class="title-right"><div class="slot-modern-wrapper"><span class="slot-modern-label">Slot</span><select id="slotSelector" class="slot-modern-select"><option value="1">スロット 1</option><option value="2">スロット 2</option><option value="3">スロット 3</option><option value="4">スロット 4</option><option value="5">スロット 5</option><option value="6">スロット 6</option><option value="7">スロット 7</option><option value="8">スロット 8</option><option value="9">スロット 9</option><option value="10">スロット 10</option></select><button id="renameSlotBtn" class="slot-modern-btn" title="スロット名を変更"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button id="clearSlotBtn" class="slot-modern-btn danger" title="このスロットをクリア"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><button id="qrBtn" class="qr-btn" title="QRコードを生成" onclick="openQrDialog()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="4" width="4" height="4" rx="0.5"/><rect x="14" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="16" y="4" width="4" height="4" rx="0.5"/><rect x="2" y="14" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="16" width="4" height="4" rx="0.5"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="19" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="19" width="3" height="3" rx="0.5"/><rect x="19" y="19" width="3" height="3" rx="0.5"/></svg></button><button id="helpBtn" class="help-btn" title="説明を表示">💡</button></div></div><div class="section-card"><div class="upload-zone" id="dropZone" style="display:none"><div class="upload-btn-main">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div><input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><div class="upload-format-text" id="uploadFormatText"><span class="fmt-item">JPG</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">PNG</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">WEBP</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">GIF</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">HEIC</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">TIFF</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">PDF</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">PSD</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">AI</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">ZIP</span></div></div><div id="searchBarContainer" style="display:none; width:100%; margin-top:8px; margin-bottom:8px; padding:0 8px; z-index:10; position:relative"><div id="sbc-left"><div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin-top:-10px;position:relative;top:-10px"><div style="display:flex;align-items:center;gap:8px"></div><div id="lastUpdatedLabel" style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.02em; white-space:nowrap; flex-shrink:0"> 最終更新: <span id="globalLastUpdatedText">-</span></div></div></div><div id="sbc-presets"><div class="preset-box" id="presetBox-thumb" draggable="true" onclick="openInPreset('thumb')" title="Thumbnailプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-thumb" width="1200" height="600" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Thumbnail</span></div><div class="preset-box" id="presetBox-og" draggable="true" onclick="openInPreset('og')" title="OGプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-og" width="1200" height="630" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>OG</span></div><div class="preset-box" id="presetBox-special" draggable="true" onclick="openInPreset('special')" title="Specialプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-special" width="1200" height="675" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Special</span></div></div></div><div id="previewArea" style="display: none;"><div class="preview-drop-hint">ここにドロップして追加</div></div><div id="actionArea" style="display:none; margin-top:20px; padding-top:0; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%; transition: opacity 0.2s">
+</style> </head><body><div id="progress"><div id="statusText" style="font-size:0.9rem; font-weight:500; color:var(--text); margin-bottom:8px">処理中...</div><div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:4px"><div id="progressFileName" style="font-size:0.8rem; color:var(--muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:200px"></div><div id="progressCount" style="font-size:0.8rem; font-weight:500; color:var(--text); white-space:nowrap"></div></div><div id="progressTimeLeft" style="font-size:0.75rem; color:var(--muted)"></div><div class="progress-container"><div class="progress-bar" id="progressBar"></div></div><button id="cancelLoadBtn" class="btn btn-secondary" style="margin-top: 14px; font-size: 0.75rem; padding: 6px 16px" onclick="cancelLoading()">キャンセル</button></div><div class="page-header"><div class="title-left"><h2>画像調整 &amp; 書き出しツール</h2><p>Image Resize &amp; Export — 幅1200px自動リサイズ / ZIP一括書き出し / PNG合成</p></div><div class="title-right"><div class="slot-modern-wrapper"><span class="slot-modern-label">Slot</span><select id="slotSelector" class="slot-modern-select"><option value="1">スロット 1</option><option value="2">スロット 2</option><option value="3">スロット 3</option><option value="4">スロット 4</option><option value="5">スロット 5</option><option value="6">スロット 6</option><option value="7">スロット 7</option><option value="8">スロット 8</option><option value="9">スロット 9</option><option value="10">スロット 10</option></select><button id="renameSlotBtn" class="slot-modern-btn" title="スロット名を変更"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button><button id="clearSlotBtn" class="slot-modern-btn danger" title="このスロットをクリア"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button></div><button id="qrBtn" class="qr-btn" title="QRコードを生成" onclick="openQrDialog()"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="4" width="4" height="4" rx="0.5"/><rect x="14" y="2" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="16" y="4" width="4" height="4" rx="0.5"/><rect x="2" y="14" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><rect x="4" y="16" width="4" height="4" rx="0.5"/><rect x="14" y="14" width="3" height="3" rx="0.5"/><rect x="19" y="14" width="3" height="3" rx="0.5"/><rect x="14" y="19" width="3" height="3" rx="0.5"/><rect x="19" y="19" width="3" height="3" rx="0.5"/></svg></button><button id="helpBtn" class="help-btn" title="説明を表示">💡</button></div></div><div class="section-card"><div id="searchBarContainer" style="display:none; width:100%; margin-top:8px; margin-bottom:8px; padding:0 8px; z-index:10; position:relative"><div id="sbc-left"><div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start;margin-top:-10px;position:relative;top:-10px"><div style="display:flex;align-items:center;gap:8px"></div><div id="lastUpdatedLabel" style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.02em; white-space:nowrap; flex-shrink:0"> 最終更新: <span id="globalLastUpdatedText">-</span></div></div></div><div id="sbc-presets"><div class="preset-box" id="presetBox-thumb" draggable="true" onclick="openInPreset('thumb')" title="Thumbnailプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-thumb" width="1200" height="600" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Thumbnail</span></div><div class="preset-box" id="presetBox-og" draggable="true" onclick="openInPreset('og')" title="OGプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-og" width="1200" height="630" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>OG</span></div><div class="preset-box" id="presetBox-special" draggable="true" onclick="openInPreset('special')" title="Specialプリセットで開く" style="cursor:grab;-webkit-user-drag:element"><div class="preset-canvas-wrap"><canvas id="pc-special" width="1200" height="675" draggable="false" ondragstart="return false" style="pointer-events:none"></canvas></div><span>Special</span></div></div></div><div class="upload-zone" id="dropZone" style="display:none"><div class="upload-btn-main">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div><input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><div class="upload-format-text" id="uploadFormatText"><span class="fmt-item">JPG</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">PNG</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">WEBP</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">GIF</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">HEIC</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">TIFF</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">PDF</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">PSD</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">AI</span><span class="fmt-sep"> &nbsp;·&nbsp; </span><span class="fmt-item">ZIP</span></div></div><div id="previewArea" style="display: none;"><div class="preview-drop-hint">ここにドロップして追加</div></div><div id="actionArea" style="display:none; margin-top:20px; padding-top:0; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; width:100%; transition: opacity 0.2s">
 <div id="actionAreaLeft" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap"><button id="seqRenameBtn" onclick="renameAllSequential(event)" style="padding:6px 14px; border-radius:100px; border:1px solid var(--border); background:var(--card); color:var(--muted); font-family:inherit; font-size:0.78rem; cursor:pointer; white-space:nowrap; transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">ファイル名を連番</button>
 <div class="search-input-wrap" style="position:relative; flex-shrink:0"><input type="text" id="searchInput" placeholder="ファイル名で検索..." style="padding:6px 12px 6px 30px; border-radius:100px; border:1px solid var(--border); font-size:0.78rem; outline:none; transition:border-color 0.2s; background:var(--card); color:var(--text); width:160px"><svg style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--muted)" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div></div>
 <div id="actionAreaRight" style="display:flex; gap:10px; align-items:center; margin-left:auto; position:relative; top:-10px"><input type="file" id="addFileInput" multiple accept=".jpg,.jpeg,.png,.webp,.gif,.heic,.heif,.tif,.tiff,.pdf,.zip,.psd,.ai" style="display:none"><input type="file" id="psdLayerFileInput" accept=".psd" style="display:none"><input type="file" id="aiLayerFileInput" accept=".ai" style="display:none"><button class="btn btn-secondary" onclick="byId('addFileInput').click()">画像追加</button><button class="btn btn-success" id="exportZipBtn">ZIP で書き出し</button></div></div><div class="instruction-text" id="instructionBox" style="margin-top:20px">
@@ -830,6 +830,7 @@ if (processedImages.length > 0 || Object.values(assignedSlots).some(v => v !== n
   renderAllPresetCanvases();
   updateSlotLabels();
   updateSlotActionBtns();
+  requestAnimationFrame(syncPresetWidths);
 }
 // スロット切替時: 既存データがあれば「作業済み」とみなす
 hasSessionWork = processedImages.length > 0 || Object.values(assignedSlots).some(v => v !== null);
@@ -1099,6 +1100,20 @@ document.addEventListener('keydown', async (e) => {
         window.location.reload();
     }
 }, true); // capture phase: ブラウザのショートカット処理より前に実行
+
+// DELETEキー・バックスペースキーで選択中サムネイルを削除
+document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+    // 入力フィールド・テキストエリア・contenteditable 内は無視
+    const tag = document.activeElement?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+    // プレビューモーダルが開いている場合は無視
+    if (byId('imagePreviewModal')?.style.display === 'flex') return;
+    // 選択中サムネイルがなければ無視
+    if (!window._thumbSelSet || window._thumbSelSet.size === 0) return;
+    e.preventDefault();
+    window._deleteSelectedThumbs?.();
+});
 byId('searchInput').addEventListener('input', (e) => applySearchFilter(e.target.value));
 function applySearchFilter(query) {query = (query || '').toLowerCase();
 const boxes = document.querySelectorAll('#previewArea .thumb-box');
@@ -1546,24 +1561,27 @@ function updateActionAreaState() {
         updateSlotActionBtns();
     }
 
-    const hasAnyImage = processedImages.length > 0 || Object.values(assignedSlots).some(v => v !== null);
+    const hasSlotData = Object.values(assignedSlots).some(v => v !== null);
+    const hasThumbs = processedImages.length > 0;
+    const hasAnyImage = hasThumbs || hasSlotData;
+    // searchBarContainer はサムネイルまたはスロットがある時に表示
     if (searchBar) {searchBar.style.display = hasAnyImage ? 'flex' : 'none';}
     if (actionArea) {actionArea.style.display = hasAnyImage ? 'flex' : 'none';}
-    if (dropZone) {dropZone.style.display = hasAnyImage ? 'none' : 'block';}
+    // サムネイルがない場合はdropZoneを表示（スロットデータのみでも）
+    if (dropZone) {dropZone.style.display = hasThumbs ? 'none' : 'block';}
 
     // 画像が0枚のときはファイル名検索・連番ボタンを非表示にして検索欄をクリア
     const actionAreaLeft = byId('actionAreaLeft');
     if (actionAreaLeft) {
-        const hasImages = processedImages.length > 0;
-        actionAreaLeft.style.display = hasImages ? 'flex' : 'none';
-        if (!hasImages) {
+        actionAreaLeft.style.display = hasThumbs ? 'flex' : 'none';
+        if (!hasThumbs) {
             const si = byId('searchInput');
             if (si) { si.value = ''; si.dispatchEvent(new Event('input')); }
         }
     }
     
-    // ▼ ここを追加（画像がある時だけプレビューエリアを表示）
-    if (previewArea) {previewArea.style.display = hasAnyImage ? 'flex' : 'none';}
+    // サムネイルがある時だけpreviewAreaを表示
+    if (previewArea) {previewArea.style.display = hasThumbs ? 'flex' : 'none';}
 }
 function setupSplitFilters(count) {let svg = byId('split-filters-svg');
 if (!svg) { svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.id = 'split-filters-svg'; svg.style.display = 'none'; document.body.appendChild(svg); }
@@ -3890,6 +3908,40 @@ function renderAllThumbs() {
         // ── ここまで ──────────────────────────────────────
         previewArea.appendChild(box);
     });
+
+    // 画像がThumb/OG/Specialのいずれか1枚のみの時、インラインドロップゾーンを追加
+    const slotKeys = ['thumb', 'og', 'special'];
+    const singleSlotImage = processedImages.length === 1 && slotKeys.some(k => assignedSlots[k] === processedImages[0]);
+    if (singleSlotImage) {
+        const inlineDrop = document.createElement('div');
+        inlineDrop.id = 'inlineDropZone';
+        inlineDrop.className = 'upload-zone';
+        inlineDrop.style.cssText = 'display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; margin:8px 0; width:100%; min-height:120px; cursor:pointer; flex-shrink:0;';
+        inlineDrop.innerHTML = `
+          <div class="upload-btn-main" style="pointer-events:none;">画像・PDF・PSD・AI・ZIP を選択 / ドロップ</div>
+          <div class="upload-format-text" id="inlineFormatText">
+            <span class="fmt-item">JPG</span><span class="fmt-sep"> &nbsp;·&nbsp; </span>
+            <span class="fmt-item">PNG</span><span class="fmt-sep"> &nbsp;·&nbsp; </span>
+            <span class="fmt-item">WEBP</span><span class="fmt-sep"> &nbsp;·&nbsp; </span>
+            <span class="fmt-item">GIF</span><span class="fmt-sep"> &nbsp;·&nbsp; </span>
+            <span class="fmt-item">HEIC</span><span class="fmt-sep"> &nbsp;·&nbsp; </span>
+            <span class="fmt-item">TIFF</span><span class="fmt-sep"> &nbsp;·&nbsp; </span>
+            <span class="fmt-item">PDF</span><span class="fmt-sep"> &nbsp;·&nbsp; </span>
+            <span class="fmt-item">PSD</span><span class="fmt-sep"> &nbsp;·&nbsp; </span>
+            <span class="fmt-item">AI</span><span class="fmt-sep"> &nbsp;·&nbsp; </span>
+            <span class="fmt-item">ZIP</span>
+          </div>`;
+        inlineDrop.addEventListener('click', () => byId('addFileInput').click());
+        inlineDrop.addEventListener('dragover', e => { e.preventDefault(); inlineDrop.style.borderColor = 'var(--accent)'; });
+        inlineDrop.addEventListener('dragleave', () => { inlineDrop.style.borderColor = ''; });
+        inlineDrop.addEventListener('drop', e => { e.preventDefault(); inlineDrop.style.borderColor = ''; handleFiles(e.dataTransfer.files); });
+        previewArea.appendChild(inlineDrop);
+        // フォーマットヒントのフェードインアニメーション
+        requestAnimationFrame(() => {
+            const items = inlineDrop.querySelectorAll('.fmt-item, .fmt-sep');
+            items.forEach((el, i) => { el.style.animationDelay = (i * 0.05) + 's'; el.classList.add('fmt-visible'); });
+        });
+    }
     updatePreviewCentering();
     updateSlotActionBtns();
     updateActionAreaState();
@@ -3920,7 +3972,12 @@ function renderAllThumbs() {
     }
 }
 function syncPresetWidths() {const thumbBox = document.querySelector('#previewArea .thumb-box');
-if (!thumbBox) return;
+if (!thumbBox) {
+    // サムネイルがない時はプリセット枠を固定幅に設定（canvasの巨大化防止）
+    const fallback = 80;
+    document.querySelectorAll('#sbc-presets .preset-box').forEach(box => {box.style.width = fallback + 'px'; box.style.flexBasis = fallback + 'px';});
+    return;
+}
 const w = thumbBox.offsetWidth;
 if (!w) { requestAnimationFrame(syncPresetWidths); return; }
 const rounded = Math.round(w);
@@ -4919,8 +4976,13 @@ exportZipBtn.addEventListener('click', async (e) => {
                 newData.exportName = preset + '.jpg';
             } else {
                 newData = { ...fromData, _modeStates: JSON.parse(JSON.stringify(fromData._modeStates || {})) };
-                // 新しいスロットのアスペクト比で fitImage させるため preset キーの modeStates は削除
-                delete newData._modeStates[preset];
+                // コピー元スロットの編集状態（色調整・回転・透過）を引き継ぐ
+                const srcState = fromData._modeStates?.[fromPreset] || fromData._modeStates?.['free'] || (fromData._modeStates && Object.values(fromData._modeStates)[0]);
+                if (srcState) {
+                    newData._modeStates[preset] = JSON.parse(JSON.stringify(srcState));
+                } else {
+                    delete newData._modeStates[preset];
+                }
                 if (fromData._logos) newData._logos = JSON.parse(JSON.stringify(fromData._logos));
                 newData._lastAspectKey = preset;
             }
@@ -4944,8 +5006,14 @@ exportZipBtn.addEventListener('click', async (e) => {
                     newSlotData._lastAspectKey = preset;
                 } else {
                     newSlotData = { ...dropped, _modeStates: JSON.parse(JSON.stringify(dropped._modeStates || {})) };
-                    // 新しいスロットのアスペクト比で fitImage させるため preset キーの modeStates は削除
-                    delete newSlotData._modeStates[preset];
+                    // サムネイルの編集状態（色調整・回転・透過）を引き継ぐ
+                    const srcKey = dropped._lastAspectKey || 'free';
+                    const srcState = dropped._modeStates?.[srcKey] || (dropped._modeStates && Object.values(dropped._modeStates)[0]);
+                    if (srcState) {
+                        newSlotData._modeStates[preset] = JSON.parse(JSON.stringify(srcState));
+                    } else {
+                        delete newSlotData._modeStates[preset];
+                    }
                     if (dropped._logos) newSlotData._logos = JSON.parse(JSON.stringify(dropped._logos));
                     newSlotData._lastAspectKey = preset;
                 }
@@ -5918,6 +5986,7 @@ function updateSavedState() {
 // ── 複数選択（ラバーバンド）& 一括削除 ──────────────────────────────
 (function() {
     let thumbSelSet = new Set();   // 選択中インデックスのSet
+    window._thumbSelSet = thumbSelSet; // キーボードハンドラ用にグローバル公開
     let rbActive = false;          // ラバーバンド中か
     let rbStartX = 0, rbStartY = 0; // previewArea相対座標の開始点
     let rbMoved = false;           // ドラッグ距離が閾値を超えたか
@@ -5953,21 +6022,9 @@ function updateSavedState() {
         syncSelectionUI();
     };
 
-    // 一括削除
-    window._deleteSelectedThumbs = async function() {
+    // 一括削除（共通処理）
+    function executeDeleteSelected() {
         if (thumbSelSet.size === 0) return;
-        const n = thumbSelSet.size;
-        const confirmed = await showCustomDialog({
-            title: '一括削除の確認',
-            message: `選択した ${n} 枚の画像を削除してもよろしいですか？`,
-            okText: `${n}枚を削除`,
-            okClass: 'btn btn-danger',
-            cancelText: 'キャンセル',
-            type: 'confirm'
-        });
-        if (!confirmed) return;
-
-        // インデックスを降順に削除（配列ずれを防ぐため）
         const indices = Array.from(thumbSelSet).sort((a, b) => b - a);
         for (const idx of indices) {
             const data = processedImages[idx];
@@ -5980,7 +6037,6 @@ function updateSavedState() {
         forceClearUnsaved();
         refreshGlobalTimestamp('edit');
         markSessionWork();
-
         const hasSlotData = assignedSlots.thumb || assignedSlots.og || assignedSlots.special;
         if (processedImages.length === 0 && !hasSlotData) {
             byId('actionArea').style.display = 'none';
@@ -5991,11 +6047,25 @@ function updateSavedState() {
         } else {
             renderAllThumbs();
         }
-        // プレビューが開いていた場合は閉じる
         if (imagePreviewModal.style.display === 'flex') closeImagePreview(true);
-        await saveAppState();
+        saveAppState();
         syncSelectionUI();
+    }
+    window._executeDeleteSelected = executeDeleteSelected;
 
+    window._deleteSelectedThumbs = async function() {
+        if (thumbSelSet.size === 0) return;
+        const n = thumbSelSet.size;
+        const confirmed = await showCustomDialog({
+            title: '一括削除の確認',
+            message: `選択した ${n} 枚の画像を削除してもよろしいですか？`,
+            okText: `${n}枚を削除`,
+            okClass: 'btn btn-danger',
+            cancelText: 'キャンセル',
+            type: 'confirm'
+        });
+        if (!confirmed) return;
+        executeDeleteSelected();
     };
 
     // renderAllThumbs後に選択状態を復元するためにフック
