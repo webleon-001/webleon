@@ -285,7 +285,22 @@ const _dateStr=_now.getFullYear().toString()
 const _prefix=`${_dateStr}_split`;
 const _existingCount=processedImages.filter(img=>img.isSplitData&&img.exportName&&img.exportName.startsWith(_prefix)).length;
 const _seq=String(_existingCount+1).padStart(2,'0');
-finalExportName=`${_prefix}${_seq}.jpg`;
+const _defName=`${_prefix}${_seq}`;
+const _dlgPromise=showCustomDialog({
+title:'分割画像のファイル名',
+message:'この分割画像のファイル名を決めてください。<br><span style="color:var(--danger);font-size:0.75rem;">※日本語・全角文字は使用できません。</span>',
+type:'prompt',
+defaultValue:_defName,
+okText:'決定',
+cancelText:'キャンセル'
+});
+const _pi=document.getElementById('customDialogInput');
+if (_pi){
+_pi.addEventListener('input',()=>{validateAndCleanFilenameInput(_pi);});
+}
+const _iName=await _dlgPromise;
+if (_iName===null) return false;
+finalExportName=sanitizeWebFilename((_iName||_defName).replace(/\.jpg$/i,'')+'.jpg',_defName.replace(/\.jpg$/i,''));
 finalOriginalName=finalExportName;
 }
 }
@@ -322,7 +337,6 @@ currentPreviewIndex=processedImages.length-1;
 currentPreviewData=newData;
 await saveAppState();
 renderAllThumbs();
-showToast('分割画像は新規画像として保存しました。');
 return 'new';
 }
 currentPreviewData=newData;
@@ -1415,6 +1429,7 @@ const hadChangesBefore=backupSplitState?backupSplitState.wasUnsaved:false;
 if (backupSplitState&&backupSplitState.images){splitSelectedImages=backupSplitState.images;
 splitStates=backupSplitState.states;
 splitTargetCount=backupSplitState.count;
+if (backupSplitState.direction) splitDirection=backupSplitState.direction;
 backupSplitState=null;
 renderAllThumbs();
 showSplitPreview(false);
@@ -1442,6 +1457,7 @@ updateSavedState();
 function cancelReselect(){if (backupSplitState){splitSelectedImages=backupSplitState.images;
 splitStates=backupSplitState.states;
 splitTargetCount=backupSplitState.count;
+if (backupSplitState.direction) splitDirection=backupSplitState.direction;
 backupSplitState=null;
 }
 reselectingSplitIndex=-1;
@@ -1707,7 +1723,7 @@ replaceBtn.onclick=async (e)=>{
 e.stopPropagation();
 const confirm=await showCustomDialog({title:'画像の差し替え',message:'この画像を差し替えますか？',okText:'はい',cancelText:'いいえ',type:'confirm'});
 if (!confirm) return;
-backupSplitState={images:[...splitSelectedImages],states:JSON.parse(JSON.stringify(splitStates)),count:splitTargetCount};
+backupSplitState={images:[...splitSelectedImages],states:JSON.parse(JSON.stringify(splitStates)),count:splitTargetCount,direction:splitDirection};
 reselectingSplitIndex=index;
 closeImagePreview(true);
 isSelectingForSplit=true;
@@ -3296,6 +3312,7 @@ if (backupSplitState){
 splitSelectedImages=[...backupSplitState.images];
 splitStates=JSON.parse(JSON.stringify(backupSplitState.states));
 splitTargetCount=backupSplitState.count;
+if (backupSplitState.direction) splitDirection=backupSplitState.direction;
 }
 splitSelectedImages[reselectingSplitIndex]=data;
 splitStates[reselectingSplitIndex]={scale:1,baseScale:0,dx:0,dy:0,sat:100,bri:100,sharp:0,rot:0};
@@ -3326,33 +3343,7 @@ isSelectingForSplit=false;
 hideSplitMessage();
 if (window._isNewSplitCreation){
 window._isNewSplitCreation=false;
-const _now=new Date();
-const _dateStr=_now.getFullYear().toString()
-+String(_now.getMonth()+1).padStart(2,'0')
-+String(_now.getDate()).padStart(2,'0');
-const _prefix=`${_dateStr}_split`;
-const _existingCount=processedImages.filter(img=>img.isSplitData&&img.exportName&&img.exportName.startsWith(_prefix)).length;
-const _seq=String(_existingCount+1).padStart(2,'0');
-const defaultName=`${_prefix}${_seq}`;
-const dialogPromise=showCustomDialog({
-title:'分割画像のファイル名',
-message:'この分割画像のファイル名を決めてください。<br><span style="color:var(--danger);font-size:0.75rem;">※日本語・全角文字は使用できません。</span>',
-type:'prompt',
-defaultValue:defaultName,
-okText:'決定',
-cancelText:'キャンセル'
-});
-const promptInput=document.getElementById('customDialogInput');
-if (promptInput){
-promptInput.addEventListener('input',()=>{validateAndCleanFilenameInput(promptInput);});
-}
-const inputName=await dialogPromise;
-if (inputName===null){
-cancelSplitMode();
-return;
-}
-let finalName=sanitizeWebFilename((inputName||defaultName).replace(/\.jpg$/i,'')+'.jpg',defaultName.replace(/\.jpg$/i,''));
-window._pendingSplitFileName=finalName;
+window._pendingSplitFileName=null;
 }
 initSplitStates();
 showSplitPreview();
@@ -5530,7 +5521,7 @@ await saveSplitDataToSlot(currentAspectKey, true);
 } else {
 const success = await saveSplitToNormalImage();
 if (!success) return;
-if (success === 'new') { forceClearUnsaved(); updateSavedState(); renderAllThumbs(); return; }
+if (success === 'new') { forceClearUnsaved(); updateSavedState(); renderAllThumbs(); markSessionWork(); showToast('編集内容を保存しました。'); closeImagePreview(true); return; }
 }
 } else {
 // 余白チェック
