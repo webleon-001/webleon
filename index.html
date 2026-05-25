@@ -475,13 +475,18 @@ return{...img,blobUrl:null,thumbUrl:null,splitSelectedImages:null,splitSelectedI
 assignedSlotsIndices,
 assignedSlotsData
 };
+return new Promise((resolve,reject)=>{
 const tx=db.transaction(STORE_NAME,'readwrite');
 tx.objectStore(STORE_NAME).put(state,'state_'+currentSlotId);
 tx.objectStore(STORE_NAME).put(slotNames,'slotNames');
 tx.oncomplete=()=>{
 updateSlotLabels();
 updateSlotActionBtns();
+resolve();
 };
+tx.onerror=(e)=>{console.error('saveAppState IDB error:',e);reject(e);};
+tx.onabort=(e)=>{console.error('saveAppState IDB aborted:',e);reject(e);};
+});
 }
 async function loadAppState(slotId){if (!db) return;
 currentSlotId=slotId;
@@ -677,6 +682,7 @@ byId('slotSelector').addEventListener('change',async (e)=>{const slotId=e.target
 showProgressPanel('スロット切替中...');
 localStorage.setItem(`slot_last_used_${slotId}`,Date.now());
 localStorage.setItem('lastUsedSlot',slotId);
+if (processedImages.length>0){localStorage.removeItem('pendingSlotClear');}
 await saveAppState();
 await loadAppState(slotId);
 byId('progress').style.display='none';
@@ -3239,8 +3245,7 @@ renderAllThumbs();
 renderAllThumbs._fromLoad=false;
 await saveAppState();
 if (!isLoadingCanceled&&processedImages.length>0){
-hasSessionWork=false;
-localStorage.setItem('pendingSlotClear',currentSlotId);
+markSessionWork();
 }
 }
 async function processSingleFile(file){return new Promise((resolve)=>{const img=new Image(),url=URL.createObjectURL(file);
