@@ -1010,6 +1010,8 @@ cleanup2();resolve(val);
 }
 function startPreviewRename(el){
 if (!currentPreviewData&&!isSplitPreviewActive) return;
+const _specialSlots=['thumb','og','special'];
+if (_specialSlots.includes(currentAspectKey)) return;
 const data=currentPreviewData;
 const isNewSplitCreation=isSplitPreviewActive&&(!data||!data.isSplitData);
 const currentName=isNewSplitCreation
@@ -1545,9 +1547,13 @@ updateAspectBarVisibility(currentAspectKey);
 imagePreviewModal.style.display='flex';void imagePreviewModal.offsetWidth;imagePreviewModal.style.opacity='1';
 resizeContainerToAspect(currentAspectKey);
 if (isNewSplit){splitStates.forEach(st=>{if (st){st.baseScale=0;st.scale=1;st.dx=0;st.dy=0;}});}
-const _dispName=window._pendingSplitFileName||(currentPreviewData&&currentPreviewData.isSplitData?currentPreviewData.exportName:`分割モード (${splitTargetCount}分割)`);
-byId('previewMetaName').innerHTML=highlightJapanese(_dispName);
-byId('previewMetaInfo').innerHTML='クリックで選択 / ドラッグで移動 / 拡大縮小・色調整';
+const _splitSpecialLabels={thumb:'Thumbnail',og:'OG',special:'Special'};
+const _dispName=_splitSpecialLabels[currentAspectKey]||(window._pendingSplitFileName||(currentPreviewData&&currentPreviewData.isSplitData?currentPreviewData.exportName:`分割モード (${splitTargetCount}分割)`));
+const _mnSplit=byId('previewMetaName');
+_mnSplit.innerHTML=highlightJapanese(_dispName);
+if (_splitSpecialLabels[currentAspectKey]){_mnSplit.style.cursor='default';_mnSplit.title='';_mnSplit.onclick=null;}
+else{_mnSplit.style.cursor='text';_mnSplit.title='クリックしてファイル名を編集';_mnSplit.onclick=(ev)=>startPreviewRename(_mnSplit);}
+byId('previewMetaInfo').innerHTML='';
 renderSplitContainer();
 const container=byId('splitContainer');
 if (container){
@@ -1641,7 +1647,8 @@ splitStates.splice(index,1);
 splitTargetCount--;
 if (activeSplitIndex>=splitTargetCount) activeSplitIndex=splitTargetCount-1;
 setupSplitFilters(splitTargetCount);
-const _dispNameRm=window._pendingSplitFileName||(currentPreviewData&&currentPreviewData.isSplitData?currentPreviewData.exportName:`分割モード (${splitTargetCount}分割)`);
+const _splitSpecialLabelsRm={thumb:'Thumbnail',og:'OG',special:'Special'};
+const _dispNameRm=_splitSpecialLabelsRm[currentAspectKey]||(window._pendingSplitFileName||(currentPreviewData&&currentPreviewData.isSplitData?currentPreviewData.exportName:`分割モード (${splitTargetCount}分割)`));
 byId('previewMetaName').innerHTML=highlightJapanese(_dispNameRm);
 renderSplitContainer();
 recalcSplitBaseScales();
@@ -1994,8 +2001,13 @@ imagePreviewModal.style.opacity='1';
 resizeContainerToAspect(currentAspectKey);
 setupSplitFilters(splitTargetCount);
 activeSplitIndex=0;
-byId('previewMetaName').innerHTML=highlightJapanese(data.exportName||`分割モード (${splitTargetCount}分割)`);
-byId('previewMetaInfo').innerHTML='クリックで選択 / ドラッグで移動 / 拡大縮小・色調整';
+const _rspSpecialLabels={thumb:'Thumbnail',og:'OG',special:'Special'};
+const _rspName=_rspSpecialLabels[currentAspectKey]||(data.exportName||`分割モード (${splitTargetCount}分割)`);
+const _rspMN=byId('previewMetaName');
+_rspMN.innerHTML=highlightJapanese(_rspName);
+if (_rspSpecialLabels[currentAspectKey]){_rspMN.style.cursor='default';_rspMN.title='';_rspMN.onclick=null;}
+else{_rspMN.style.cursor='text';_rspMN.title='クリックしてファイル名を編集';_rspMN.onclick=(ev)=>startPreviewRename(_rspMN);}
+byId('previewMetaInfo').innerHTML='';
 renderSplitContainer();
 activeSplitIndex=-1;
 updateActiveSplitSlotDOM();
@@ -4015,7 +4027,14 @@ requestAnimationFrame(()=>{
 nextImg.style.transition='';
 requestAnimationFrame(()=>{
 nextImg.style.opacity='1';
-byId('previewMetaName').innerHTML=highlightJapanese(data.exportName);updatePreviewMetaDimensions();
+const _specialSlotLabels={thumb:'Thumbnail',og:'OG',special:'Special'};
+const _dispKey=forcePreset||currentAspectKey;
+const _metaName=_specialSlotLabels[_dispKey]?_specialSlotLabels[_dispKey]:data.exportName;
+byId('previewMetaName').innerHTML=highlightJapanese(_metaName);
+const _mn=byId('previewMetaName');
+if (_specialSlotLabels[_dispKey]){_mn.style.cursor='default';_mn.title='';_mn.onclick=null;}
+else{_mn.style.cursor='text';_mn.title='クリックしてファイル名を編集';_mn.onclick=(ev)=>startPreviewRename(_mn);}
+updatePreviewMetaDimensions();
 if (isInitialOpen){const prog=byId('progress');if (prog) prog.style.display='none';imagePreviewModal.style.opacity='1';}
 setTimeout(()=>{isPreviewLoading=false;updateSavedState();},150);
 });
@@ -4645,7 +4664,6 @@ newData={...fromData};
 newData.splitSelectedImages=[...fromData.splitSelectedImages];
 newData.splitStates=JSON.parse(JSON.stringify(fromData.splitStates));
 newData._lastAspectKey=preset;
-newData.exportName=preset+'.jpg';
 newData._modeStates=JSON.parse(JSON.stringify(fromData._modeStates||{}));
 const srcState=fromData._modeStates?.[fromPreset]||fromData._modeStates?.['free']||(fromData._modeStates&&Object.values(fromData._modeStates)[0]);
 if (srcState){
