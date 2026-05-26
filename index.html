@@ -1530,9 +1530,19 @@ ctx.drawImage(tc,isHoriz?0:i*segW,isHoriz?i*segH:0);
 }
 const blob=await new Promise(res=>canvas.toBlob(res,'image/jpeg',0.8));
 if (!blob) return;
-if (currentPreviewData.thumbUrl) URL.revokeObjectURL(currentPreviewData.thumbUrl);
+const _oldThumbUrl=currentPreviewData.thumbUrl;
+if (_oldThumbUrl){
+const _sharing=processedImages.filter(img=>img!==currentPreviewData&&img.thumbUrl===_oldThumbUrl);
+URL.revokeObjectURL(_oldThumbUrl);
 currentPreviewData.thumbUrl=URL.createObjectURL(blob);
 currentPreviewData.thumbBlob=blob;
+_sharing.forEach(img=>{
+if (img.thumbBlob) img.thumbUrl=URL.createObjectURL(img.thumbBlob);
+});
+}else{
+currentPreviewData.thumbUrl=URL.createObjectURL(blob);
+currentPreviewData.thumbBlob=blob;
+}
 }
 function showSplitPreview(isNewSplit=true){isPreviewLoading=true;
 isSplitPreviewActive=true;
@@ -1942,8 +1952,8 @@ slot.style.outline='none';slot.style.zIndex='1';
 }
 function updateSplitSlotDOM(i){const img=byId(`split-img-${i}`),data=splitSelectedImages[i];if (!img||!data) return;
 const st=splitStates[i],finalScale=st.baseScale*st.scale;
-const currentImgW=Math.round(data.originalWidth*finalScale);
-const currentImgH=Math.round(data.originalHeight*finalScale);
+const currentImgW=Math.ceil(data.originalWidth*finalScale);
+const currentImgH=Math.ceil(data.originalHeight*finalScale);
 const currentImgX=st.dx;
 const currentImgY=st.dy;
 img.style.width=currentImgW+'px';img.style.height=currentImgH+'px';
@@ -1983,7 +1993,10 @@ splitModePreservedAspect=currentAspectKey;
 }
 splitTargetCount=data.splitTargetCount;
 splitDirection=data.splitDirection||'vertical';
-splitSelectedImages=[...data.splitSelectedImages];
+splitSelectedImages=data.splitSelectedImages.map(si=>{
+const match=processedImages.find(p=>p===si||(p.originalName&&p.originalName===si.originalName&&p.originalWidth===si.originalWidth&&p.originalHeight===si.originalHeight));
+return match||si;
+});
 splitStates=JSON.parse(JSON.stringify(data.splitStates));
 splitStates.forEach(st=>{if (st&&st.rot !==undefined) st.rot=Math.round(st.rot);});
 currentPreviewData=data;
@@ -4662,7 +4675,7 @@ let newData;
 if (fromData.isSplitData){
 newData={...fromData};
 newData.splitSelectedImages=[...fromData.splitSelectedImages];
-newData.splitStates=JSON.parse(JSON.stringify(fromData.splitStates));
+newData.splitStates=JSON.parse(JSON.stringify(fromData.splitStates)).map(st=>st?{...st,baseScale:0}:st);
 newData._lastAspectKey=preset;
 newData._modeStates=JSON.parse(JSON.stringify(fromData._modeStates||{}));
 const srcState=fromData._modeStates?.[fromPreset]||fromData._modeStates?.['free']||(fromData._modeStates&&Object.values(fromData._modeStates)[0]);
@@ -4697,7 +4710,7 @@ let newSlotData;
 if (dropped.isSplitData){
 newSlotData={...dropped};
 newSlotData.splitSelectedImages=[...dropped.splitSelectedImages];
-newSlotData.splitStates=JSON.parse(JSON.stringify(dropped.splitStates));
+newSlotData.splitStates=JSON.parse(JSON.stringify(dropped.splitStates)).map(st=>st?{...st,baseScale:0}:st);
 newSlotData._lastAspectKey=preset;
 newSlotData._modeStates=JSON.parse(JSON.stringify(dropped._modeStates||{}));
 const srcKey=dropped._lastAspectKey||'free';
