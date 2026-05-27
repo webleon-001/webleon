@@ -2268,6 +2268,11 @@ const data=currentPreviewData;
 const srcW=data.originalWidth,srcH=data.originalHeight;
 const el=byId('previewMetaInfo');
 if (!el) return;
+const _presetSizes={thumb:'1200×600px',og:'1200×630px',special:'1200×675px'};
+if (_presetSizes[currentAspectKey]){
+el.innerHTML=_presetSizes[currentAspectKey];
+return;
+}
 if (srcW>=1200){
 el.innerHTML=`${srcW}×${srcH}px`;
 return;
@@ -4109,9 +4114,8 @@ currentLogos=[];
 fitImage();
 if (ms&&ms.imgW){const newCw=targetCw||zoomContainer.clientWidth,newCh=targetCh||zoomContainer.clientHeight,sw=ms.cw>0?newCw/ms.cw:1,sh=ms.ch>0?newCh/ms.ch:1,natW=getActiveImg().naturalWidth,natH=getActiveImg().naturalHeight;
 imgW=Math.round(ms.imgW*sw);imgH=natW>0?Math.round(imgW*natH/natW):Math.round(ms.imgH*sh);
-imgW+=2;imgH+=2;
-zoomContainer.style.width=imgW+'px';zoomContainer.style.height=imgH+'px';
-targetCw=imgW;targetCh=imgH;
+const _isPresetKey=['thumb','og','special'].includes(currentAspectKey);
+if(!_isPresetKey){imgW+=2;imgH+=2;zoomContainer.style.width=imgW+'px';zoomContainer.style.height=imgH+'px';targetCw=imgW;targetCh=imgH;}
 imgX=Math.round(ms.imgX*sw);imgY=Math.round(ms.imgY*sh);
 const c=clampPos(imgX,imgY,imgW,imgH);imgX=c.nx;imgY=c.ny;applyPos();
 }
@@ -4814,6 +4818,20 @@ delete newSlotData._modeStates[preset];
 }
 if (dropped._logos) newSlotData._logos=JSON.parse(JSON.stringify(dropped._logos));
 newSlotData._lastAspectKey=preset;
+// デスティネーションプリセットのcw/chに補正
+const _destAsp=ASPECT_PRESETS[preset];
+if(_destAsp&&_destAsp.w&&_destAsp.h&&newSlotData._modeStates&&newSlotData._modeStates[preset]){
+const _ms=newSlotData._modeStates[preset];
+const _oldCw=_ms.cw||_destAsp.w,_oldCh=_ms.ch||_destAsp.h;
+const _newCw=_destAsp.w,_newCh=_destAsp.h;
+if(_oldCw!==_newCw||_oldCh!==_newCh){
+const _sx=_newCw/_oldCw,_sy=_newCh/_oldCh;
+if(_ms.imgW){_ms.imgW=Math.round(_ms.imgW*_sx);_ms.imgH=Math.round(_ms.imgH*_sy);_ms.imgX=Math.round(_ms.imgX*_sx);_ms.imgY=Math.round(_ms.imgY*_sy);}
+_ms.cw=_newCw;_ms.ch=_newCh;
+}
+}
+newSlotData._viewCw=_destAsp&&_destAsp.w?_destAsp.w:newSlotData._viewCw;
+newSlotData._viewCh=_destAsp&&_destAsp.h?_destAsp.h:newSlotData._viewCh;
 }
 assignedSlots[preset]=newSlotData;
 renderPresetCanvas(preset);
