@@ -1060,7 +1060,7 @@ const data=currentPreviewData;
 const isNewSplitCreation=isSplitPreviewActive&&(!data||!data.isSplitData);
 const currentName=isNewSplitCreation
 ?(window._pendingSplitFileName||`split_${splitTargetCount}files.jpg`)
-:(data.exportName||data.originalName);
+:getDisplayName(data);
 const ext=currentName.match(/\.[^/.]+$/)?.[0]||'.jpg';
 const base=currentName.slice(0,currentName.length-ext.length);
 const input=document.createElement('input');
@@ -1099,7 +1099,7 @@ markSessionWork();
 }
 }
 el.innerHTML='';
-const _finalName=isNewSplitCreation?(window._pendingSplitFileName||currentName):(data.exportName||data.originalName);
+const _finalName=isNewSplitCreation?(window._pendingSplitFileName||currentName):getDisplayName(data);
 byId('previewMetaName').innerHTML=highlightJapanese(_finalName);
 };
 input.addEventListener('input',()=>{validateAndCleanFilenameInput(input);});
@@ -1165,7 +1165,7 @@ renderAllThumbs();
 renderAllThumbs._fromLoad=false;
 saveAppState();
 markSessionWork();
-if (currentPreviewData) byId('previewMetaName').innerHTML=highlightJapanese(currentPreviewData.exportName);
+if (currentPreviewData) byId('previewMetaName').innerHTML=highlightJapanese(getDisplayName(currentPreviewData));
 });
 return;
 }
@@ -1198,7 +1198,7 @@ renderAllThumbs._fromLoad=false;
 saveAppState();
 markSessionWork();
 if (currentPreviewData){
-byId('previewMetaName').innerHTML=highlightJapanese(currentPreviewData.exportName);
+byId('previewMetaName').innerHTML=highlightJapanese(getDisplayName(currentPreviewData));
 }
 });
 }
@@ -2119,7 +2119,7 @@ const instBox=byId('instructionBox');
 if (localStorage.getItem('hideAppInstruction')) instBox.style.display='none';
 byId('closeInstBtn').onclick=()=>{instBox.classList.remove('inst-enter');instBox.classList.add('inst-leave');instBox.addEventListener('animationend',function h(){instBox.style.display='none';instBox.classList.remove('inst-leave');instBox.removeEventListener('animationend',h);},{once:true});localStorage.setItem('hideAppInstruction','1');};
 byId('helpBtn').onclick=()=>{if (instBox.style.display==='none'){instBox.style.display='block';instBox.classList.remove('inst-leave','inst-enter');void instBox.offsetWidth;instBox.classList.add('inst-enter');localStorage.removeItem('hideAppInstruction');}else{instBox.classList.remove('inst-enter');instBox.classList.add('inst-leave');instBox.addEventListener('animationend',function h(){instBox.style.display='none';instBox.classList.remove('inst-leave');instBox.removeEventListener('animationend',h);},{once:true});localStorage.setItem('hideAppInstruction','1');}};
-function getDisplayName(data){return (data&&data.displayName)||data.exportName||data.originalName;}
+function getDisplayName(data){if(!data) return "";const src=data.sourceFileName||data.originalName||"";const expBase=(data.exportName||"").replace(/\.[^/.]+$/,"");const srcBase=src.replace(/\.[^/.]+$/,"");return expBase===srcBase?src:(data.exportName||src);}
 function highlightJapanese(text){return text.replace(/[^\x01-\x7E]+/g,'<span class="highlight-red">$&</span>');}
 function validateAndCleanFilenameInput(input){
 const val=input.value;
@@ -3279,15 +3279,16 @@ updateFileProgress(doneCount,allTasks.length||1,task.name);await new Promise(r=>
 try{let blob,outName=task.name;
 if (task.isPdf){const pdf=await pdfjsLib.getDocument({data:await task.file.arrayBuffer()}).promise;
 for (let j=1;j<=pdf.numPages;j++){if (isLoadingCanceled) break;
-const page=await pdf.getPage(j),viewport=page.getViewport({scale:2.0});const canvasTmp=document.createElement('canvas');canvasTmp.width=viewport.width;canvasTmp.height=viewport.height;await page.render({canvasContext:canvasTmp.getContext('2d'),viewport}).promise;await processSingleFile(new File([await new Promise(r=>canvasTmp.toBlob(r,'image/jpeg',0.95))],`${task.file.name.replace(/\.pdf$/i, '')}_p${j}.jpg`,{type:'image/jpeg'}));
+const page=await pdf.getPage(j),viewport=page.getViewport({scale:2.0});const canvasTmp=document.createElement('canvas');canvasTmp.width=viewport.width;canvasTmp.height=viewport.height;await page.render({canvasContext:canvasTmp.getContext('2d'),viewport}).promise;await processSingleFile(new File([await new Promise(r=>canvasTmp.toBlob(r,'image/jpeg',0.95))],`${task.file.name.replace(/\.pdf$/i, '')}_p${j}.jpg`,{type:'image/jpeg'}),`${task.file.name.replace(/\.pdf$/i,'')}_p${j}.pdf`);
 }
 doneCount++;continue;
 }
-if (task.isPsd){try{blob=await decodePsdToBlob(task.file);outName=outName.replace(/\.psd$/i,'.jpg');}catch(e){await showCustomDialog({title:'PSDエラー',message:`失敗: ${e.message}`,okText:'閉じる',okClass:'btn btn-danger',type:'alert'});doneCount++;continue;}await processSingleFile(new File([blob],outName,{type:'image/jpeg'}));doneCount++;continue;}
-if (task.isAi){try{blob=await decodeAiToBlob(task.file);outName=outName.replace(/\.ai$/i,'.jpg');}catch(e){await showCustomDialog({title:'AIエラー',message:`失敗`,okText:'閉じる',okClass:'btn btn-danger',type:'alert'});doneCount++;continue;}await processSingleFile(new File([blob],outName,{type:'image/jpeg'}));doneCount++;continue;}
+if (task.isPsd){try{blob=await decodePsdToBlob(task.file);outName=outName.replace(/\.psd$/i,'.jpg');}catch(e){await showCustomDialog({title:'PSDエラー',message:`失敗: ${e.message}`,okText:'閉じる',okClass:'btn btn-danger',type:'alert'});doneCount++;continue;}await processSingleFile(new File([blob],outName,{type:'image/jpeg'}),task.file.name);doneCount++;continue;}
+if (task.isAi){try{blob=await decodeAiToBlob(task.file);outName=outName.replace(/\.ai$/i,'.jpg');}catch(e){await showCustomDialog({title:'AIエラー',message:`失敗`,okText:'閉じる',okClass:'btn btn-danger',type:'alert'});doneCount++;continue;}await processSingleFile(new File([blob],outName,{type:'image/jpeg'}),task.file.name);doneCount++;continue;}
 blob=task.zipKey?await task.zipObj.file(task.zipKey).async("blob"):task.file;
+const _origOutName=outName;
 if (/\.(heic|heif)$/i.test(outName)){blob=await decodeHeicToBlob(new File([blob],outName));outName=outName.replace(/\.(heic|heif)$/i,'.jpg');}else if (/\.(tif|tiff)$/i.test(outName)){blob=await decodeTiffToBlob(new File([blob],outName));outName=outName.replace(/\.(tif|tiff)$/i,'.jpg');}else if (/\.psd$/i.test(outName)){blob=await decodePsdToBlob(new File([blob],outName));outName=outName.replace(/\.psd$/i,'.jpg');}else if (/\.ai$/i.test(outName)){blob=await decodeAiToBlob(new File([blob],outName));outName=outName.replace(/\.ai$/i,'.jpg');}
-await processSingleFile(new File([blob],outName));
+await processSingleFile(new File([blob],outName),_origOutName);
 }catch(e){console.error(e);}
 doneCount++;
 }
@@ -3319,15 +3320,16 @@ updateFileProgress(doneCount,allTasks.length||1,task.name);await new Promise(r=>
 try{let blob,outName=task.name;
 if (task.isPdf){const pdf=await pdfjsLib.getDocument({data:await task.file.arrayBuffer()}).promise;
 for (let j=1;j<=pdf.numPages;j++){if (isLoadingCanceled) break;
-const page=await pdf.getPage(j),viewport=page.getViewport({scale:2.0});const canvasTmp=document.createElement('canvas');canvasTmp.width=viewport.width;canvasTmp.height=viewport.height;await page.render({canvasContext:canvasTmp.getContext('2d'),viewport}).promise;await processSingleFile(new File([await new Promise(r=>canvasTmp.toBlob(r,'image/jpeg',0.95))],`${task.file.name.replace(/\.pdf$/i, '')}_p${j}.jpg`,{type:'image/jpeg'}));
+const page=await pdf.getPage(j),viewport=page.getViewport({scale:2.0});const canvasTmp=document.createElement('canvas');canvasTmp.width=viewport.width;canvasTmp.height=viewport.height;await page.render({canvasContext:canvasTmp.getContext('2d'),viewport}).promise;await processSingleFile(new File([await new Promise(r=>canvasTmp.toBlob(r,'image/jpeg',0.95))],`${task.file.name.replace(/\.pdf$/i, '')}_p${j}.jpg`,{type:'image/jpeg'}),`${task.file.name.replace(/\.pdf$/i,'')}_p${j}.pdf`);
 }
 doneCount++;continue;
 }
-if (task.isPsd){try{blob=await decodePsdToBlob(task.file);outName=outName.replace(/\.psd$/i,'.jpg');}catch(e){await showCustomDialog({title:'PSDエラー',message:`失敗`,okText:'閉じる',okClass:'btn btn-danger',type:'alert'});doneCount++;continue;}await processSingleFile(new File([blob],outName,{type:'image/jpeg'}));doneCount++;continue;}
-if (task.isAi){try{blob=await decodeAiToBlob(task.file);outName=outName.replace(/\.ai$/i,'.jpg');}catch(e){await showCustomDialog({title:'AIエラー',message:`失敗`,okText:'閉じる',okClass:'btn btn-danger',type:'alert'});doneCount++;continue;}await processSingleFile(new File([blob],outName,{type:'image/jpeg'}));doneCount++;continue;}
+if (task.isPsd){try{blob=await decodePsdToBlob(task.file);outName=outName.replace(/\.psd$/i,'.jpg');}catch(e){await showCustomDialog({title:'PSDエラー',message:`失敗`,okText:'閉じる',okClass:'btn btn-danger',type:'alert'});doneCount++;continue;}await processSingleFile(new File([blob],outName,{type:'image/jpeg'}),task.file.name);doneCount++;continue;}
+if (task.isAi){try{blob=await decodeAiToBlob(task.file);outName=outName.replace(/\.ai$/i,'.jpg');}catch(e){await showCustomDialog({title:'AIエラー',message:`失敗`,okText:'閉じる',okClass:'btn btn-danger',type:'alert'});doneCount++;continue;}await processSingleFile(new File([blob],outName,{type:'image/jpeg'}),task.file.name);doneCount++;continue;}
 blob=task.zipKey?await task.zipObj.file(task.zipKey).async("blob"):task.file;
+const _origOutName=outName;
 if (/\.(heic|heif)$/i.test(outName)){blob=await decodeHeicToBlob(new File([blob],outName));outName=outName.replace(/\.(heic|heif)$/i,'.jpg');}else if (/\.(tif|tiff)$/i.test(outName)){blob=await decodeTiffToBlob(new File([blob],outName));outName=outName.replace(/\.(tif|tiff)$/i,'.jpg');}else if (/\.psd$/i.test(outName)){blob=await decodePsdToBlob(new File([blob],outName));outName=outName.replace(/\.psd$/i,'.jpg');}else if (/\.ai$/i.test(outName)){blob=await decodeAiToBlob(new File([blob],outName));outName=outName.replace(/\.ai$/i,'.jpg');}
-await processSingleFile(new File([blob],outName));
+await processSingleFile(new File([blob],outName),_origOutName);
 }catch(e){console.error(e);}
 doneCount++;
 }
@@ -3347,7 +3349,7 @@ if (!isLoadingCanceled&&processedImages.length>0){
 markSessionWork();
 }
 }
-async function processSingleFile(file){return new Promise((resolve)=>{const img=new Image(),url=URL.createObjectURL(file);
+async function processSingleFile(file,_srcFileName){return new Promise((resolve)=>{const img=new Image(),url=URL.createObjectURL(file);
 img.onload=async ()=>{if (isLoadingCanceled){URL.revokeObjectURL(url);resolve();return;}
 const isSmall=img.width<1200,hasJapanese=/[^\x01-\x7E]/.test(file.name);
 const needsResizeDialog=img.width<1200;
@@ -3360,7 +3362,7 @@ return new Promise(r=>cvs.toBlob(r,'image/jpeg',q));
 };
 const[exportBlob,previewBlob,thumbBlob]=await Promise.all([createBlob(1200,0.95),createBlob(3000,0.90),createBlob(100,0.85)]);
 if (isLoadingCanceled||!exportBlob){URL.revokeObjectURL(url);resolve();return;}
-const data={file,originalName:file.name,exportName:file.name.replace(/\.[^/.]+$/,"").replace(/ /g,"_")+".jpg",displayName:(()=>{const _ext=file.name.match(/\.([^/.]+)$/)?.[1]?.toLowerCase();const _base=file.name.replace(/\.[^/.]+$/,"").replace(/ /g,"_");const _keepExt=["psd","pdf","ai","png","webp","gif","tif","tiff","heic","heif"];return _keepExt.includes(_ext)&&_ext!=="jpg"&&_ext!=="jpeg"?_base+"."+_ext:null;})(),blob:exportBlob,previewBlob,thumbBlob,blobUrl:URL.createObjectURL(previewBlob),thumbUrl:URL.createObjectURL(thumbBlob),originalWidth:img.width,originalHeight:img.height,isSmall,hasJapanese,sizeStr:formatBytes(file.size),lastUpdated:getFormattedDate()
+const data={file,originalName:file.name,exportName:file.name.replace(/\.[^/.]+$/,"").replace(/ /g,"_")+".jpg",sourceFileName:_srcFileName||file.name,blob:exportBlob,previewBlob,thumbBlob,blobUrl:URL.createObjectURL(previewBlob),thumbUrl:URL.createObjectURL(thumbBlob),originalWidth:img.width,originalHeight:img.height,isSmall,hasJapanese,sizeStr:formatBytes(file.size),lastUpdated:getFormattedDate()
 };
 processedImages.push(data);if (needsResizeDialog) smallImages.push(data);if (hasJapanese) japaneseImages.push(data);
 URL.revokeObjectURL(url);resolve();
